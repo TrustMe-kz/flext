@@ -2,15 +2,24 @@
 
 const esbuild = require('esbuild');
 const babel = require('../babel-plugin.js');
-const glob = require('esbuild-plugin-import-glob');
+
+esbuild.build({
+    entryPoints: [ 'src/index.ts' ],
+    outfile: 'dist/index.cjs',
+    bundle: true,
+    platform: 'node',
+    format: 'cjs',
+    sourcemap: false,
+    minify: true,
+    plugins: [ babel.plugin() ],
+}).catch(() => process.exit(1));
 
 esbuild.build({
     entryPoints: [ 'src/index.ts' ],
     outfile: 'dist/index.js',
     bundle: true,
     platform: 'node',
-    format: 'cjs',
+    format: 'esm',
     sourcemap: false,
     minify: true,
-    plugins: [ glob.default(), babel.plugin() ],
 }).catch(() => process.exit(1));

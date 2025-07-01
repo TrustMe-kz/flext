@@ -3,8 +3,7 @@ import { TemplateDelegate } from 'handlebars';
 import { BaseError } from '@/errors';
 import { strToTemplate, getHtml } from '@/lib';
 import { has } from '@/lib';
-// @ts-ignore
-import * as modules from './modules/*/*.ts';
+import * as modules from './modules';
 
 
 // Types
@@ -18,8 +17,6 @@ export type Macro = {
 // Constants
 
 export const DEFAULT_MODULE_SCRIPT = 'index';
-
-export const MODULES_DIR = './modules';
 
 
 // Classes
@@ -73,30 +70,13 @@ export class SimpleFlext  {
 export class Flext extends SimpleFlext {
   declare public version: string;
   declare public lineHeight: number;
-  declare public onReadyVal: any;
-  public isReady: boolean = false;
 
-  constructor(val: string|null = null, options: any = {}) {
-    super();
-
-
-    // Getting the options
-
-    const onReady = options?.onReady ?? (() => {});
-
-
-    // Setting the data
-
-    this.setOnReady(onReady);
-    if (val) this.setHbs(val ?? '');
-  }
-
-  public async useModule(...val: string[]): Promise<void> {
+  public useModule(...val: string[]): this {
     for (const moduleName of val) {
 
       // Getting the module
 
-      const module = await getModule(moduleName);
+      const module = modules[moduleName];
       const moduleHelpers = module?.helpers ?? {};
 
 
@@ -123,6 +103,9 @@ export class Flext extends SimpleFlext {
           this.addHelper(moduleName + ':' + helperName, helper);
       }
     }
+
+
+    return this;
   }
 
   public setHbs(val: string): this {
@@ -159,10 +142,7 @@ export class Flext extends SimpleFlext {
 
     const moduleNames = modulesStr?.split(',') ?? null;
 
-    if (moduleNames)
-      this.useModule(...moduleNames).then(this.onReady.bind(this)).catch(console.error);
-    else
-      this.onReady();
+    this.useModule(...moduleNames);
 
 
     return this;
@@ -176,23 +156,6 @@ export class Flext extends SimpleFlext {
   public setLineHeight(val: number): this {
     this.lineHeight = val;
     return this;
-  }
-
-  public setOnReady(val: any): this {
-    this.onReadyVal = val;
-    return this;
-  }
-
-  public getHtml(data: Obj = {}, helpers: Obj = {}): string {
-    if (this.isReady)
-      return super.getHtml(data, helpers);
-    else
-      throw new BaseError('Flext: Unable to get the HTML: The template is not ready');
-  }
-
-  private onReady(): void {
-    this.isReady = true;
-    this.onReadyVal(this.html);
   }
 }
 
@@ -219,36 +182,6 @@ export function getMacros(hbs: string): Macro[] {
 
     result.push({ name, value });
   }
-
-
-  return result;
-}
-
-export async function getModule(name: string, script: string = DEFAULT_MODULE_SCRIPT): Promise<any> {
-  const path = `${MODULES_DIR}/${name}/${script}`;
-  const pathTs = path + '.ts';
-  const pathIndex = path + '/index.ts';
-
-
-  // Getting the loader
-
-  const get = modules[pathTs] ?? modules[pathIndex] ?? null;
-
-  if (!get)
-    throw new BaseError(`Flext: Module '${name}' does not exist`);
-
-
-  // Getting the module
-
-  const module: any = await get();
-
-
-  // Getting the module
-
-  const result: any = module?.default ?? null;
-
-  if (!result)
-    throw new BaseError(`Flext: Unable to get module '${name}': The ES module has no default export`);
 
 
   return result;
