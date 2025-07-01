@@ -1,8 +1,8 @@
 {
-  "name": "exjsona",
-  "version": "1.0.7",
+  "name": "@trustme24/flext",
+  "version": "1.0.0",
   "description": "A library for user-friendly variables in JSON",
-  "keywords": ["json", "json variables", "presets", "json presets", "configuration"],
+  "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "commonjs",
   "main": "dist/index.js",
   "types": "dist/src/index.d.ts",
