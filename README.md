@@ -11,16 +11,30 @@ Flext is maintained by **DauInvest** (Astana, Kazakhstan).
 import { Flext } from '@trustme24/flext';
 
 const template = `
-{{!-- @use "put" --}}
-<td>{{ put data.name 'Guest' }}</td>
+  {{!-- @v "1.0" --}}
+  {{!-- @use "put" --}}
+
+  <div class="text-center text-red-500">{{ put data.helloworld 'No Hello World...' }}</div>
 `;
 
-const fx = new Flext(template, { data: { name: 'Kenny' } });
-console.log(fx.html); // <td><span class="text-blue-500">Kenny</span></td>
+const flext = new Flext(template, {
+  data: { helloworld: 'Hello World!' },
+});
+
+document.body.innerHTML = flext.html;
 ```
 
 ## Installation
 
-```bash
-npm install @trustme24/flext
+1. Install dependencies:
+
+```shell
+npm install tailwindcss
+npm i @trustme24/flext
 ```
+
+2. Add the CSS import:
+
+Add `@import "@trustme24/flext/index.css";` in `src/index.css`.
+
+3. You're all set!
