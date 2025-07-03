@@ -26,15 +26,15 @@ document.body.innerHTML = flext.html;
 
 ## Installation
 
-1. Install dependencies:
+1. Install **dependencies**:
 
 ```shell
 npm install tailwindcss
 npm i @trustme24/flext
 ```
 
-2. Add the CSS import:
+2. Add the **CSS** import:
 
 Add `@import "@trustme24/flext/index.css";` in `src/index.css`.
 
-3. You're all set!
+3. **You're all set!**
