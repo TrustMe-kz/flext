@@ -1,10 +1,10 @@
 ## Flext
 
-Flext is a lightweight extension over Handlebars. It introduces a small DSL for handling macros and modules to help create dynamic templates. The library is compiled to both ESM and CommonJS bundles and can be embedded in other projects such as Vue components.
+**Flext** is a lightweight extension over Handlebars. It introduces a small DSL for handling macros and modules to help create dynamic templates. The library is compiled to both ESM and CommonJS bundles and can be embedded in other projects such as [Vue components](https://www.npmjs.com/package/vue-flext).
 
-Public documentation is available at [TrustMe Wiki](https://trustmekz.atlassian.net/wiki/external/MTUwYzM5NjUzNDE4NDViMGJlMTliOWEzNzM1Y2RiZWE).
+Public documentation is available at [Wiki](https://trustmekz.atlassian.net/wiki/external/MTUwYzM5NjUzNDE4NDViMGJlMTliOWEzNzM1Y2RiZWE).
 
-Flext is maintained by **DauInvest** (Astana, Kazakhstan).
+Flext is maintained by [TrustMe](https://trustme24.com/).
 
 ### Example
 ```ts
@@ -29,12 +29,17 @@ document.body.innerHTML = flext.html;
 1. Install **dependencies**:
 
 ```shell
-npm install tailwindcss
-npm i @trustme24/flext
+npm i tailwindcss @trustme24/flext
 ```
 
-2. Add the **CSS** import:
+2. Add the **CSS** import in your CSS file:
 
-Add `@import "@trustme24/flext/index.css";` in `src/index.css`.
+```css
+@import "@trustme24/flext/index.css";
+```
 
 3. **You're all set!**
+
+---
+**Flext by Kenny Romanov**  
+TrustMe
