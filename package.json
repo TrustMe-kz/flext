@@ -1,6 +1,6 @@
 {
   "name": "@trustme24/flext",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "A Powerful Templating Engine",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "commonjs",
