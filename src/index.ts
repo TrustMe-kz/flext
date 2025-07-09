@@ -1,9 +1,16 @@
 import { AST } from '@handlebars/parser';
-import { Obj } from '@/types';
+import { Obj, DataModelNode } from '@/types';
 import { BaseError } from '@/errors';
 import { getAst, getTemplate, getHtml, getDataModel, getMacros } from '@/lib';
 import { has } from '@/lib';
 import * as modules from './modules';
+
+
+// Types
+
+// export type FlextModelNode = DataModelNode & {
+//   type: string,
+// };
 
 
 // Classes
@@ -151,8 +158,42 @@ export class Flext extends SimpleFlext {
     return this;
   }
 
-  public getDataModel(): Obj {
-    return getDataModel(this.ast);
+  public getDataModel(): DataModelNode[] {
+    const model = getDataModel(this.ast);
+    const nodes: DataModelNode[] = model?.$ ?? [];
+    const result: DataModelNode[] = [];
+
+
+    // Defining the functions
+
+    const isHelper = (node: DataModelNode): boolean => {
+      for (const helperName in this.helpers) {
+        if (!has(this.helpers, helperName)) continue;
+
+        if (node?.name === helperName)
+          return true;
+      }
+
+      return false;
+    }
+
+
+    // Getting the nodes
+
+    for (const node of nodes) {
+
+      // Doing some checks
+
+      if (isHelper(node)) continue;
+
+
+      // Setting the node type
+
+      result.push(node)
+    }
+
+
+    return result;
   }
 
   public get model(): Obj {

@@ -1,19 +1,10 @@
 import { AST } from '@handlebars/parser';
-import { Obj, Macro, MacroParam } from '@/types';
+import { Obj, Macro, MacroParam, DataModelNode, DataModel } from '@/types';
 import { PotentialLoopError, BaseWarning } from '@/errors';
 import Handlebars, { TemplateDelegate } from 'handlebars';
 
 
 // Types
-
-export type ModelNode = {
-  name: string,
-  $?: ModelNode[],
-};
-
-export type DataModel = ModelNode & {
-  addPath: (path: string, depth?: number) => void,
-};
 
 export type CollectorFilterHandler<T = any> = (val?: T) => boolean;
 
@@ -136,7 +127,7 @@ export function getPaths(ast: AST.Program): string[] {
   return unique(paths);
 }
 
-export function pathToModelNode(path: string, depth: number = DEFAULT_MODEL_DEPTH): ModelNode {
+export function pathToDataModelNode(path: string, depth: number = DEFAULT_MODEL_DEPTH): DataModelNode {
 
   // Doing some checks
 
@@ -147,10 +138,10 @@ export function pathToModelNode(path: string, depth: number = DEFAULT_MODEL_DEPT
   // Getting the node
 
   const [ name, ...items ] = path?.split('.') ?? [];
-  const result: ModelNode = { name };
+  const result: DataModelNode = { name };
 
   if (items?.length > 0)
-    result.$ = [ pathToModelNode(items?.join('.'), depth - 1) ];
+    result.$ = [ pathToDataModelNode(items?.join('.'), depth - 1) ];
 
 
   // Getting the root mode
@@ -160,16 +151,16 @@ export function pathToModelNode(path: string, depth: number = DEFAULT_MODEL_DEPT
 }
 
 export function pathToDataModel(path: string, depth: number = DEFAULT_MODEL_DEPTH): DataModel {
-  const node: any = pathToModelNode(path, depth);
+  const node: any = pathToDataModelNode(path, depth);
   const dataModel: any = { name: 'root', $: [ node ] };
 
 
   // Defining the methods
 
   dataModel.addPath = (_path: string, _depth: number = DEFAULT_MODEL_DEPTH): void => {
-    const newNode = pathToModelNode(_path, _depth);
-    let cursorRef: ModelNode = dataModel;
-    let cursor: ModelNode | null = newNode;
+    const newNode = pathToDataModelNode(_path, _depth);
+    let cursorRef: DataModelNode = dataModel;
+    let cursor: DataModelNode | null = newNode;
 
 
     // Iterating for each new node
