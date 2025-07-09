@@ -14,3 +14,7 @@ export class BaseError extends BaseThrowable {
 export class BaseWarning extends BaseThrowable {
     public name = 'BaseWarning';
 }
+
+export class PotentialLoopError extends BaseThrowable {
+    public name = 'PotentialLoopError';
+}

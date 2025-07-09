@@ -1,41 +1,28 @@
+import { AST } from '@handlebars/parser';
 import { Obj } from '@/types';
-import { TemplateDelegate } from 'handlebars';
 import { BaseError } from '@/errors';
-import { strToTemplate, getHtml } from '@/lib';
+import { getAst, getTemplate, getHtml, getDataModel, getMacros } from '@/lib';
 import { has } from '@/lib';
 import * as modules from './modules';
-
-
-// Types
-
-export type Macro = {
-  name: string,
-  value: string,
-};
-
-
-// Constants
-
-export const DEFAULT_MODULE_SCRIPT = 'index';
 
 
 // Classes
 
 export class SimpleFlext  {
-  declare public template: TemplateDelegate;
+  declare public ast: AST.Program;
   declare public data: Obj;
   declare public helpers: Obj;
 
   constructor(val: string|null = null, data: Obj = {}, helpers: Obj = {}) {
     this.setData(data);
     this.setHelpers(helpers);
-    if (val) this.setHbs(val);
+    if (val) this.setTemplate(val);
   }
 
-  public setHbs(val: string): this {
+  public setTemplate(val: string): this {
     this.data = {};
     this.helpers = {};
-    this.template = strToTemplate(val);
+    this.ast = getAst(val);
 
     return this;
   }
@@ -56,8 +43,10 @@ export class SimpleFlext  {
   }
 
   public getHtml(data: Obj = {}, helpers: Obj = {}): string {
-    if (this.template)
-      return getHtml(this.template, data, helpers);
+    const template = getTemplate(this.ast);
+
+    if (template)
+      return getHtml(template, data, helpers);
     else
       throw new BaseError('Flext: Unable to get the HTML: No template');
   }
@@ -108,15 +97,24 @@ export class Flext extends SimpleFlext {
     return this;
   }
 
-  public setHbs(val: string): this {
-    const macros = getMacros(val);
+  public setTemplate(val: string): this {
+
+    // Setting the template
+
+    super.setTemplate(val);
+
+
+    // Defining the variables
+
+    const macros = getMacros(this.ast);
+    console.log(macros, 'macros');
 
 
     // Defining the functions
 
     const get = (val: string): string|null => {
       const macro = macros?.find(m => m?.name === val);
-      return macro?.value ?? null;
+      return macro?.params[0]?.value ?? null;
     };
 
 
@@ -131,11 +129,6 @@ export class Flext extends SimpleFlext {
 
     if (version) this.setVersion(version);
     if (lineHeight) this.setLineHeight(Number(lineHeight));
-
-
-    // Setting the template
-
-    super.setHbs(val);
 
 
     // Using the modules
@@ -157,41 +150,14 @@ export class Flext extends SimpleFlext {
     this.lineHeight = val;
     return this;
   }
-}
 
-
-// Functions
-
-export function getMacros(hbs: string): Macro[] {
-  const matches = hbs.matchAll(RegexHelper.macro);
-  const result: Macro[] = [];
-
-
-  // Iterating for all matches
-
-  for (const match of matches) {
-    const name = match?.groups?.name ?? null;
-    const value = match?.groups?.value ?? null;
-
-
-    // Doing some checks
-
-    if (!name || !value)
-      throw new BaseError(`Flext: Unable to get macros: Bad macro: '${match}'`);
-
-
-    result.push({ name, value });
+  public getDataModel(): Obj {
+    return getDataModel(this.ast);
   }
 
-
-  return result;
-}
-
-
-// Helpers
-
-export class RegexHelper {
-  public static macro = /{{!-- @(?<name>.+) "(?<value>.+)" --}}/gm;
+  public get model(): Obj {
+    return this.getDataModel();
+  }
 }
 
 
