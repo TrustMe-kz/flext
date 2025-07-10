@@ -1,6 +1,6 @@
 import { AST } from '@handlebars/parser';
-import { Obj, DataModelNode } from '@/types';
-import { BaseError } from '@/errors';
+import { Obj, DataModelNode, Macro } from '@/types';
+import { BaseError, PotentialLoopError } from '@/errors';
 import { getAst, getTemplate, getHtml, getDataModel, getMacros } from '@/lib';
 import { has } from '@/lib';
 import * as modules from './modules';
@@ -8,9 +8,27 @@ import * as modules from './modules';
 
 // Types
 
-// export type FlextModelNode = DataModelNode & {
-//   type: string,
-// };
+export type FieldType = 'string' | 'number' | 'boolean' | 'date';
+
+export type Field = {
+  name: string,
+  label?: string|null,
+  type: FieldType,
+  isRequired: boolean,
+};
+
+export type MetadataModelNode = DataModelNode & {
+  label?: string|null,
+  type: FieldType,
+  isRequired: boolean,
+};
+
+
+// Constants
+
+export const DEFAULT_FIELD_TYPE: FieldType = 'string';
+
+export const DEFAULT_MODEL_DEPTH = 10;
 
 
 // Classes
@@ -66,6 +84,7 @@ export class SimpleFlext  {
 export class Flext extends SimpleFlext {
   declare public version: string;
   declare public lineHeight: number;
+  declare public fields: Field[];
 
   public useModule(...val: string[]): this {
     for (const moduleName of val) {
@@ -114,14 +133,17 @@ export class Flext extends SimpleFlext {
     // Defining the variables
 
     const macros = getMacros(this.ast);
-    console.log(macros, 'macros');
 
 
     // Defining the functions
 
+    const getAll = (val: string): Macro[] | null => macros?.filter(m => m?.name === val) ?? null;
+
     const get = (val: string): string|null => {
-      const macro = macros?.find(m => m?.name === val);
-      return macro?.params[0]?.value ?? null;
+      const [ macro ] = getAll(val);
+      const [ param ] = macro?.params ?? null;
+
+      return param?.value ?? null;
     };
 
 
@@ -130,12 +152,21 @@ export class Flext extends SimpleFlext {
     const version = get('v');
     const modulesStr = get('use');
     const lineHeight = get('lineHeight');
+    const fieldMacros = getAll('field');
 
 
     // Setting the data
 
-    if (version) this.setVersion(version);
-    if (lineHeight) this.setLineHeight(Number(lineHeight));
+    const fields = fieldMacros?.map(macroToField) ?? null;
+
+    if (version)
+      this.setVersion(version);
+
+    if (lineHeight)
+      this.setLineHeight(Number(lineHeight));
+
+    if (fields)
+      this.setFields(fields);
 
 
     // Using the modules
@@ -158,11 +189,12 @@ export class Flext extends SimpleFlext {
     return this;
   }
 
-  public getDataModel(): DataModelNode[] {
-    const model = getDataModel(this.ast);
-    const nodes: DataModelNode[] = model?.$ ?? [];
-    const result: DataModelNode[] = [];
+  public setFields(val: Field[]): this {
+    this.fields = val;
+    return this;
+  }
 
+  public getDataModel(depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode[] {
 
     // Defining the functions
 
@@ -177,28 +209,93 @@ export class Flext extends SimpleFlext {
       return false;
     }
 
-
-    // Getting the nodes
-
-    for (const node of nodes) {
+    const getMetadataModelNode = (node: DataModelNode, options: Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode => {
 
       // Doing some checks
 
-      if (isHelper(node)) continue;
+      if (depth <= 0)
+        throw new PotentialLoopError('Flext: Unable to get the data model: The data model is too deep');
 
 
-      // Setting the node type
+      // Getting the metadata
 
-      result.push(node)
+      const fieldName = options?.fieldName ?? null;
+      const field = this.fields?.find(f => f?.name === fieldName) ?? null;
+
+
+      // Getting the data
+
+      const name = node?.name ?? null;
+      const label = field?.label ?? null;
+      const type = field?.type ?? DEFAULT_FIELD_TYPE;
+      const isRequired = !!field?.isRequired;
+      const nodes = node?.$ ?? [];
+
+
+      // Getting the sub-nodes
+
+      const $: MetadataModelNode[] = [];
+
+      for (const node of nodes) {
+        const nodeName = node?.name ?? null;
+
+        $.push(getMetadataModelNode(node, {
+          fieldName: fieldName + '.' + nodeName,
+        }, depth - 1));
+      }
+
+
+      return { name, label, type, isRequired, $ };
     }
 
 
-    return result;
+    // Getting the nodes
+
+    const model = getDataModel(this.ast);
+    const nodes: DataModelNode[] = model?.$ ?? [];
+
+
+    return nodes
+        .filter(n => !isHelper(n))
+        .map(n => getMetadataModelNode(n, { fieldName: n?.name ?? null }, depth));
   }
 
   public get model(): Obj {
     return this.getDataModel();
   }
+}
+
+
+// Functions
+
+export function macroToField(val: Macro): Field {
+  const params = val?.params ?? [];
+  const [ nameParam, ...args ] = params;
+
+
+  // Defining the functions
+
+  const get = (val: string): any => {
+    const arg = args?.find(a => a?.name === val) ?? null;
+
+    if (arg && arg?.value)
+      return arg?.value ?? null;
+    else if (arg && arg?.name)
+      return true;
+    else
+      return null;
+  }
+
+
+  // Getting the data
+
+  const name = nameParam?.value ?? null;
+  const label = get('label');
+  const type = get('type') ?? DEFAULT_FIELD_TYPE;
+  const isRequired = !!get('required');
+
+
+  return { name, label, type, isRequired };
 }
 
 
