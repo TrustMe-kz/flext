@@ -95,38 +95,8 @@ export class Flext extends SimpleFlext {
   declare public fields: Field[];
 
   public useModule(...val: string[]): this {
-    for (const moduleName of val) {
-
-      // Getting the module
-
-      const module = modules[moduleName];
-      const moduleHelpers = module?.helpers ?? {};
-
-
-      // Setting the helpers
-
-      for (const helperName in moduleHelpers) {
-        if (!has(moduleHelpers, helperName)) continue;
-
-
-        // Getting the data
-
-        const handle = moduleHelpers[helperName];
-        const isDefault = helperName === 'default';
-
-
-        // Getting the helper
-
-        const helper = (...args: any[]) => handle({ args });
-
-
-        if (isDefault)
-          this.addHelper(moduleName, helper);
-        else
-          this.addHelper(moduleName + ':' + helperName, helper);
-      }
-    }
-
+    for (const name of val)
+      this.addModule(name, modules[name]);
 
     return this;
   }
@@ -199,6 +169,36 @@ export class Flext extends SimpleFlext {
 
   public setFields(val: Field[]): this {
     this.fields = val;
+    return this;
+  }
+
+  public addModule(name: string, val: any): this {
+    const helpers = val?.helpers ?? {};
+
+
+    // Iterating for each helper
+
+    for (const helperName in helpers) {
+      if (!has(helpers, helperName)) continue;
+
+
+      // Getting the data
+
+      const handle = helpers[helperName];
+      const isDefault = helperName === 'default';
+
+
+      // Adding the helper
+
+      const helper = (...args: any[]) => handle({ args });
+
+      if (isDefault)
+        this.addHelper(name, helper);
+      else
+        this.addHelper(name + ':' + helperName, helper);
+    }
+
+
     return this;
   }
 
