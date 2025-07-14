@@ -70,14 +70,22 @@ export class SimpleFlext  {
   public getHtml(data: Obj = {}, helpers: Obj = {}): string {
     const template = getTemplate(this.ast);
 
-    if (template)
-      return getHtml(template, data, helpers);
-    else
+
+    // Doing some checks
+
+    if (!template)
       throw new BaseError('Flext: Unable to get the HTML: No template');
+
+
+    return getHtml(
+        template,
+        { ...this.data, ...data },
+        { ...this.helpers, ...helpers },
+    );
   }
 
   public get html(): string {
-    return this.getHtml(this.data, this.helpers);
+    return this.getHtml();
   }
 }
 
