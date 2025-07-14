@@ -254,13 +254,13 @@ export function getMacroParam(val: string): MacroParam | null {
 }
 
 export function getMacroParams(val: string, doWarn: boolean = true): MacroParam[] {
-  const tokens = val?.split(' ') ?? [];
+  const matches = val?.match(RegexHelper.macroParams) ?? [];
   const result: MacroParam[] = [];
 
 
   // Iterating for each token
 
-  for (const token of tokens) {
+  for (const token of matches) {
     const macro = getMacroParam(token);
 
     if (macro)
@@ -309,6 +309,7 @@ export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
 
 export class RegexHelper {
   public static macro = /^@(?<name>.+?) (?<params>.+)$/;
+  public static macroParams = /(?<param>".+?")|(?<namedParam>[a-zA-Z0-9]+=".+?")|(?<simplaeParam>[a-zA-Z0-9]+)/gm;
   public static macroParam = /^"(?<value>.+)"$/;
   public static macroNamedParam = /^(?<name>.+)="(?<value>.+)"$/;
   public static macroSimpleParam = /^(?<name>[a-zA-Z]+)$/;
