@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const esbuild = require('esbuild');
-const babel = require('../babel-plugin.js');
+import esbuild from 'esbuild';
+import babelPlugin from '../babel-plugin.js';
 
 esbuild.build({
     entryPoints: [ 'src/index.ts' ],
@@ -11,7 +11,7 @@ esbuild.build({
     format: 'cjs',
     sourcemap: false,
     minify: true,
-    plugins: [ babel.plugin() ],
+    plugins: [ babelPlugin() ],
 }).catch(() => process.exit(1));
 
 esbuild.build({

@@ -1,7 +1,20 @@
 import { AST } from '@handlebars/parser';
+import { createGenerator, presetTypography, Preset } from 'unocss';
+import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
 import { Obj, Macro, MacroParam, DataModelNode, DataModel } from '@/types';
 import { PotentialLoopError, BaseWarning } from '@/errors';
 import Handlebars, { TemplateDelegate } from 'handlebars';
+
+
+// Third-parties
+
+export const uno = createGenerator({
+  presets: [
+    presetWind4(),
+    presetTypography() as unknown as Preset<Wind4Theme>,
+  ],
+  theme: {},
+});
 
 
 // Types
@@ -117,6 +130,14 @@ export function getTemplate(val: string | AST.Program): TemplateDelegate {
 
 export function getHtml(template: TemplateDelegate, data: Obj = {}, helpers: Obj = {}): string {
   return template(data, { helpers });
+}
+
+export async function getCss(template: TemplateDelegate, data: Obj = {}, helpers: Obj = {}): Promise<string> {
+  const generator = await uno;
+  const html = getHtml(template, data, helpers);
+  const { css } = await generator.generate(html, { preflights: true });
+
+  return css;
 }
 
 

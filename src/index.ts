@@ -1,7 +1,7 @@
 import { AST } from '@handlebars/parser';
 import { Obj, DataModelNode, Macro } from '@/types';
 import { BaseError, PotentialLoopError } from '@/errors';
-import { getAst, getTemplate, getHtml, getDataModel, getMacros } from '@/lib';
+import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros } from '@/lib';
 import { has } from '@/lib';
 import * as modules from './modules';
 
@@ -74,10 +74,27 @@ export class SimpleFlext  {
     // Doing some checks
 
     if (!template)
-      throw new BaseError('Flext: Unable to get the HTML: No template');
+      throw new BaseError('Flext: Unable to get HTML: No template');
 
 
     return getHtml(
+        template,
+        { ...this.data, ...data },
+        { ...this.helpers, ...helpers },
+    );
+  }
+
+  public async getCss(data: Obj = {}, helpers: Obj = {}): Promise<string> {
+    const template = getTemplate(this.ast);
+
+
+    // Doing some checks
+
+    if (!template)
+      throw new BaseError('Flext: Unable to get CSS: No template');
+
+
+    return await getCss(
         template,
         { ...this.data, ...data },
         { ...this.helpers, ...helpers },
@@ -222,7 +239,7 @@ export class Flext extends SimpleFlext {
       // Doing some checks
 
       if (depth <= 0)
-        throw new PotentialLoopError('Flext: Unable to get the data model: The data model is too deep');
+        throw new PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
 
 
       // Getting the metadata

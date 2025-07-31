@@ -1,7 +1,7 @@
-const fs = require('fs');
-const babelCore = require('@babel/core');
+import fs from 'fs';
+import babelCore from '@babel/core';
 
-function plugin() {
+export function plugin() {
     return {
         name: 'babel',
         setup(build) {
@@ -20,4 +20,4 @@ function plugin() {
     }
 }
 
-module.exports = { plugin };
+export default plugin;
