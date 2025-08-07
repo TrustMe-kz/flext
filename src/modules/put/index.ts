@@ -1,5 +1,5 @@
 import { SafeString } from 'handlebars';
-import { defineModule } from '../../lib';
+import { defineModule } from '@/lib';
 
 
 // Functions
