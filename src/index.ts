@@ -26,6 +26,8 @@ export type MetadataModelNode = DataModelNode & {
 
 // Constants
 
+export const DEFAULT_HELPER_NAME = '__default';
+
 export const DEFAULT_FIELD_TYPE: FieldType = 'string';
 
 export const DEFAULT_MODEL_DEPTH = 10;
@@ -202,12 +204,19 @@ export class Flext extends SimpleFlext {
       // Getting the data
 
       const handle = helpers[helperName];
-      const isDefault = helperName === 'default';
+      const isDefault = helperName === DEFAULT_HELPER_NAME;
 
 
       // Adding the helper
 
-      const helper = (...args: any[]) => handle({ args });
+      const helper = function (...args: any[]): any {
+        const options = args[args.length - 1] ?? {};
+        // @ts-ignore
+        const self = this;
+        const getContent = () => options?.fn(self) ?? null;
+
+        return handle({ args, options, self, getContent });
+      }
 
       if (isDefault)
         this.addHelper(name, helper);

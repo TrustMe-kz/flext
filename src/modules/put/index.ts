@@ -19,6 +19,6 @@ export function putWithColor(state: any): SafeString {
 export default defineModule({
   helpers: {
     noColor: put,
-    default: putWithColor,
+    __default: putWithColor,
   },
 });

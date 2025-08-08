@@ -50,7 +50,7 @@ export function op(state: any): number {
 
 export function opWithColor(state: any): SafeString {
   const result = op(state);
-  const newState = { args: [ result ] };
+  const newState = { ...state, args: [ result ] };
 
   return putWithColor(newState);
 }
@@ -173,6 +173,6 @@ export default defineModule({
     cbrt: cbrt,
     abs: abs,
     noColor: op,
-    default: opWithColor,
+    __default: opWithColor,
   },
 });
