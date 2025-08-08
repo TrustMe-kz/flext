@@ -136,7 +136,7 @@ export class Flext extends SimpleFlext {
 
     const get = (val: string): string|null => {
       const [ macro ] = getAll(val);
-      const [ param ] = macro?.params ?? null;
+      const [ param ] = macro?.params ?? [];
 
       return param?.value ?? null;
     };
@@ -145,7 +145,7 @@ export class Flext extends SimpleFlext {
     // Getting the data
 
     const version = get('v');
-    const modulesStr = get('use');
+    const modulesMacros = getAll('use');
     const lineHeight = get('lineHeight');
     const fieldMacros = getAll('field');
 
@@ -166,7 +166,7 @@ export class Flext extends SimpleFlext {
 
     // Using the modules
 
-    const moduleNames = modulesStr?.split(',') ?? null;
+    const moduleNames = modulesMacros.map(macroToModuleNames).flat();
 
     this.useModule(...moduleNames);
 
@@ -292,6 +292,11 @@ export class Flext extends SimpleFlext {
 
 
 // Functions
+
+export function macroToModuleNames(val: Macro): string[] {
+  const params = val?.params ?? [];
+  return params.map(p => p?.value ?? null);
+}
 
 export function macroToField(val: Macro): Field {
   const params = val?.params ?? [];

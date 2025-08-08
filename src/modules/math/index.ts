@@ -1,7 +1,6 @@
 import { SafeString } from 'handlebars';
 import { defineModule, audit } from '@/lib';
 import { putWithColor } from '../put';
-import Math from 'math';
 
 
 // Types
@@ -33,17 +32,17 @@ export function op(state: any): number {
 
   switch (op) {
     case 'plus':
-      return a + b;
+      return Number(a) + Number(b);
     case 'minus':
-      return a - b;
+      return Number(a) - Number(b);
     case 'multiply':
-      return a * b;
+      return Number(a) * Number(b);
     case 'divide':
-      return a / b;
+      return Number(a) / Number(b);
     case 'intDivide':
-      return a % b;
+      return Number(a) % Number(b);
     case 'power':
-      return a ** b;
+      return Number(a) ** Number(b);
     default:
       return calc(...args);
   }
@@ -105,7 +104,7 @@ export function round(state: any): SafeString {
 
   // Defining the function
 
-  const handle = (op: string, val: Arg): SafeString => opWithColor({ args: [ 'round', val ] });
+  const handle = (op: string, val: Arg): SafeString => opWithColor({ args: [ op, val ] });
 
 
   // If the operation is not defined
