@@ -110,6 +110,7 @@ export class SimpleFlext  {
 
 export class Flext extends SimpleFlext {
   declare public version: string;
+  declare public lang: string;
   declare public lineHeight: number;
   declare public fields: Field[];
 
@@ -147,6 +148,7 @@ export class Flext extends SimpleFlext {
     // Getting the data
 
     const version = get('v');
+    const lang = get('lang');
     const modulesMacros = getAll('use');
     const lineHeight = get('lineHeight');
     const fieldMacros = getAll('field');
@@ -158,6 +160,9 @@ export class Flext extends SimpleFlext {
 
     if (version)
       this.setVersion(version);
+
+    if (lang)
+      this.setLang(lang);
 
     if (lineHeight)
       this.setLineHeight(Number(lineHeight));
@@ -178,6 +183,11 @@ export class Flext extends SimpleFlext {
 
   public setVersion(val: string): this {
     this.version = val;
+    return this;
+  }
+
+  public setLang(val: string): this {
+    this.lang = val;
     return this;
   }
 

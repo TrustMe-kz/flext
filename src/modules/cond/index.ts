@@ -25,7 +25,7 @@ export function op(state: any): boolean {
   }
 
 
-  // Guessing the operation
+  // Matching an operation
 
   switch (op) {
     case 'equal':

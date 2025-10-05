@@ -326,9 +326,38 @@ export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
 }
 
 
+// Framework Functions
+
+export function ensureDate(val: Date | string | number): Date {
+  const isDateObj = isObject(val) && val instanceof Date;
+  const isDateStr = typeof val === 'string' && RegexHelper.dbDateStr.test(val);
+
+
+  // Defining the functions
+
+  const dbDate = (val1: string): Date => {
+    const [ year, month, day ] = val1?.split('-')?.map(Number) ?? [];
+
+    if (year && month && day)
+      return new Date(year, month - 1, day);
+    else
+      throw new Error('Unable to get date: The date is not valid: ' + audit(val1));
+  }
+
+
+  if (isDateObj)
+    return val as Date;
+  else if (isDateStr)
+    return dbDate(val);
+  else
+    return new Date(val);
+}
+
+
 // Helpers
 
 export class RegexHelper {
+  public static dbDateStr = /^\d+-\d+-\d+$/;
   public static macro = /^@(?<name>.+?) (?<params>.+)$/;
   public static macroParams = /(?<param>".+?")|(?<namedParam>[a-zA-Z0-9]+=".+?")|(?<simplaeParam>[a-zA-Z0-9]+)/gm;
   public static macroParam = /^"(?<value>.+)"$/;

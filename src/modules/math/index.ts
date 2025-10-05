@@ -28,7 +28,7 @@ export function op(state: any): number {
   }
 
 
-  // Guessing the operation
+  // Matching an operation
 
   switch (op) {
     case 'plus':
@@ -112,7 +112,7 @@ export function round(state: any): SafeString {
   if (!op) return handle('round', a);
 
 
-  // Guessing the operation
+  // Matching an operation
 
   switch (op) {
     case 'floor':
