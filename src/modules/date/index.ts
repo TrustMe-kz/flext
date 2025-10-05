@@ -46,7 +46,7 @@ export function op(state: any): string|number {
     switch (arg1) {
       case 'monthText':
         const dateText = newDate.toLocaleString(arg3 ?? DEFAULT_LANG, { day: 'numeric', month: 'long' });
-        const monthText = dateText.replace(/[^\p{L}]/gu, '');
+        const monthText = dateText.replace(/[^\p{L}]/gu, ''); // TODO: kr: Costyl to work with thw US dates
 
         return monthText.toLowerCase();
       default:
