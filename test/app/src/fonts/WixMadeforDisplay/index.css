@@ -1,0 +1,41 @@
+
+/* Variable */
+
+@font-face {
+    font-family: 'WixMadeforDisplay';
+    src: url('./Variable.ttf') format('truetype');
+    font-weight: 100 900;
+}
+
+
+/* Static */
+
+@font-face {
+    font-family: 'WixMadeforDisplay';
+    src: url('./ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+}
+
+@font-face {
+    font-family: 'WixMadeforDisplay';
+    src: url('./Bold.ttf') format('truetype');
+    font-weight: 700;
+}
+
+@font-face {
+    font-family: 'WixMadeforDisplay';
+    src: url('./SemiBold.ttf') format('truetype');
+    font-weight: 600;
+}
+
+@font-face {
+    font-family: 'WixMadeforDisplay';
+    src: url('./Medium.ttf') format('truetype');
+    font-weight: 500;
+}
+
+@font-face {
+    font-family: 'WixMadeforDisplay';
+    src: url('./Regular.ttf') format('truetype');
+    font-weight: 400;
+}

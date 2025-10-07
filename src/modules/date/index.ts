@@ -1,5 +1,5 @@
 import { SafeString } from 'handlebars';
-import { audit, defineModule, ensureDate } from '@/lib';
+import { audit, inarr, ensureDate, defineModule } from '@/lib';
 import { BaseError } from '@/errors';
 import { putWithColor } from '@/modules/put';
 
@@ -14,7 +14,7 @@ export const DEFAULT_LANG = 'en-US';
 export function op(state: any): Date | string | number {
   const args: any[] = state?.args ?? [];
   const [ date, opOrArg2, genitiveOrArg3, langOrArg4 ] = args;
-  const newDate = date === 'now' ? new Date() : ensureDate(date);
+  const newDate = inarr(date, 'now', null, undefined) ? new Date() : ensureDate(date);
 
 
   // Defining the functions
@@ -74,6 +74,8 @@ export function op(state: any): Date | string | number {
       return monthText.toLowerCase();
     case 'year':
       return newDate.getFullYear();
+    case 'text':
+      return newDate.toLocaleString(genitiveOrArg3 ?? DEFAULT_LANG);
     case 'unix':
       return newDate.getTime();
     case 'iso':
@@ -90,15 +92,11 @@ export function opWithColor(state: any): SafeString {
   return putWithColor(newState);
 }
 
-export function now(): Date {
-  return op({ args: [ 'now' ] })
-}
-
 export function seconds(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, arg ] = args;
 
-  if (arg === 'noPad')
+  if (arg === 'noPadding')
     return opWithColor({ args: [ date, 'seconds' ] });
   else
     return opWithColor({ args: [ date, 'pad', 'seconds' ] });
@@ -108,7 +106,7 @@ export function minutes(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, arg ] = args;
 
-  if (arg === 'noPad')
+  if (arg === 'noPadding')
     return opWithColor({ args: [ date, 'minutes' ] });
   else
     return opWithColor({ args: [ date, 'pad', 'minutes' ] });
@@ -118,7 +116,7 @@ export function hours(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, arg ] = args;
 
-  if (arg === 'noPad')
+  if (arg === 'noPadding')
     return opWithColor({ args: [ date, 'hours' ] });
   else
     return opWithColor({ args: [ date, 'pad', 'hours' ] });
@@ -128,7 +126,7 @@ export function day(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, arg ] = args;
 
-  if (arg === 'noPad')
+  if (arg === 'noPadding')
     return opWithColor({ args: [ date, 'day' ] });
   else
     return opWithColor({ args: [ date, 'pad', 'day' ] });
@@ -138,7 +136,7 @@ export function month(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, arg ] = args;
 
-  if (arg === 'noPad')
+  if (arg === 'noPadding')
     return opWithColor({ args: [ date, 'month' ] });
   else
     return opWithColor({ args: [ date, 'pad', 'month' ] });
@@ -158,10 +156,21 @@ export function year(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, arg ] = args;
 
-  if (arg === 'noPad')
+  if (arg === 'noPadding')
     return opWithColor({ args: [ date, 'year' ] });
   else
     return opWithColor({ args: [ date, 'pad', 'year' ] });
+}
+
+export function text(state: any): SafeString {
+  const args: any[] = state?.args ?? [];
+  const [ date, lang ] = args;
+
+  return opWithColor({ args: [ date, 'text', lang ] });
+}
+
+export function now(): Date {
+  return op({ args: [ 'now' ] }) as Date;
 }
 
 export function unix(state: any): number {
@@ -182,6 +191,7 @@ export function iso(state: any): string {
 export default defineModule({
   helpers: {
     op: opWithColor,
+    now: now,
     seconds: seconds,
     minutes: minutes,
     hours: hours,
@@ -189,9 +199,10 @@ export default defineModule({
     month: month,
     monthText: monthText,
     year: year,
+    text: text,
     unix: unix,
     iso: iso,
     noColor: op,
-    __default: now,
+    __default: text,
   },
 });

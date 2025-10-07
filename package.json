@@ -1,6 +1,6 @@
 {
   "name": "@trustme24/flext",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A Powerful Templating Engine",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "module",
@@ -15,6 +15,8 @@
     "./index.css": "./dist/index.css"
   },
   "scripts": {
+    "test-flext:app": "cd test/app && bun run test-app",
+    "test-flext": "bun run test-flext:app",
     "build:types": "tsc && tsc-alias",
     "build:css": "tailwindcss -i ./src/index.tail.css -o ./dist/index.css --minify",
     "build": "bin/build.mjs && npm run build:types && npm run build:css",
@@ -26,22 +28,22 @@
   "author": "Kenny Romanov",
   "license": "MIT",
   "devDependencies": {
-    "@babel/cli": "^7.28.0",
-    "@babel/core": "^7.28.0",
-    "@babel/preset-env": "^7.28.0",
+    "@babel/cli": "^7.28.3",
+    "@babel/core": "^7.28.4",
+    "@babel/preset-env": "^7.28.3",
     "@babel/preset-typescript": "^7.27.1",
-    "@handlebars/parser": "^2.2.0",
-    "@tailwindcss/cli": "^4.1.11",
-    "@types/node": "^24.1.0",
-    "esbuild": "^0.25.8",
+    "@handlebars/parser": "^2.2.1",
+    "@tailwindcss/cli": "^4.1.14",
+    "@types/node": "^24.7.0",
+    "esbuild": "^0.25.10",
     "esbuild-plugin-import-glob": "^0.1.1",
-    "tailwindcss": "^4.1.11",
+    "tailwindcss": "^4.1.14",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.8.3"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@unocss/preset-wind4": "^66.3.3",
+    "@unocss/preset-wind4": "^66.5.2",
     "handlebars": "^4.7.8",
-    "unocss": "^66.3.3"
+    "unocss": "^66.5.2"
   }
 }

@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [ "src/*" ],
+      "@public/*": [ "public/*" ],
+      "@flext": [ "../../dist" ],
+    },
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": [ "ES2020", "DOM" ],
+    "types": [ "node" ],
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": false,
+
+    /* Bundler mode */
+    "outDir": "dist",
+    "moduleResolution": "node",
+    "sandboxModules": true,
+    "moduleDetection": "force",
+    "declaration": true,
+    "sourceMap": false,
+    "emitDeclarationOnly": true,
+
+    /* Linting */
+    "strict": true,
+    "strictNullChecks": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "../../dist/*.ts",
+    "../../dist/*.d.ts",
+  ]
+}

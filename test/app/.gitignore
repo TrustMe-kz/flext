@@ -16,17 +16,7 @@
 /src-bex/www
 /src-bex/js/core
 
-# Log files
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
 # Editor directories and files
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
 /remote-schema-introspect/
 
 # Custom

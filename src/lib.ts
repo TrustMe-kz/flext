@@ -91,6 +91,10 @@ export function has(obj: Obj, key: string): boolean {
   return obj.hasOwnProperty(key);
 }
 
+export function inarr(val: any, ...arr: any): boolean {
+  return arr.includes(val);
+}
+
 
 // System Functions
 
@@ -344,7 +348,7 @@ export function ensureDate(val: Date | string | number): Date {
       throw new BaseError('Unable to get date: The date is invalid: ' + audit(val1));
   }
 
-  const date = (val1: string): Date => {
+  const date = (val1: string|number): Date => {
     const date = new Date(val1);
 
     if (isNaN(date.getTime()))
@@ -361,7 +365,7 @@ export function ensureDate(val: Date | string | number): Date {
     return dbDate(val);
 
   else
-    return date(val);
+    return date(val as string|number);
 }
 
 
