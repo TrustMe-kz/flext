@@ -40,6 +40,20 @@ npm i tailwindcss @trustme24/flext
 
 3. **You're all set!**
 
+## Tests & Demo
+
+- Test **App**:
+
+```shell
+npm run test-flext:app
+```
+
+- **All tests:**
+
+```shell
+npm run test-flext
+```
+
 ---
 **Flext by Kenny Romanov**  
 TrustMe

@@ -15,8 +15,8 @@
     "./index.css": "./dist/index.css"
   },
   "scripts": {
-    "test-flext:app": "cd test/app && bun run test-app",
-    "test-flext": "bun run test-flext:app",
+    "test-flext:app": "cd test/app && npm run test-app",
+    "test-flext": "npm run test-flext:app",
     "build:types": "tsc && tsc-alias",
     "build:css": "tailwindcss -i ./src/index.tail.css -o ./dist/index.css --minify",
     "build": "bin/build.mjs && npm run build:types && npm run build:css",

@@ -5,7 +5,7 @@
   "description": "A Powerful Templating Engine",
   "scripts": {
     "start": "vite",
-    "test-app": "bun run start"
+    "test-app": "npm run start"
   },
   "author": "Kenny Romanov",
   "license": "MIT",
