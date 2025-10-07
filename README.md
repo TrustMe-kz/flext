@@ -1,5 +1,7 @@
 ## Flext
 
+![Static Badge](https://img.shields.io/badge/GitHub-Star%20%281%29-yellow?logo=github&link=https%3A%2F%2Fgithub.com%2FTrustMe-kz%2Fflext) ![Static Badge](https://img.shields.io/badge/NPM-Download%20%28393%29-blue?link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2F%40trustme24%2Fflext)
+
 **Flext** is a lightweight extension over Handlebars. It introduces a small DSL for handling macros and modules to help create dynamic templates. The library is compiled to both ESM and CommonJS bundles and can be embedded in other projects such as [Vue components](https://www.npmjs.com/package/vue-flext).
 
 Public documentation is available at [Wiki](https://trustmekz.atlassian.net/wiki/external/MTUwYzM5NjUzNDE4NDViMGJlMTliOWEzNzM1Y2RiZWE).
