@@ -2,7 +2,7 @@ import { AST } from '@handlebars/parser';
 import { createGenerator, presetTypography, Preset } from 'unocss';
 import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
 import { Obj, Macro, MacroParam, DataModelNode, DataModel } from '@/types';
-import { PotentialLoopError, BaseWarning } from '@/errors';
+import { BaseError, PotentialLoopError, BaseWarning } from '@/errors';
 import Handlebars, { TemplateDelegate } from 'handlebars';
 
 
@@ -330,7 +330,7 @@ export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
 
 export function ensureDate(val: Date | string | number): Date {
   const isDateObj = isObject(val) && val instanceof Date;
-  const isDateStr = typeof val === 'string' && RegexHelper.dbDateStr.test(val);
+  const isDbDate = typeof val === 'string' && RegexHelper.dbDateStr.test(val);
 
 
   // Defining the functions
@@ -341,16 +341,27 @@ export function ensureDate(val: Date | string | number): Date {
     if (year && month && day)
       return new Date(year, month - 1, day);
     else
-      throw new Error('Unable to get date: The date is not valid: ' + audit(val1));
+      throw new BaseError('Unable to get date: The date is invalid: ' + audit(val1));
+  }
+
+  const date = (val1: string): Date => {
+    const date = new Date(val1);
+
+    if (isNaN(date.getTime()))
+      throw new BaseWarning('Flext: Unable to get date: The date is invalid');
+    else
+      return date;
   }
 
 
   if (isDateObj)
     return val as Date;
-  else if (isDateStr)
+
+  else if (isDbDate)
     return dbDate(val);
+
   else
-    return new Date(val);
+    return date(val);
 }
 
 

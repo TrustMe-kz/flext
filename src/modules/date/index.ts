@@ -1,5 +1,6 @@
 import { SafeString } from 'handlebars';
 import { audit, defineModule, ensureDate } from '@/lib';
+import { BaseError } from '@/errors';
 import { putWithColor } from '@/modules/put';
 
 
@@ -10,10 +11,10 @@ export const DEFAULT_LANG = 'en-US';
 
 // Functions
 
-export function op(state: any): string|number {
+export function op(state: any): Date | string | number {
   const args: any[] = state?.args ?? [];
-  const [ date, arg1, arg2, arg3 ] = args;
-  const newDate = ensureDate(date);
+  const [ date, opOrArg2, genitiveOrArg3, langOrArg4 ] = args;
+  const newDate = date === 'now' ? new Date() : ensureDate(date);
 
 
   // Defining the functions
@@ -21,10 +22,10 @@ export function op(state: any): string|number {
   const pad = (val: string|number, pad: number = 2): string => String(val || '').padStart(pad, '0');
 
 
-  // If the pad was passed
+  // If the 'pad' was passed
 
-  if (arg1 === 'pad') {
-    switch (arg2) {
+  if (opOrArg2 === 'pad') {
+    switch (genitiveOrArg3) {
       case 'seconds':
         return pad(newDate.getSeconds());
       case 'minutes':
@@ -38,26 +39,26 @@ export function op(state: any): string|number {
       case 'year':
         return pad(newDate.getFullYear(), 4);
       default:
-        throw new Error(`Date: Operation ${audit(op)} is not compatible with argument 'pad'`);
+        throw new BaseError(`Date: Operation ${audit(op)} is not compatible with argument 'pad'`);
     }
   }
 
-  if (arg2 === 'genitive') {
-    switch (arg1) {
+  if (genitiveOrArg3 === 'genitive') {
+    switch (opOrArg2) {
       case 'monthText':
-        const dateText = newDate.toLocaleString(arg3 ?? DEFAULT_LANG, { day: 'numeric', month: 'long' });
+        const dateText = newDate.toLocaleString(langOrArg4 ?? DEFAULT_LANG, { day: 'numeric', month: 'long' });
         const monthText = dateText.replace(/[^\p{L}]/gu, ''); // TODO: kr: Costyl to work with thw US dates
 
         return monthText.toLowerCase();
       default:
-        throw new Error(`Date: Operation ${audit(op)} is not compatible with argument 'genitive'`);
+        throw new BaseError(`Date: Operation ${audit(op)} is not compatible with argument 'genitive'`);
     }
   }
 
 
   // Matching an operation
 
-  switch (arg1) {
+  switch (opOrArg2) {
     case 'seconds':
       return newDate.getSeconds();
     case 'minutes':
@@ -69,7 +70,7 @@ export function op(state: any): string|number {
     case 'month':
       return newDate.getMonth() + 1;
     case 'monthText':
-      const monthText = newDate.toLocaleString(arg2 ?? DEFAULT_LANG, { month: 'long' });
+      const monthText = newDate.toLocaleString(genitiveOrArg3 ?? DEFAULT_LANG, { month: 'long' });
       return monthText.toLowerCase();
     case 'year':
       return newDate.getFullYear();
@@ -78,7 +79,7 @@ export function op(state: any): string|number {
     case 'iso':
       return newDate.toISOString();
     default:
-      throw new Error('Date: Unknown operation: ' + audit(op));
+      return newDate;
   }
 }
 
@@ -87,6 +88,10 @@ export function opWithColor(state: any): SafeString {
   const newState = { ...state, args: [ result ] };
 
   return putWithColor(newState);
+}
+
+export function now(): Date {
+  return op({ args: [ 'now' ] })
 }
 
 export function seconds(state: any): SafeString {
@@ -141,12 +146,12 @@ export function month(state: any): SafeString {
 
 export function monthText(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, arg1, arg2 ] = args;
+  const [ date, opOrArg2, genitiveOrArg3 ] = args;
 
-  if (arg1 === 'nominative')
-    return opWithColor({ args: [ date, 'monthText', arg2 ?? DEFAULT_LANG ] });
+  if (opOrArg2 === 'nominative')
+    return opWithColor({ args: [ date, 'monthText', genitiveOrArg3 ?? DEFAULT_LANG ] });
   else
-    return opWithColor({ args: [ date, 'monthText', 'genitive', arg1 ?? DEFAULT_LANG ] });
+    return opWithColor({ args: [ date, 'monthText', 'genitive', opOrArg2 ?? DEFAULT_LANG ] });
 }
 
 export function year(state: any): SafeString {
@@ -187,6 +192,6 @@ export default defineModule({
     unix: unix,
     iso: iso,
     noColor: op,
-    __default: opWithColor,
+    __default: now,
   },
 });

@@ -1,5 +1,6 @@
 // import { SafeString } from 'handlebars';
 import { audit, defineModule } from '@/lib';
+import { BaseError } from '@/errors';
 // import { putWithColor } from '@/modules/put';
 
 
@@ -20,7 +21,7 @@ export function op(state: any): boolean {
       // case 'not':
       //   return !_arg;
       default:
-        throw new Error('Condition: Unknown operation: ' + audit(newOp));
+        throw new BaseError('Condition: Unknown operation: ' + audit(newOp));
     }
   }
 

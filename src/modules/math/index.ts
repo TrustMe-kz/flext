@@ -1,5 +1,6 @@
 import { SafeString } from 'handlebars';
 import { defineModule, audit } from '@/lib';
+import { BaseError } from '@/errors';
 import { putWithColor } from '../put';
 
 
@@ -24,7 +25,7 @@ export function op(state: any): number {
     if (handle)
       return handle(...mathArgs);
     else
-      throw new Error('Math: Unknown operation: ' + audit(mathOp));
+      throw new BaseError('Math: Unknown operation: ' + audit(mathOp));
   }
 
 
@@ -122,7 +123,7 @@ export function round(state: any): SafeString {
     case 'trunc':
       return handle('trunc', a);
     default:
-      throw new Error('Math: Unknown operation: ' + audit(op));
+      throw new BaseError('Math: Unknown operation: ' + audit(op));
   }
 }
 

@@ -14,7 +14,7 @@ const template = `
   {{!-- @v "1.0" --}}
   {{!-- @use "put" --}}
 
-  <div class="text-center text-red-500">{{ put data.helloworld 'No Hello World...' }}</div>
+  <div class="text-center text-red-500">{{ put data.helloworld 'No hello world...' }}</div>
 `;
 
 const flext = new Flext(template, {
