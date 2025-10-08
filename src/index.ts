@@ -111,6 +111,7 @@ export class SimpleFlext  {
 export class Flext extends SimpleFlext {
   declare public version: string;
   declare public lang: string;
+  declare public timeZone: string;
   declare public lineHeight: number;
   declare public fields: Field[];
 
@@ -149,6 +150,7 @@ export class Flext extends SimpleFlext {
 
     const version = get('v');
     const lang = get('lang');
+    const timeZone = get('timeZone');
     const modulesMacros = getAll('use');
     const lineHeight = get('lineHeight');
     const fieldMacros = getAll('field');
@@ -163,6 +165,9 @@ export class Flext extends SimpleFlext {
 
     if (lang)
       this.setLang(lang);
+
+    if (timeZone)
+      this.setTimeZone(timeZone);
 
     if (lineHeight)
       this.setLineHeight(Number(lineHeight));
@@ -191,6 +196,11 @@ export class Flext extends SimpleFlext {
     return this;
   }
 
+  public setTimeZone(val: string): this {
+    this.timeZone = val;
+    return this;
+  }
+
   public setLineHeight(val: number): this {
     this.lineHeight = val;
     return this;
@@ -214,10 +224,13 @@ export class Flext extends SimpleFlext {
       // Getting the data
 
       const handle = helpers[helperName];
+
       const isDefault = helperName === DEFAULT_HELPER_NAME;
 
 
       // Adding the helper
+
+      const flext = this;
 
       const helper = function (...args1: any[]): any {
         const args = args1?.slice(0, -1) ?? [];
@@ -226,7 +239,7 @@ export class Flext extends SimpleFlext {
         const self = this;
         const getContent = () => options?.fn(self) ?? null;
 
-        return handle({ args, options, self, getContent });
+        return handle({ flext, args, options, self, getContent });
       }
 
       if (isDefault)

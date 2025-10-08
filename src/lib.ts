@@ -357,7 +357,7 @@ export function ensureDate(val: Date | string | number): Date {
     const [ year, month, day ] = val1?.split('-')?.map(Number) ?? [];
 
     if (year && month && day)
-      return DateTime.local().toJSDate(year, month - 1, day);
+      return DateTime.fromObject({ year, month, day }).toJSDate();
     else
       throw new BaseError('Unable to get date: The date is invalid: ' + audit(val1));
   }

@@ -1,4 +1,6 @@
+import { DateTime } from 'luxon';
 import { SafeString } from 'handlebars';
+import { Obj } from '@/types';
 import { audit, inarr, ensureDate, defineModule } from '@/lib';
 import { BaseError } from '@/errors';
 import { putWithColor } from '@/modules/put';
@@ -11,10 +13,10 @@ export const DEFAULT_LANG = 'en-US';
 
 // Functions
 
-export function op(state: any): Date | string | number {
+export function op(state: any): DateTime | string | number {
+  const flext: Obj = state?.flext ?? {};
   const args: any[] = state?.args ?? [];
   const [ date, opOrArg2, genitiveOrArg3, langOrArg4 ] = args;
-  const newDate = inarr(date, 'now', null, undefined) ? new Date() : ensureDate(date);
 
 
   // Defining the functions
@@ -22,22 +24,33 @@ export function op(state: any): Date | string | number {
   const pad = (val: string|number, pad: number = 2): string => String(val || '').padStart(pad, '0');
 
 
+  // Getting the date
+
+  let newDate: DateTime = DateTime.local();
+
+  if (!inarr(date, 'now', null, undefined))
+    newDate = DateTime.fromJSDate(ensureDate(date));
+
+  if (flext?.timeZone)
+    newDate = newDate.setZone(flext?.timeZone);
+
+
   // If the 'pad' was passed
 
   if (opOrArg2 === 'pad') {
     switch (genitiveOrArg3) {
       case 'seconds':
-        return pad(newDate.getSeconds());
+        return pad(newDate.second);
       case 'minutes':
-        return pad(newDate.getMinutes());
+        return pad(newDate.minute);
       case 'hours':
-        return pad(newDate.getHours());
+        return pad(newDate.hour);
       case 'day':
-        return pad(newDate.getDate());
+        return pad(newDate.day);
       case 'month':
-        return pad(newDate.getMonth() + 1);
+        return pad(newDate.month);
       case 'year':
-        return pad(newDate.getFullYear(), 4);
+        return pad(newDate.year, 4);
       default:
         throw new BaseError(`Date: Operation ${audit(op)} is not compatible with argument 'pad'`);
     }
@@ -46,7 +59,7 @@ export function op(state: any): Date | string | number {
   if (genitiveOrArg3 === 'genitive') {
     switch (opOrArg2) {
       case 'monthText':
-        const dateText = newDate.toLocaleString(langOrArg4 ?? DEFAULT_LANG, { day: 'numeric', month: 'long' });
+        const dateText = newDate.setLocale(langOrArg4 ?? DEFAULT_LANG).toLocaleString({ day: 'numeric', month: 'long' });
         const monthText = dateText.replace(/[^\p{L}]/gu, ''); // TODO: kr: Costyl to work with thw US dates
 
         return monthText.toLowerCase();
@@ -60,26 +73,26 @@ export function op(state: any): Date | string | number {
 
   switch (opOrArg2) {
     case 'seconds':
-      return newDate.getSeconds();
+      return newDate.second;
     case 'minutes':
-      return newDate.getMinutes();
+      return newDate.minute;
     case 'hours':
-      return newDate.getHours();
+      return newDate.hour;
     case 'day':
-      return newDate.getDate();
+      return newDate.day;
     case 'month':
-      return newDate.getMonth() + 1;
+      return newDate.month;
     case 'monthText':
-      const monthText = newDate.toLocaleString(genitiveOrArg3 ?? DEFAULT_LANG, { month: 'long' });
+      const monthText = newDate.setLocale(genitiveOrArg3 ?? DEFAULT_LANG).toLocaleString({ month: 'long' });
       return monthText.toLowerCase();
     case 'year':
-      return newDate.getFullYear();
+      return newDate.year;
     case 'text':
-      return newDate.toLocaleString(genitiveOrArg3 ?? DEFAULT_LANG);
+      return newDate.setLocale(genitiveOrArg3 ?? DEFAULT_LANG).toLocaleString();
     case 'unix':
-      return newDate.getTime();
+      return newDate.toMillis();
     case 'iso':
-      return newDate.toISOString();
+      return newDate.toISOTime();
     default:
       return newDate;
   }
@@ -92,14 +105,18 @@ export function opWithColor(state: any): SafeString {
   return putWithColor(newState);
 }
 
+export function now(state: any): DateTime {
+  return op({ ...state, args: [ 'now' ] }) as DateTime;
+}
+
 export function seconds(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, arg ] = args;
 
   if (arg === 'noPadding')
-    return opWithColor({ args: [ date, 'seconds' ] });
+    return opWithColor({ ...state, args: [ date, 'seconds' ] });
   else
-    return opWithColor({ args: [ date, 'pad', 'seconds' ] });
+    return opWithColor({ ...state, args: [ date, 'pad', 'seconds' ] });
 }
 
 export function minutes(state: any): SafeString {
@@ -107,9 +124,9 @@ export function minutes(state: any): SafeString {
   const [ date, arg ] = args;
 
   if (arg === 'noPadding')
-    return opWithColor({ args: [ date, 'minutes' ] });
+    return opWithColor({ ...state, args: [ date, 'minutes' ] });
   else
-    return opWithColor({ args: [ date, 'pad', 'minutes' ] });
+    return opWithColor({ ...state, args: [ date, 'pad', 'minutes' ] });
 }
 
 export function hours(state: any): SafeString {
@@ -117,9 +134,9 @@ export function hours(state: any): SafeString {
   const [ date, arg ] = args;
 
   if (arg === 'noPadding')
-    return opWithColor({ args: [ date, 'hours' ] });
+    return opWithColor({ ...state, args: [ date, 'hours' ] });
   else
-    return opWithColor({ args: [ date, 'pad', 'hours' ] });
+    return opWithColor({ ...state, args: [ date, 'pad', 'hours' ] });
 }
 
 export function day(state: any): SafeString {
@@ -127,9 +144,9 @@ export function day(state: any): SafeString {
   const [ date, arg ] = args;
 
   if (arg === 'noPadding')
-    return opWithColor({ args: [ date, 'day' ] });
+    return opWithColor({ ...state, args: [ date, 'day' ] });
   else
-    return opWithColor({ args: [ date, 'pad', 'day' ] });
+    return opWithColor({ ...state, args: [ date, 'pad', 'day' ] });
 }
 
 export function month(state: any): SafeString {
@@ -137,9 +154,9 @@ export function month(state: any): SafeString {
   const [ date, arg ] = args;
 
   if (arg === 'noPadding')
-    return opWithColor({ args: [ date, 'month' ] });
+    return opWithColor({ ...state, args: [ date, 'month' ] });
   else
-    return opWithColor({ args: [ date, 'pad', 'month' ] });
+    return opWithColor({ ...state, args: [ date, 'pad', 'month' ] });
 }
 
 export function monthText(state: any): SafeString {
@@ -147,9 +164,9 @@ export function monthText(state: any): SafeString {
   const [ date, opOrArg2, genitiveOrArg3 ] = args;
 
   if (opOrArg2 === 'nominative')
-    return opWithColor({ args: [ date, 'monthText', genitiveOrArg3 ?? DEFAULT_LANG ] });
+    return opWithColor({ ...state, args: [ date, 'monthText', genitiveOrArg3 ?? DEFAULT_LANG ] });
   else
-    return opWithColor({ args: [ date, 'monthText', 'genitive', opOrArg2 ?? DEFAULT_LANG ] });
+    return opWithColor({ ...state, args: [ date, 'monthText', 'genitive', opOrArg2 ?? DEFAULT_LANG ] });
 }
 
 export function year(state: any): SafeString {
@@ -157,34 +174,30 @@ export function year(state: any): SafeString {
   const [ date, arg ] = args;
 
   if (arg === 'noPadding')
-    return opWithColor({ args: [ date, 'year' ] });
+    return opWithColor({ ...state, args: [ date, 'year' ] });
   else
-    return opWithColor({ args: [ date, 'pad', 'year' ] });
+    return opWithColor({ ...state, args: [ date, 'pad', 'year' ] });
 }
 
 export function text(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, lang ] = args;
 
-  return opWithColor({ args: [ date, 'text', lang ] });
-}
-
-export function now(): Date {
-  return op({ args: [ 'now' ] }) as Date;
+  return opWithColor({ ...state, args: [ date, 'text', lang ] });
 }
 
 export function unix(state: any): number {
   const args: any[] = state?.args ?? [];
   const [ date ] = args;
 
-  return op({ args: [ date, 'unix' ] }) as number;
+  return op({ ...state, args: [ date, 'unix' ] }) as number;
 }
 
 export function iso(state: any): string {
   const args: any[] = state?.args ?? [];
   const [ date ] = args;
 
-  return op({ args: [ date, 'iso' ] }) as string;
+  return op({ ...state, args: [ date, 'iso' ] }) as string;
 }
 
 
@@ -203,6 +216,6 @@ export default defineModule({
     unix: unix,
     iso: iso,
     noColor: op,
-    __default: text,
+    __default: opWithColor,
   },
 });
