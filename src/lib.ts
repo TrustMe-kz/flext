@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { AST } from '@handlebars/parser';
 import { createGenerator, presetTypography, Preset } from 'unocss';
 import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
@@ -82,6 +83,10 @@ class FlextMacroCollector extends HandlebarsCommentCollector {
 
 
 // Checking Functions
+
+export function isNumber(val: any): boolean {
+  return !isNaN(Number(val));
+}
 
 export function isObject(val: any): boolean {
   return typeof val === 'object' && val !== null;
@@ -339,33 +344,45 @@ export function ensureDate(val: Date | string | number): Date {
 
   // Defining the functions
 
+  const unixDate = (val1: string|number): Date => {
+    const date = new Date(val1);
+
+    if (isNaN(date.getTime()))
+      throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(val1));
+    else
+      return date;
+  }
+
   const dbDate = (val1: string): Date => {
     const [ year, month, day ] = val1?.split('-')?.map(Number) ?? [];
 
     if (year && month && day)
-      return new Date(year, month - 1, day);
+      return DateTime.local().toJSDate(year, month - 1, day);
     else
       throw new BaseError('Unable to get date: The date is invalid: ' + audit(val1));
   }
 
-  const date = (val1: string|number): Date => {
-    const date = new Date(val1);
+  const isoDate = (val1: string): Date => {
+    const date = DateTime.fromISO(val1);
 
-    if (isNaN(date.getTime()))
-      throw new BaseWarning('Flext: Unable to get date: The date is invalid');
+    if (date.isValid)
+      return date.toJSDate();
     else
-      return date;
+      throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(val1));
   }
 
 
   if (isDateObj)
     return val as Date;
 
+  if (isNumber(val))
+    return unixDate(val as number);
+
   else if (isDbDate)
-    return dbDate(val);
+    return dbDate(val as string);
 
   else
-    return date(val as string|number);
+    return isoDate(val as string);
 }
 
 

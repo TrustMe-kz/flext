@@ -1,6 +1,6 @@
 {
   "name": "@trustme24/flext",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "A Powerful Templating Engine",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "module",
@@ -44,6 +44,7 @@
   "dependencies": {
     "@unocss/preset-wind4": "^66.5.2",
     "handlebars": "^4.7.8",
+    "luxon": "^3.7.2",
     "unocss": "^66.5.2"
   }
 }
