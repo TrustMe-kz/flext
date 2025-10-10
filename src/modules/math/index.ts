@@ -51,51 +51,49 @@ export function op(state: any): number {
 
 export function opWithColor(state: any): SafeString {
   const result = op(state);
-  const newState = { ...state, args: [ result ] };
-
-  return putWithColor(newState);
+  return putWithColor({ ...state, args: [ result ] });
 }
 
 export function plus(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return opWithColor({ args: [ a, 'plus', b ] });
+  return opWithColor({ ...state, args: [ a, 'plus', b ] });
 }
 
 export function minus(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return opWithColor({ args: [ a, 'minus', b ] });
+  return opWithColor({ ...state, args: [ a, 'minus', b ] });
 }
 
 export function multiply(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return opWithColor({ args: [ a, 'multiply', b ] });
+  return opWithColor({ ...state, args: [ a, 'multiply', b ] });
 }
 
 export function divide(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return opWithColor({ args: [ a, 'divide', b ] });
+  return opWithColor({ ...state, args: [ a, 'divide', b ] });
 }
 
 export function intDivide(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return opWithColor({ args: [ a, 'intDivide', b ] });
+  return opWithColor({ ...state, args: [ a, 'intDivide', b ] });
 }
 
 export function power(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return opWithColor({ args: [ a, 'power', b ] });
+  return opWithColor({ ...state, args: [ a, 'power', b ] });
 }
 
 export function round(state: any): SafeString {
@@ -105,7 +103,7 @@ export function round(state: any): SafeString {
 
   // Defining the function
 
-  const handle = (op: string, val: Arg): SafeString => opWithColor({ args: [ op, val ] });
+  const handle = (op: string, val: Arg): SafeString => opWithColor({ ...state, args: [ op, val ] });
 
 
   // If the operation is not defined
@@ -132,9 +130,9 @@ export function percent(state: any): SafeString {
     const [ a, b ] = args;
 
     if (b === undefined || b === null) {
-        return opWithColor({ args: [ 'percent', a ] });
+        return opWithColor({ ...state, args: [ 'percent', a ] });
     } else {
-        return opWithColor({ args: [ a, 'divide', b, 'multiply', 100 ] });
+        return opWithColor({ ...state, args: [ a, 'divide', b, 'multiply', 100 ] });
     }
 }
 
@@ -142,21 +140,21 @@ export function sqrt(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a ] = args;
 
-  return opWithColor({ args: [ 'sqrt', a ] });
+  return opWithColor({ ...state, args: [ 'sqrt', a ] });
 }
 
 export function cbrt(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a ] = args;
 
-  return opWithColor({ args: [ 'cbrt', a ] });
+  return opWithColor({ ...state, args: [ 'cbrt', a ] });
 }
 
 export function abs(state: any): SafeString {
   const args: Arg[] = state?.args ?? [];
   const [ a ] = args;
 
-  return opWithColor({ args: [ 'abs', a ] });
+  return opWithColor({ ...state, args: [ 'abs', a ] });
 }
 
 

@@ -1,5 +1,11 @@
 import { SafeString } from 'handlebars';
+import { Obj } from '@/types';
 import { defineModule } from '@/lib';
+
+
+// Contents
+
+export const DEFAULT_COLOR = 'text-blue-500';
 
 
 // Functions
@@ -12,7 +18,13 @@ export function put(state: any): string {
 }
 
 export function putWithColor(state: any): SafeString {
-  return new SafeString(`<span class="text-blue-500">${put(state)}</span>`);
+  const namedArgs: Obj = state?.namedArgs ?? {};
+  const color = namedArgs?.color ?? DEFAULT_COLOR;
+
+  if (color)
+    return new SafeString(`<span class="${color}">${put(state)}</span>`);
+  else
+    return new SafeString(state);
 }
 
 

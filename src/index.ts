@@ -235,11 +235,12 @@ export class Flext extends SimpleFlext {
       const helper = function (...args1: any[]): any {
         const args = args1?.slice(0, -1) ?? [];
         const options = args1[args1.length - 1] ?? {};
+        const namedArgs = options?.hash ?? {};
         // @ts-ignore
         const self = this;
         const getContent = () => options?.fn(self) ?? null;
 
-        return handle({ flext, args, options, self, getContent });
+        return handle({ flext, args, options, namedArgs, self, getContent });
       }
 
       if (isDefault)

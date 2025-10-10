@@ -13,7 +13,7 @@ export function matchHelper(state: any): any {
   // Setting the match data
 
   self.__flext_match_value = value;
-  self.__flext_match_isInProgress = true;
+  self.__flext_match_isCompleted = true;
 
 
   return render();
@@ -28,8 +28,8 @@ export function caseHelper(state: any): any {
 
   // Iterating for each value
 
-  if (self.__flext_match_isInProgress) for (const valueRef of args) if (value === valueRef) {
-    self.__flext_match_isInProgress = false;
+  if (!self.__flext_match_isCompleted) for (const valueRef of args) if (value === valueRef) {
+    self.__flext_match_isCompleted = true;
     return render();
   }
 

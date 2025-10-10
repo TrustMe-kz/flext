@@ -16,12 +16,14 @@ export const DEFAULT_LANG = 'en-US';
 export function op(state: any): DateTime | string | number {
   const flext: Obj = state?.flext ?? {};
   const args: any[] = state?.args ?? [];
-  const [ date, opOrArg2, genitiveOrArg3, langOrArg4 ] = args;
+  const namedArgs: Obj = state?.namedArgs ?? [];
+  const [ date, opName ] = args;
+  const { padding, genitive, timeZone, lang } = namedArgs;
 
 
   // Defining the functions
 
-  const pad = (val: string|number, pad: number = 2): string => String(val || '').padStart(pad, '0');
+  const padStart = (val: string|number, pad: number = 2): string => String(val || '').padStart(pad, '0');
 
 
   // Getting the date
@@ -31,35 +33,35 @@ export function op(state: any): DateTime | string | number {
   if (!inarr(date, 'now', null, undefined))
     newDate = DateTime.fromJSDate(ensureDate(date));
 
-  if (flext?.timeZone)
-    newDate = newDate.setZone(flext?.timeZone);
+  if (timeZone || flext?.timeZone)
+    newDate = newDate.setZone(timeZone ?? flext?.timeZone);
 
 
   // If the 'pad' was passed
 
-  if (opOrArg2 === 'pad') {
-    switch (genitiveOrArg3) {
+  if (padding) {
+    switch (opName) {
       case 'seconds':
-        return pad(newDate.second);
+        return padStart(newDate.second, padding);
       case 'minutes':
-        return pad(newDate.minute);
+        return padStart(newDate.minute, padding);
       case 'hours':
-        return pad(newDate.hour);
+        return padStart(newDate.hour, padding);
       case 'day':
-        return pad(newDate.day);
+        return padStart(newDate.day, padding);
       case 'month':
-        return pad(newDate.month);
+        return padStart(newDate.month, padding);
       case 'year':
-        return pad(newDate.year, 4);
+        return padStart(newDate.year, 4);
       default:
         throw new BaseError(`Date: Operation ${audit(op)} is not compatible with argument 'pad'`);
     }
   }
 
-  if (genitiveOrArg3 === 'genitive') {
-    switch (opOrArg2) {
+  if (genitive) {
+    switch (opName) {
       case 'monthText':
-        const dateText = newDate.setLocale(langOrArg4 ?? DEFAULT_LANG).toLocaleString({ day: 'numeric', month: 'long' });
+        const dateText = newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString({ day: 'numeric', month: 'long' });
         const monthText = dateText.replace(/[^\p{L}]/gu, ''); // TODO: kr: Costyl to work with thw US dates
 
         return monthText.toLowerCase();
@@ -71,7 +73,7 @@ export function op(state: any): DateTime | string | number {
 
   // Matching an operation
 
-  switch (opOrArg2) {
+  switch (opName) {
     case 'seconds':
       return newDate.second;
     case 'minutes':
@@ -83,12 +85,12 @@ export function op(state: any): DateTime | string | number {
     case 'month':
       return newDate.month;
     case 'monthText':
-      const monthText = newDate.setLocale(genitiveOrArg3 ?? DEFAULT_LANG).toLocaleString({ month: 'long' });
+      const monthText = newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString({ month: 'long' });
       return monthText.toLowerCase();
     case 'year':
       return newDate.year;
     case 'text':
-      return newDate.setLocale(genitiveOrArg3 ?? DEFAULT_LANG).toLocaleString();
+      return newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString();
     case 'unix':
       return newDate.toMillis();
     case 'iso':
@@ -100,9 +102,7 @@ export function op(state: any): DateTime | string | number {
 
 export function opWithColor(state: any): SafeString {
   const result = op(state);
-  const newState = { ...state, args: [ result ] };
-
-  return putWithColor(newState);
+  return putWithColor({ ...state, args: [ result ] });
 }
 
 export function now(state: any): DateTime {
@@ -111,79 +111,105 @@ export function now(state: any): DateTime {
 
 export function seconds(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, arg ] = args;
+  const [ date ] = args;
+  const namedArgs: Obj = state?.namedArgs ?? [];
+  const padding = namedArgs?.padding ?? 2;
 
-  if (arg === 'noPadding')
-    return opWithColor({ ...state, args: [ date, 'seconds' ] });
-  else
-    return opWithColor({ ...state, args: [ date, 'pad', 'seconds' ] });
+  return opWithColor({
+    ...state,
+
+    args: [ date, 'seconds' ],
+    namedArgs: { ...namedArgs, padding },
+  });
 }
 
 export function minutes(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, arg ] = args;
+  const [ date ] = args;
+  const namedArgs: Obj = state?.namedArgs ?? [];
+  const padding = namedArgs?.padding ?? 2;
 
-  if (arg === 'noPadding')
-    return opWithColor({ ...state, args: [ date, 'minutes' ] });
-  else
-    return opWithColor({ ...state, args: [ date, 'pad', 'minutes' ] });
+  return opWithColor({
+    ...state,
+
+    args: [ date, 'minutes' ],
+    namedArgs: { ...namedArgs, padding },
+  });
 }
 
 export function hours(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, arg ] = args;
+  const [ date ] = args;
+  const namedArgs: Obj = state?.namedArgs ?? [];
+  const padding = namedArgs?.padding ?? 2;
 
-  if (arg === 'noPadding')
-    return opWithColor({ ...state, args: [ date, 'hours' ] });
-  else
-    return opWithColor({ ...state, args: [ date, 'pad', 'hours' ] });
+  return opWithColor({
+    ...state,
+
+    args: [ date, 'hours' ],
+    namedArgs: { ...namedArgs, padding },
+  });
 }
 
 export function day(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, arg ] = args;
+  const [ date ] = args;
+  const namedArgs: Obj = state?.namedArgs ?? [];
+  const padding = namedArgs?.padding ?? 2;
 
-  if (arg === 'noPadding')
-    return opWithColor({ ...state, args: [ date, 'day' ] });
-  else
-    return opWithColor({ ...state, args: [ date, 'pad', 'day' ] });
+  return opWithColor({
+    ...state,
+
+    args: [ date, 'day' ],
+    namedArgs: { ...namedArgs, padding },
+  });
 }
 
 export function month(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, arg ] = args;
+  const [ date ] = args;
+  const namedArgs: Obj = state?.namedArgs ?? [];
+  const padding = namedArgs?.padding ?? 2;
 
-  if (arg === 'noPadding')
-    return opWithColor({ ...state, args: [ date, 'month' ] });
-  else
-    return opWithColor({ ...state, args: [ date, 'pad', 'month' ] });
+  return opWithColor({
+    ...state,
+
+    args: [ date, 'month' ],
+    namedArgs: { ...namedArgs, padding },
+  });
 }
 
 export function monthText(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, opOrArg2, genitiveOrArg3 ] = args;
+  const namedArgs: Obj = state?.namedArgs ?? [];
+  const [ date ] = args;
+  const { nominative } = namedArgs;
 
-  if (opOrArg2 === 'nominative')
-    return opWithColor({ ...state, args: [ date, 'monthText', genitiveOrArg3 ?? DEFAULT_LANG ] });
+  if (nominative)
+    return opWithColor({ ...state, args: [ date, 'monthText' ] });
   else
-    return opWithColor({ ...state, args: [ date, 'monthText', 'genitive', opOrArg2 ?? DEFAULT_LANG ] });
+    return opWithColor({ ...state, args: [ date, 'monthText', 'genitive' ] });
 }
 
 export function year(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, arg ] = args;
+  const [ date ] = args;
+  const namedArgs: Obj = state?.namedArgs ?? [];
+  const padding = namedArgs?.padding ?? 2;
 
-  if (arg === 'noPadding')
-    return opWithColor({ ...state, args: [ date, 'year' ] });
-  else
-    return opWithColor({ ...state, args: [ date, 'pad', 'year' ] });
+  return opWithColor({
+    ...state,
+
+    args: [ date, 'year' ],
+    namedArgs: { ...namedArgs, padding },
+  });
 }
 
 export function text(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const [ date, lang ] = args;
+  const [ date ] = args;
 
-  return opWithColor({ ...state, args: [ date, 'text', lang ] });
+  return opWithColor({ ...state, args: [ date, 'text' ] });
 }
 
 export function unix(state: any): number {
