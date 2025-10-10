@@ -19,8 +19,9 @@
     "build:types": "tsc && tsc-alias",
     "build:css": "tailwindcss -i ./src/index.tail.css -o ./dist/index.css --minify",
     "build": "bin/build.mjs && npm run build:types && npm run build:css",
+    "test:modules": "vitest run",
     "test-flext:app": "npm run build && cd test/app && npm i && npm run test-app",
-    "test-flext": "npm run test-flext:app",
+    "test-flext": "npm run test:modules",
     "prepare": "npm run build"
   },
   "files": [
@@ -40,7 +41,8 @@
     "esbuild-plugin-import-glob": "^0.1.1",
     "tailwindcss": "^4.1.14",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.4"
   },
   "dependencies": {
     "@unocss/preset-wind4": "^66.5.3",
