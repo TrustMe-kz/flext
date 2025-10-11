@@ -10,19 +10,17 @@ export const MODULE_NAME = 'match';
 // Tests
 
 describe('"match" module', () => {
-  it('renders the matching case content', () => {
+  it('case renders content for the first matching value', () => {
     const html = getHtml({
       modules: MODULE_NAME,
-      template: '{{#match data.status}}{{#match:case "ok"}}OK!{{/match:case}}{{#match:case "pending"}}Pending{{/match:case}}{{#match:fallback}}Fail...{{/match:fallback}}{{/match}}',
+      template: '{{#match data.status}}{{#match:case "ok"}}Primary{{/match:case}}{{#match:case "ok"}}Secondary{{/match:case}}{{#match:fallback}}Fallback{{/match:fallback}}{{/match}}',
       data: { data: { status: 'ok' } },
     }).trim();
-    console.log('html');
-    console.log(html);
 
-    expect(html).toBe('OK!');
+    expect(html).toBe('Primary');
   });
 
-  it('renders the fallback when no case matches', () => {
+  it('fallback runs when no case succeeds', () => {
     const html = getHtml({
       modules: MODULE_NAME,
       template: '{{#match data.status}}{{#match:case "ok"}}OK!{{/match:case}}{{#match:fallback}}Fail...{{/match:fallback}}{{/match}}',
@@ -32,24 +30,12 @@ describe('"match" module', () => {
     expect(html).toBe('Fail...');
   });
 
-  it('stops evaluation after the first matching case', () => {
-    const html = getHtml({
-      modules: MODULE_NAME,
-      template: '{{#match data.status}}{{#match:case "ok"}}First{{/match:case}}{{#match:case "ok"}}Second{{/match:case}}{{#match:fallback}}Fallback{{/match:fallback}}{{/match}}',
-      data: { data: { status: 'ok' } },
-    }).trim();
-
-    expect(html).toBe('First');
-  });
-
-  it('allows providing multiple values to a single case', () => {
+  it('default helper stores the value and drives the evaluation flow', () => {
     const html = getHtml({
       modules: MODULE_NAME,
       template: '{{#match data.status}}{{#match:case "pending" "processing"}}Working...{{/match:case}}{{#match:fallback}}Done{{/match:fallback}}{{/match}}',
       data: { data: { status: 'processing' } },
     }).trim();
-    console.log('html');
-    console.log(html);
 
     expect(html).toBe('Working...');
   });

@@ -10,53 +10,51 @@ export const MODULE_NAME = 'put';
 // Tests
 
 describe('"put" module', () => {
-  it('renders value with the default color wrapper', () => {
-    const html = getHtml({
+  it('noColor returns raw values without decoration', () => {
+    const rawValue = getHtml({
       modules: MODULE_NAME,
-      template: '{{ put data.city "Default City" }}',
+      template: '{{ put:noColor data.city "Default City" }}',
       data: { data: { city: 'Paris' } },
     }).trim();
 
-    expect(html).toBe(mockPut('Paris'));
-  });
-
-  it('uses fallback value when input is missing', () => {
-    const html = getHtml({
-      modules: MODULE_NAME,
-      template: '{{ put data.city "Default City" }}',
-      data: { data: {} },
-    }).trim();
-
-    expect(html).toBe(mockPut('Default City'));
-  });
-
-  it('respects the noColor helper variant', () => {
-    const html = getHtml({
+    const fallbackValue = getHtml({
       modules: MODULE_NAME,
       template: '{{ put:noColor data.city "Default City" }}',
       data: { data: {} },
     }).trim();
 
-    expect(html).toBe('Default City');
+    expect(rawValue).toBe('Paris');
+    expect(fallbackValue).toBe('Default City');
   });
 
-  it('allows overriding the color via named argument', () => {
-    const html = getHtml({
+  it('default helper wraps the value with color and respects overrides', () => {
+    const colored = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put data.city "Default City" }}',
+      data: { data: { city: 'Paris' } },
+    }).trim();
+
+    const fallback = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put data.city "Default City" }}',
+      data: { data: {} },
+    }).trim();
+
+    const overriddenColor = getHtml({
       modules: MODULE_NAME,
       template: '{{ put data.city "Default City" color="text-red-600" }}',
       data: { data: { city: 'Paris' } },
     }).trim();
 
-    expect(html).toBe(mockPut('Paris', 'text-red-600'));
-  });
-
-  it('treats zero as a valid value', () => {
-    const html = getHtml({
+    const zeroValue = getHtml({
       modules: MODULE_NAME,
       template: '{{ put data.count "Default" }}',
       data: { data: { count: 0 } },
     }).trim();
 
-    expect(html).toBe(mockPut('0'));
+    expect(colored).toBe(mockPut('Paris'));
+    expect(fallback).toBe(mockPut('Default City'));
+    expect(overriddenColor).toBe(mockPut('Paris', 'text-red-600'));
+    expect(zeroValue).toBe(mockPut('0'));
   });
 });
