@@ -1,6 +1,6 @@
 {
   "name": "@trustme24/flext",
-  "version": "1.3.4",
+  "version": "1.4.0",
   "description": "A Powerful Templating Engine",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "module",
@@ -15,11 +15,14 @@
     "./index.css": "./dist/index.css"
   },
   "scripts": {
+    "start:test-app": "cd test/app && npm run test-app",
     "build:types": "tsc && tsc-alias",
     "build:css": "tailwindcss -i ./src/index.tail.css -o ./dist/index.css --minify",
-    "build": "bin/build.mjs && npm run build:types && npm run build:css",
-    "test-flext:app": "npm run build && cd test/app && npm i && npm run test-app",
-    "test-flext": "npm run test-flext:app",
+    "build-only": "bin/build.mjs && npm run build:types && npm run build:css",
+    "build": "bun run build-only && vitest run",
+    "test:app": "npm run build && cd test/app && npm i && npm run test-app",
+    "test-only": "vitest run",
+    "test": "bun run bun run build-only && bun run test-only",
     "prepare": "npm run build"
   },
   "files": [
@@ -34,17 +37,18 @@
     "@babel/preset-typescript": "^7.27.1",
     "@handlebars/parser": "^2.2.1",
     "@tailwindcss/cli": "^4.1.14",
-    "@types/node": "^24.7.0",
+    "@types/node": "^24.7.1",
     "esbuild": "^0.25.10",
     "esbuild-plugin-import-glob": "^0.1.1",
     "tailwindcss": "^4.1.14",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.4"
   },
   "dependencies": {
-    "@unocss/preset-wind4": "^66.5.2",
+    "@unocss/preset-wind4": "^66.5.3",
     "handlebars": "^4.7.8",
     "luxon": "^3.7.2",
-    "unocss": "^66.5.2"
+    "unocss": "^66.5.3"
   }
 }

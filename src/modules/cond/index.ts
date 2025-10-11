@@ -1,27 +1,27 @@
-// import { SafeString } from 'handlebars';
+import { Obj } from '@/types';
 import { audit, defineModule } from '@/lib';
 import { BaseError } from '@/errors';
-// import { putWithColor } from '@/modules/put';
 
 
 // Functions
 
 export function op(state: any): boolean {
   const args: any[] = state?.args ?? [];
+  const namedArgs: Obj = state?.namedArgs ?? {};
   const [ a, op, b ] = args;
+  const { soft } = namedArgs;
 
 
-  // Defining the functions
+  // If the 'soft' was passed
 
-  const handle = (...args1: any[]): boolean => {
-    const [ newOp, ...newArgs ] = args1;
-    const [ _arg ] = newArgs;
-
-    switch (newOp) {
-      // case 'not':
-      //   return !_arg;
+  if (soft) {
+    switch (op) {
+      case 'equal':
+        return a == b;
+      case 'notEqual':
+        return a != b;
       default:
-        throw new BaseError('Condition: Unknown operation: ' + audit(newOp));
+        throw new BaseError('Condition: Unknown operation: ' + audit(op));
     }
   }
 
@@ -31,12 +31,8 @@ export function op(state: any): boolean {
   switch (op) {
     case 'equal':
       return a === b;
-    case 'softEqual':
-      return a == b;
     case 'notEqual':
       return a !== b;
-    case 'softNotEqual':
-      return a != b;
     case 'and':
       return a && b;
     case 'or':
@@ -46,71 +42,50 @@ export function op(state: any): boolean {
     case 'less':
       return Number(a) < Number(b);
     default:
-      return handle(...args);
+      throw new BaseError('Condition: Unknown operation: ' + audit(op));
   }
 }
-
-// export function opWithColor(state: any): SafeString {
-//   const result = op(state);
-//   const newState = { ...state, args: [ result ] };
-//
-//   return putWithColor(newState);
-// }
 
 export function equal(state: any): boolean {
   const args: any[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return op({ args: [ a, 'equal', b ] });
-}
-
-export function softEqual(state: any): boolean {
-  const args: any[] = state?.args ?? [];
-  const [ a, b ] = args;
-
-  return op({ args: [ a, 'softEqual', b ] });
+  return op({ ...state, args: [ a, 'equal', b ] });
 }
 
 export function notEqual(state: any): boolean {
   const args: any[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return op({ args: [ a, 'notEqual', b ] });
-}
-
-export function softNotEqual(state: any): boolean {
-  const args: any[] = state?.args ?? [];
-  const [ a, b ] = args;
-
-  return op({ args: [ a, 'softNotEqual', b ] });
+  return op({ ...state, args: [ a, 'notEqual', b ] });
 }
 
 export function and(state: any): boolean {
   const args: any[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return op({ args: [ a, 'and', b ] });
+  return op({ ...state, args: [ a, 'and', b ] });
 }
 
 export function or(state: any): boolean {
   const args: any[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return op({ args: [ a, 'or', b ] });
+  return op({ ...state, args: [ a, 'or', b ] });
 }
 
 export function greater(state: any): boolean {
   const args: any[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return op({ args: [ a, 'greater', b ] });
+  return op({ ...state, args: [ a, 'greater', b ] });
 }
 
 export function less(state: any): boolean {
   const args: any[] = state?.args ?? [];
   const [ a, b ] = args;
 
-  return op({ args: [ a, 'less', b ] });
+  return op({ ...state, args: [ a, 'less', b ] });
 }
 
 
@@ -118,9 +93,7 @@ export default defineModule({
   helpers: {
     op: op,
     equal: equal,
-    softEqual: softEqual,
     notEqual: notEqual,
-    softNotEqual: softNotEqual,
     and: and,
     or: or,
     greater: greater,
