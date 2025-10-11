@@ -1,14 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { renderTemplate } from '../../test-lib';
-import { DEFAULT_COLOR } from '../../src/modules/put';
+import { getHtml } from '@test-lib';
 
 
-const MODULE_NAME = 'put';
+// Constants
+
+export const MODULE_NAME = 'put';
+
+export const DEFAULT_COLOR = 'text-blue-500';
 
 
-describe('put module', () => {
+// Tests
+
+describe('"put" module', () => {
   it('renders value with the default color wrapper', () => {
-    const html = renderTemplate({
+    const html = getHtml({
       modules: MODULE_NAME,
       expression: '{{ put data.city "Default City" }}',
       data: { data: { city: 'Paris' } },
@@ -18,7 +23,7 @@ describe('put module', () => {
   });
 
   it('uses fallback value when input is missing', () => {
-    const html = renderTemplate({
+    const html = getHtml({
       modules: MODULE_NAME,
       expression: '{{ put data.city "Default City" }}',
       data: { data: {} },
@@ -28,7 +33,7 @@ describe('put module', () => {
   });
 
   it('respects the noColor helper variant', () => {
-    const html = renderTemplate({
+    const html = getHtml({
       modules: MODULE_NAME,
       expression: '{{ put:noColor data.city "Default City" }}',
       data: { data: {} },
@@ -38,7 +43,7 @@ describe('put module', () => {
   });
 
   it('allows overriding the color via named argument', () => {
-    const html = renderTemplate({
+    const html = getHtml({
       modules: MODULE_NAME,
       expression: '{{ put data.city "Default City" color="text-red-600" }}',
       data: { data: { city: 'Paris' } },
@@ -48,7 +53,7 @@ describe('put module', () => {
   });
 
   it('treats zero as a valid value', () => {
-    const html = renderTemplate({
+    const html = getHtml({
       modules: MODULE_NAME,
       expression: '{{ put data.count "Default" }}',
       data: { data: { count: 0 } },

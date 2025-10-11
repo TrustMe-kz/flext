@@ -3,8 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": [ "src/*" ],
-      "@public/*": [ "public/*" ],
-      "@flext": [ "../../dist" ],
+      "@flext/*": [ "../../dist/*" ],
     },
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -36,7 +35,5 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
-    "../../dist/*.ts",
-    "../../dist/*.d.ts",
   ]
 }

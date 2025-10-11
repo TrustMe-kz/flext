@@ -1,8 +1,11 @@
 {
+  "exclude": [ "test/app/**" ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [ "src/*" ]
+      "@/*": [ "src/*" ],
+      "@flext/*": [ "dist/*" ],
+      "@test-lib": [ "test-lib.ts" ],
     },
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -31,5 +34,8 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [ "src/**/*.ts", "src/**/*.d.ts" ]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts"
+  ]
 }
