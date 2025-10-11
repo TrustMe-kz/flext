@@ -13,7 +13,7 @@ export function matchHelper(state: any): any {
   // Setting the match data
 
   self.__flext_match_value = value;
-  self.__flext_match_isCompleted = true;
+  self.__flext_match_isCompleted = false;
 
 
   return render();

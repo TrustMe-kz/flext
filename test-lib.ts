@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { Obj } from '@/types';
 import Flext from '@flext';
 
 
@@ -7,10 +8,15 @@ import Flext from '@flext';
 
 export type GetHtmlOptions = {
   modules: string | string[],
-  expression: string,
-  data?: Record<string, any>,
-  helpers?: Record<string, any>,
+  template: string,
+  data?: Obj,
+  helpers?: Obj,
 };
+
+
+// Constants
+
+export const DEFAULT_COLOR = 'text-blue-500';
 
 
 // Variables
@@ -26,7 +32,7 @@ export function getHtml(options: GetHtmlOptions): string {
 
   // Getting the data
 
-  const { modules, expression, data = {}, helpers = {} } = options;
+  const { modules, template, data = {}, helpers = {} } = options;
   const newModules = Array.isArray(modules) ? modules : [ modules ];
   const newNewModules = newModules?.map(name => `"${name}"`)?.join(' ') || '""';
 
@@ -35,10 +41,14 @@ export function getHtml(options: GetHtmlOptions): string {
 
   const newTemplateSyntax = templateSyntax
     .replace('{MODULES}', newNewModules)
-    .replace('{CONTENT}', expression);
+    .replace('{CONTENT}', template);
 
   const flext = new Flext(newTemplateSyntax);
 
 
   return flext.getHtml(data, helpers);
+}
+
+export function mockPut(val: string, color: string = DEFAULT_COLOR): string {
+  return `<span class="${color}">${val}</span>`;
 }
