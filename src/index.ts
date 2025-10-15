@@ -1,7 +1,7 @@
 import { AST } from '@handlebars/parser';
 import { Obj, DataModelNode, Macro } from '@/types';
 import { BaseError, PotentialLoopError } from '@/errors';
-import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros } from '@/lib';
+import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getContent, getHtmlH1Title, ensureTitle } from '@/lib';
 import { has } from '@/lib';
 import * as modules from './modules';
 
@@ -111,6 +111,7 @@ export class SimpleFlext  {
 export class Flext extends SimpleFlext {
   declare public version: string;
   declare public lang: string;
+  declare public title: string;
   declare public timeZone: string;
   declare public lineHeight: number;
   declare public fields: Field[];
@@ -132,6 +133,20 @@ export class Flext extends SimpleFlext {
     // Defining the variables
 
     const macros = getMacros(this.ast);
+    const titleStr = getHtmlH1Title(this.ast);
+    const contentArr = getContent(this.ast);
+    const contentStr = contentArr.find(c => c.includes(' ') || c.includes('\n')) ?? null;
+
+
+    // Getting the title
+
+    let newTitle: string|null = null;
+
+    if (titleStr)
+      newTitle = ensureTitle(titleStr);
+
+    else if (contentStr)
+      newTitle = ensureTitle(contentStr);
 
 
     // Defining the functions
@@ -150,6 +165,7 @@ export class Flext extends SimpleFlext {
 
     const version = get('v');
     const lang = get('lang');
+    const title = get('title');
     const timeZone = get('timeZone');
     const modulesMacros = getAll('use');
     const lineHeight = get('lineHeight');
@@ -165,6 +181,9 @@ export class Flext extends SimpleFlext {
 
     if (lang)
       this.setLang(lang);
+
+    if (title || newTitle)
+      this.setTitle(title ?? newTitle);
 
     if (timeZone)
       this.setTimeZone(timeZone);
@@ -193,6 +212,11 @@ export class Flext extends SimpleFlext {
 
   public setLang(val: string): this {
     this.lang = val;
+    return this;
+  }
+
+  public setTitle(val: string): this {
+    this.title = val;
     return this;
   }
 
