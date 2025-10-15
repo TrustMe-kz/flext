@@ -4,6 +4,7 @@ import { createGenerator, presetTypography, Preset } from 'unocss';
 import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
 import { Obj, Macro, MacroParam, DataModelNode, DataModel } from '@/types';
 import { BaseError, PotentialLoopError, BaseWarning } from '@/errors';
+import striptags from 'striptags';
 import Handlebars, { TemplateDelegate } from 'handlebars';
 
 
@@ -26,6 +27,11 @@ export type CollectorFilterHandler<T = any> = (val?: T) => boolean;
 // Constants
 
 export const DEFAULT_MODEL_DEPTH = 10;
+
+
+// Variables
+
+export const stripHtml = striptags;
 
 
 // Classes
@@ -88,7 +94,7 @@ class FlextMacroCollector extends HandlebarsCommentCollector {
   public match = FilterHelper.macro;
 }
 
-class FlextHtmlH1Collector extends HandlebarsContentCollector {
+class FlextH1SomewhereContentCollector extends HandlebarsContentCollector {
   public match = FilterHelper.htmlH1Somewhere;
 }
 
@@ -327,8 +333,12 @@ export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
 
     // Doing some checks
 
-    if (!matches && doWarn)
-      throw new BaseWarning('Flext: Unable to parse the macros: Bad macro: ' + audit(macroStr));
+    if (!matches) {
+      if (doWarn)
+        throw new BaseWarning('Flext: Unable to parse the macros: Bad macro: ' + audit(macroStr));
+      else
+        return null;
+    }
 
 
     // Getting the data
@@ -345,12 +355,8 @@ export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
   return result;
 }
 
-export function getContent(ast: AST.Program): string[] {
-  return new HandlebarsContentCollector().collect(ast);
-}
-
 export function getHtmlH1(ast: AST.Program, doWarn: boolean = true): string[] {
-  const titleArr = new FlextHtmlH1Collector().collect(ast);
+  const titleArr = new FlextH1SomewhereContentCollector().collect(ast);
   const result: string[] = [];
 
 
@@ -362,28 +368,22 @@ export function getHtmlH1(ast: AST.Program, doWarn: boolean = true): string[] {
 
     // Doing some checks
 
-    if (!matches && doWarn)
-      throw new BaseWarning('Flext: Unable to parse the H1: Bad HTML: ' + audit(titleStr));
+    if (!matches) {
+      if (doWarn)
+        throw new BaseWarning('Flext: Unable to parse H1: Bad HTML: ' + audit(titleStr));
+      else
+        return null;
+    }
 
 
-    // Getting the data
+    // Iterating for each match
 
-    const val = matches?.groups?.value ?? null;
-
-    if (!val && doWarn)
-      throw new BaseWarning('Flext: Unable to parse the H1: Bad HTML: ' + audit(titleStr));
-
-
-    result.push(val);
+    for (const match of matches)
+      result.push(String(match));
   }
 
 
   return result;
-}
-
-export function getHtmlH1Title(ast: AST.Program, doWarn: boolean = true): string|null {
-  const [ result ] = getHtmlH1(ast, doWarn);
-  return result ?? null;
 }
 
 
@@ -438,12 +438,12 @@ export function ensureDate(val: Date | string | number): Date {
 }
 
 export function ensureTitle(val: string|number): string {
-  let result: string|null = String(val).trim();
+  let title: string|null = stripHtml(String(val)).trim();
 
 
   // Defining the functions
 
-  const filter1 = (search: string | RegExp, val: string = '') => result = result.trim().replace(search, val);
+  const filter1 = (search: string | RegExp, val: string = '') => title = title.replace(search, val);
 
 
   // Getting the title
@@ -453,7 +453,7 @@ export function ensureTitle(val: string|number): string {
   filter1(/[^\p{L}\d\s]/mgu);
 
 
-  return result;
+  return title.trim();
 }
 
 export function filter(regex: RegExp, val: string|number): boolean {
@@ -470,7 +470,7 @@ export class RegexHelper {
   public static macroParam = /^"(?<value>.+)"$/;
   public static macroNamedParam = /^(?<name>.+)="(?<value>.+)"$/;
   public static macroSimpleParam = /^(?<name>[a-zA-Z]+)$/;
-  public static htmlH1Somewhere = /\<h1.*\>(?<value>.*)\<\/h1.*\>/mg;
+  public static htmlH1Somewhere = /\<h1.*?\>(?<value>.*)\<\/h1.*?\>/gs;
 }
 
 export class FilterHelper {

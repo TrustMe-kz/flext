@@ -1,7 +1,7 @@
 import { AST } from '@handlebars/parser';
 import { Obj, DataModelNode, Macro } from '@/types';
 import { BaseError, PotentialLoopError } from '@/errors';
-import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getContent, getHtmlH1Title, ensureTitle } from '@/lib';
+import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureTitle } from '@/lib';
 import { has } from '@/lib';
 import * as modules from './modules';
 
@@ -132,21 +132,8 @@ export class Flext extends SimpleFlext {
 
     // Defining the variables
 
+    const [ titleStr ] = getHtmlH1(this.ast);
     const macros = getMacros(this.ast);
-    const titleStr = getHtmlH1Title(this.ast);
-    const contentArr = getContent(this.ast);
-    const contentStr = contentArr.find(c => c.includes(' ') || c.includes('\n')) ?? null;
-
-
-    // Getting the title
-
-    let newTitle: string|null = null;
-
-    if (titleStr)
-      newTitle = ensureTitle(titleStr);
-
-    else if (contentStr)
-      newTitle = ensureTitle(contentStr);
 
 
     // Defining the functions
@@ -182,8 +169,8 @@ export class Flext extends SimpleFlext {
     if (lang)
       this.setLang(lang);
 
-    if (title || newTitle)
-      this.setTitle(title ?? newTitle);
+    if (title || titleStr)
+      this.setTitle(title ?? ensureTitle(titleStr));
 
     if (timeZone)
       this.setTimeZone(timeZone);
