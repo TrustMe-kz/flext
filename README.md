@@ -14,7 +14,7 @@ Flext is maintained by [TrustMe](https://trustme24.com/).
 import { Flext } from '@trustme24/flext';
 
 const template = `
-  {{!-- @v "1.0" --}}
+  {{!-- @v "1.0.beta3" --}}
   {{!-- @use "put" --}}
 
   <div class="text-center text-red-500">{{ put data.helloWorld 'No hello world...' }}</div>

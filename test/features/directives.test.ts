@@ -44,7 +44,7 @@ describe('Flext features', () => {
 
   it('derives title from the first <h1> when no @title directive is provided', () => {
     const template = `
-      {{!-- @v "1.0.beta2" --}}
+      {{!-- @v "1.0.beta3" --}}
       <main>
         <h1>
           Flext Main Title 2024
