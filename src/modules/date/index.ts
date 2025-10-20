@@ -6,17 +6,12 @@ import { BaseError } from '@/errors';
 import { putWithColor } from '@/modules/put';
 
 
-// Constants
-
-export const DEFAULT_LANG = 'en-US';
-
-
 // Functions
 
 export function op(state: any): DateTime | string | number {
   const flext: Obj = state?.flext ?? {};
   const args: any[] = state?.args ?? [];
-  const namedArgs: Obj = state?.namedArgs ?? [];
+  const namedArgs: Obj = state?.namedArgs ?? {};
   const [ date, opName ] = args;
   const { padding, genitive, timeZone, lang } = namedArgs;
 
@@ -35,6 +30,9 @@ export function op(state: any): DateTime | string | number {
 
   if (timeZone || flext?.timeZone)
     newDate = newDate.setZone(timeZone ?? flext?.timeZone);
+
+  if (lang || flext?.lang)
+    newDate = newDate.setLocale(lang ?? flext?.lang);
 
 
   // If the 'pad' was passed
@@ -61,7 +59,7 @@ export function op(state: any): DateTime | string | number {
   if (genitive) {
     switch (opName) {
       case 'monthText':
-        const dateText = newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString({ day: 'numeric', month: 'long' });
+        const dateText = newDate.toLocaleString({ day: 'numeric', month: 'long' });
         const monthText = dateText.replace(/[^\p{L}]/gu, ''); // TODO: kr: Costyl to work with thw US dates
 
         return monthText.toLowerCase();
@@ -85,12 +83,12 @@ export function op(state: any): DateTime | string | number {
     case 'month':
       return newDate.month;
     case 'monthText':
-      const monthText = newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString({ month: 'long' });
+      const monthText = newDate.toLocaleString({ month: 'long' });
       return monthText.toLowerCase();
     case 'year':
       return newDate.year;
     case 'text':
-      return newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString();
+      return newDate.toLocaleString();
     case 'unix':
       return newDate.toMillis();
     case 'iso':
@@ -112,7 +110,7 @@ export function now(state: any): DateTime {
 export function seconds(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date ] = args;
-  const namedArgs: Obj = state?.namedArgs ?? [];
+  const namedArgs: Obj = state?.namedArgs ?? {};
   const padding = namedArgs?.padding ?? 2;
 
   return opWithColor({
@@ -126,7 +124,7 @@ export function seconds(state: any): SafeString {
 export function minutes(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date ] = args;
-  const namedArgs: Obj = state?.namedArgs ?? [];
+  const namedArgs: Obj = state?.namedArgs ?? {};
   const padding = namedArgs?.padding ?? 2;
 
   return opWithColor({
@@ -140,7 +138,7 @@ export function minutes(state: any): SafeString {
 export function hours(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date ] = args;
-  const namedArgs: Obj = state?.namedArgs ?? [];
+  const namedArgs: Obj = state?.namedArgs ?? {};
   const padding = namedArgs?.padding ?? 2;
 
   return opWithColor({
@@ -154,7 +152,7 @@ export function hours(state: any): SafeString {
 export function day(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date ] = args;
-  const namedArgs: Obj = state?.namedArgs ?? [];
+  const namedArgs: Obj = state?.namedArgs ?? {};
   const padding = namedArgs?.padding ?? 2;
 
   return opWithColor({
@@ -168,7 +166,7 @@ export function day(state: any): SafeString {
 export function month(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date ] = args;
-  const namedArgs: Obj = state?.namedArgs ?? [];
+  const namedArgs: Obj = state?.namedArgs ?? {};
   const padding = namedArgs?.padding ?? 2;
 
   return opWithColor({
@@ -181,20 +179,22 @@ export function month(state: any): SafeString {
 
 export function monthText(state: any): SafeString {
   const args: any[] = state?.args ?? [];
-  const namedArgs: Obj = state?.namedArgs ?? [];
   const [ date ] = args;
-  const { nominative } = namedArgs;
+  const namedArgs: Obj = state?.namedArgs ?? {};
+  const genitive = !namedArgs?.nominative;
 
-  if (nominative)
-    return opWithColor({ ...state, args: [ date, 'monthText' ] });
-  else
-    return opWithColor({ ...state, args: [ date, 'monthText', 'genitive' ] });
+  return opWithColor({
+    ...state,
+
+    args: [ date, 'monthText' ],
+    namedArgs: { ...namedArgs, genitive },
+  });
 }
 
 export function year(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date ] = args;
-  const namedArgs: Obj = state?.namedArgs ?? [];
+  const namedArgs: Obj = state?.namedArgs ?? {};
   const padding = namedArgs?.padding ?? 2;
 
   return opWithColor({
