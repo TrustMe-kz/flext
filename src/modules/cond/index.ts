@@ -8,42 +8,61 @@ import { BaseError } from '@/errors';
 export function op(state: any): boolean {
   const args: any[] = state?.args ?? [];
   const namedArgs: Obj = state?.namedArgs ?? {};
-  const [ a, op, b ] = args;
+  const [ arg1, arg2OrOp, arg3, ...rest ] = args;
   const { soft } = namedArgs;
+
+
+  // If the 'not' was passed
+
+  if (arg1 === 'not') return !arg2OrOp;
 
 
   // If the 'soft' was passed
 
   if (soft) {
-    switch (op) {
+    switch (arg2OrOp) {
       case 'equal':
-        return a == b;
+        return arg1 == arg3;
       case 'notEqual':
-        return a != b;
+        return arg1 != arg3;
       default:
-        throw new BaseError('Condition: Unknown operation: ' + audit(op));
+        throw new BaseError('Condition: Unknown operation: ' + audit(arg2OrOp));
     }
   }
 
 
+  // Defining the functions
+
+  const and = <T = any>(...a: T[]): T => a.reduce((r, x) => r && x);
+
+  const or  = <T = any>(...a: T[]): T => a.reduce((r, x) => r || x);
+
+
   // Matching an operation
 
-  switch (op) {
+  switch (arg2OrOp) {
     case 'equal':
-      return a === b;
+      return arg1 === arg3;
     case 'notEqual':
-      return a !== b;
+      return arg1 !== arg3;
     case 'and':
-      return a && b;
+      return and(arg1, arg3, ...rest);
     case 'or':
-      return a || b;
+      return or(arg1, arg3, ...rest);
     case 'greater':
-      return Number(a) > Number(b);
+      return Number(arg1) > Number(arg3);
     case 'less':
-      return Number(a) < Number(b);
+      return Number(arg1) < Number(arg3);
     default:
-      throw new BaseError('Condition: Unknown operation: ' + audit(op));
+      throw new BaseError('Condition: Unknown operation: ' + audit(arg2OrOp));
   }
+}
+
+export function not(state: any): boolean {
+  const args: any[] = state?.args ?? [];
+  const [ a ] = args;
+
+  return op({ ...state, args: [ 'not', a ] });
 }
 
 export function equal(state: any): boolean {
@@ -62,16 +81,16 @@ export function notEqual(state: any): boolean {
 
 export function and(state: any): boolean {
   const args: any[] = state?.args ?? [];
-  const [ a, b ] = args;
+  const [ a, ...rest ] = args;
 
-  return op({ ...state, args: [ a, 'and', b ] });
+  return op({ ...state, args: [ a, 'and', ...rest ] });
 }
 
 export function or(state: any): boolean {
   const args: any[] = state?.args ?? [];
-  const [ a, b ] = args;
+  const [ a, ...rest ] = args;
 
-  return op({ ...state, args: [ a, 'or', b ] });
+  return op({ ...state, args: [ a, 'or', ...rest ] });
 }
 
 export function greater(state: any): boolean {
@@ -92,6 +111,7 @@ export function less(state: any): boolean {
 export default defineModule({
   helpers: {
     op: op,
+    not: not,
     equal: equal,
     notEqual: notEqual,
     and: and,
