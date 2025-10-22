@@ -4,6 +4,7 @@ import { createGenerator, presetTypography, Preset } from 'unocss';
 import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
 import { Obj, Macro, MacroParam, DataModelNode, DataModel } from '@/types';
 import { BaseError, PotentialLoopError, BaseWarning } from '@/errors';
+import striptags from 'striptags';
 import Handlebars, { TemplateDelegate } from 'handlebars';
 
 
@@ -26,6 +27,11 @@ export type CollectorFilterHandler<T = any> = (val?: T) => boolean;
 // Constants
 
 export const DEFAULT_MODEL_DEPTH = 10;
+
+
+// Variables
+
+export const stripHtml = striptags;
 
 
 // Classes
@@ -64,9 +70,16 @@ export class HandlebarsCollector<T = any> extends Handlebars.Visitor {
 }
 
 class HandlebarsCommentCollector extends HandlebarsCollector<string> {
-  CommentStatement(node) {
+  public CommentStatement(node) {
     this.onCollect(node.value);
     return super.CommentStatement(node);
+  }
+}
+
+class HandlebarsContentCollector extends HandlebarsCollector<string> {
+  public ContentStatement(node) {
+    this.onCollect(node.value);
+    return super.ContentStatement(node);
   }
 }
 
@@ -79,6 +92,10 @@ class HandlebarsPathCollector extends HandlebarsCollector<string> {
 
 class FlextMacroCollector extends HandlebarsCommentCollector {
   public match = FilterHelper.macro;
+}
+
+class FlextH1SomewhereContentCollector extends HandlebarsContentCollector {
+  public match = FilterHelper.htmlH1Somewhere;
 }
 
 
@@ -304,20 +321,24 @@ export function getMacroParams(val: string, doWarn: boolean = true): MacroParam[
 }
 
 export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
-  const macrosStr = new FlextMacroCollector().collect(ast);
+  const macroArr = new FlextMacroCollector().collect(ast);
   const result: Macro[] = [];
 
 
   // Iterating for each macro string
 
-  for (const macroStr of macrosStr) {
+  for (const macroStr of macroArr) {
     const matches = macroStr?.trim()?.match(RegexHelper.macro) ?? null;
 
 
     // Doing some checks
 
-    if (!matches && doWarn)
-      throw new BaseWarning('Flext: Unable to parse the macros: Bad macro: ' + audit(macroStr));
+    if (!matches) {
+      if (doWarn)
+        throw new BaseWarning('Flext: Unable to parse the macros: Bad macro: ' + audit(macroStr));
+      else
+        return null;
+    }
 
 
     // Getting the data
@@ -328,6 +349,37 @@ export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
 
 
     result.push({ name, params });
+  }
+
+
+  return result;
+}
+
+export function getHtmlH1(ast: AST.Program, doWarn: boolean = true): string[] {
+  const titleArr = new FlextH1SomewhereContentCollector().collect(ast);
+  const result: string[] = [];
+
+
+  // Iterating for each macro string
+
+  for (const titleStr of titleArr) {
+    const matches = titleStr?.trim()?.match(RegexHelper.htmlH1Somewhere) ?? null;
+
+
+    // Doing some checks
+
+    if (!matches) {
+      if (doWarn)
+        throw new BaseWarning('Flext: Unable to parse H1: Bad HTML: ' + audit(titleStr));
+      else
+        return null;
+    }
+
+
+    // Iterating for each match
+
+    for (const match of matches)
+      result.push(String(match));
   }
 
 
@@ -385,6 +437,29 @@ export function ensureDate(val: Date | string | number): Date {
     return isoDate(val as string);
 }
 
+export function ensureTitle(val: string|number): string {
+  let title: string|null = stripHtml(String(val)).trim();
+
+
+  // Defining the functions
+
+  const filter1 = (search: string | RegExp, val: string = '') => title = title.replace(search, val);
+
+
+  // Getting the title
+
+  filter1('\n', ' ');
+  filter1(/\s{2,}/mg, ' ');
+  filter1(/[^\p{L}\d\s]/mgu);
+
+
+  return title.trim();
+}
+
+export function filter(regex: RegExp, val: string|number): boolean {
+  return !!String(val).trim().match(regex);
+}
+
 
 // Helpers
 
@@ -395,10 +470,15 @@ export class RegexHelper {
   public static macroParam = /^"(?<value>.+)"$/;
   public static macroNamedParam = /^(?<name>.+)="(?<value>.+)"$/;
   public static macroSimpleParam = /^(?<name>[a-zA-Z]+)$/;
+  public static htmlH1Somewhere = /\<h1.*?\>(?<value>.*)\<\/h1.*?\>/gs;
 }
 
 export class FilterHelper {
   public static macro(val: string): boolean {
-    return !!val?.trim()?.match(RegexHelper.macro);
+    return filter(RegexHelper.macro, val);
+  }
+
+  public static htmlH1Somewhere(val: string): boolean {
+    return filter(RegexHelper.htmlH1Somewhere, val);
   }
 }

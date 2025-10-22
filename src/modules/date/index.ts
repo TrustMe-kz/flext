@@ -6,11 +6,6 @@ import { BaseError } from '@/errors';
 import { putWithColor } from '@/modules/put';
 
 
-// Constants
-
-export const DEFAULT_LANG = 'en-US';
-
-
 // Functions
 
 export function op(state: any): DateTime | string | number | null {
@@ -35,6 +30,9 @@ export function op(state: any): DateTime | string | number | null {
 
   if (timeZone || flext?.timeZone)
     newDate = newDate.setZone(timeZone ?? flext?.timeZone);
+
+  if (lang || flext?.lang)
+    newDate = newDate.setLocale(lang ?? flext?.lang);
 
 
   // Defining the functions
@@ -66,7 +64,7 @@ export function op(state: any): DateTime | string | number | null {
   if (genitive) {
     switch (op) {
       case 'monthText':
-        const dateText = newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString({ day: 'numeric', month: 'long' });
+        const dateText = newDate.toLocaleString({ day: 'numeric', month: 'long' });
         const monthText = dateText.replace(/[^\p{L}]/gu, ''); // TODO: kr: Costyl to work with thw US dates
 
         return monthText.toLowerCase();
@@ -90,12 +88,12 @@ export function op(state: any): DateTime | string | number | null {
     case 'month':
       return newDate.month;
     case 'monthText':
-      const monthText = newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString({ month: 'long' });
+      const monthText = newDate.toLocaleString({ month: 'long' });
       return monthText.toLowerCase();
     case 'year':
       return newDate.year;
     case 'text':
-      return newDate.setLocale(lang ?? DEFAULT_LANG).toLocaleString();
+      return newDate.toLocaleString();
     case 'unix':
       return newDate.toMillis();
     case 'iso':
@@ -191,12 +189,14 @@ export function monthText(state: any): SafeString {
   const args: any[] = state?.args ?? [];
   const [ date, fallback ] = args;
   const namedArgs: Obj = state?.namedArgs ?? {};
-  const nominative = !!namedArgs?.nominative;
+  const genitive = !namedArgs?.nominative;
 
-  if (nominative)
-    return opWithColor({ ...state, args: [ date, 'monthText' ], namedArgs: { ...namedArgs, fallback } });
-  else
-    return opWithColor({ ...state, args: [ date, 'monthText', 'genitive' ], namedArgs: { ...namedArgs, fallback } });
+  return opWithColor({
+    ...state,
+
+    args: [ date, 'monthText' ],
+    namedArgs: { ...namedArgs, genitive, fallback },
+  });
 }
 
 export function year(state: any): SafeString {

@@ -1,7 +1,7 @@
 import { AST } from '@handlebars/parser';
 import { Obj, DataModelNode, Macro } from '@/types';
 import { BaseError, PotentialLoopError } from '@/errors';
-import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros } from '@/lib';
+import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureTitle } from '@/lib';
 import { has } from '@/lib';
 import * as modules from './modules';
 
@@ -111,6 +111,7 @@ export class SimpleFlext  {
 export class Flext extends SimpleFlext {
   declare public version: string;
   declare public lang: string;
+  declare public title: string;
   declare public timeZone: string;
   declare public lineHeight: number;
   declare public fields: Field[];
@@ -131,6 +132,7 @@ export class Flext extends SimpleFlext {
 
     // Defining the variables
 
+    const [ titleStr ] = getHtmlH1(this.ast);
     const macros = getMacros(this.ast);
 
 
@@ -150,6 +152,7 @@ export class Flext extends SimpleFlext {
 
     const version = get('v');
     const lang = get('lang');
+    const title = get('title');
     const timeZone = get('timeZone');
     const modulesMacros = getAll('use');
     const lineHeight = get('lineHeight');
@@ -165,6 +168,9 @@ export class Flext extends SimpleFlext {
 
     if (lang)
       this.setLang(lang);
+
+    if (title || titleStr)
+      this.setTitle(title ?? ensureTitle(titleStr));
 
     if (timeZone)
       this.setTimeZone(timeZone);
@@ -193,6 +199,11 @@ export class Flext extends SimpleFlext {
 
   public setLang(val: string): this {
     this.lang = val;
+    return this;
+  }
+
+  public setTitle(val: string): this {
+    this.title = val;
     return this;
   }
 
