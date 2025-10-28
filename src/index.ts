@@ -2,7 +2,7 @@ import { AST } from '@handlebars/parser';
 import { Obj, DataModelNode, Macro } from '@/types';
 import { BaseError, PotentialLoopError } from '@/errors';
 import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureTitle } from '@/lib';
-import { has } from '@/lib';
+import { inarr, has } from '@/lib';
 import * as modules from './modules';
 
 
@@ -138,10 +138,10 @@ export class Flext extends SimpleFlext {
 
     // Defining the functions
 
-    const getAll = (val: string): Macro[] | null => macros?.filter(m => m?.name === val) ?? null;
+    const getAll = (_val: string): Macro[] | null => macros?.filter(m => m?.name === _val) ?? null;
 
-    const get = (val: string): string|null => {
-      const [ macro ] = getAll(val);
+    const get = (_val: string): string|null => {
+      const [ macro ] = getAll(_val);
       const [ param ] = macro?.params ?? [];
 
       return param?.value ?? null;
@@ -268,28 +268,18 @@ export class Flext extends SimpleFlext {
 
     // Defining the functions
 
-    const isHelper = (node: DataModelNode): boolean => {
-      for (const helperName in this.helpers) {
-        if (!has(this.helpers, helperName)) continue;
-
-        if (node?.name === helperName)
-          return true;
-      }
-
-      return false;
-    }
-
-    const getMetadataModelNode = (node: DataModelNode, options: Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode => {
+    const getMetadataModelNode = (node: DataModelNode, options: Obj = {}, _depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode => {
 
       // Doing some checks
 
-      if (depth <= 0)
+      if (_depth <= 0)
         throw new PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
 
 
       // Getting the metadata
 
       const fieldName = options?.fieldName ?? null;
+
       const field = this.fields?.find(f => f?.name === fieldName) ?? null;
 
 
@@ -311,17 +301,29 @@ export class Flext extends SimpleFlext {
 
         $.push(getMetadataModelNode(node, {
           fieldName: fieldName + '.' + nodeName,
-        }, depth - 1));
+        }, _depth - 1));
       }
 
 
       return { name, label, type, isRequired, $ };
     }
 
+    const isHelper = (node: DataModelNode): boolean => {
+      for (const helperName in this.helpers) {
+        if (!has(this.helpers, helperName)) continue;
+
+        if (node?.name === helperName)
+          return true;
+      }
+
+      return false;
+    }
+
 
     // Getting the nodes
 
     const model = getDataModel(this.ast);
+
     const nodes: DataModelNode[] = model?.$ ?? [];
 
 
@@ -330,8 +332,50 @@ export class Flext extends SimpleFlext {
         .map(n => getMetadataModelNode(n, { fieldName: n?.name ?? null }, depth));
   }
 
-  public get model(): Obj {
+  public getIsValid(data: Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): boolean {
+
+    // Defining the functions
+
+    const isDataValidByModel = (_data: Obj, model: MetadataModelNode[], _depth: number = DEFAULT_MODEL_DEPTH): boolean => {
+
+      // Doing some checks
+
+      if (_depth <= 0)
+        throw new PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
+
+
+      // Iterating for each subnode
+
+      for (const node of model) {
+
+        // Getting the data
+
+        const newData: Obj = _data[node.name] ?? null;
+
+
+        // If the data was not found, but the field is required
+
+        if (inarr(newData, '', null, undefined) && node?.isRequired)
+          return false;
+
+        if (!isDataValidByModel(newData ?? {}, node.$ as MetadataModelNode[], _depth - 1))
+          return false;
+      }
+
+
+      return true;
+    }
+
+
+    return isDataValidByModel({ ...this.data, ...data }, this.model, depth);
+  }
+
+  public get model(): MetadataModelNode[] {
     return this.getDataModel();
+  }
+
+  public get isValid(): boolean {
+    return this.getIsValid();
   }
 }
 
@@ -350,8 +394,8 @@ export function macroToField(val: Macro): Field {
 
   // Defining the functions
 
-  const get = (val: string): any => {
-    const arg = args?.find(a => a?.name === val) ?? null;
+  const get = (_val: string): any => {
+    const arg = args?.find(a => a?.name === _val) ?? null;
 
     if (arg && arg?.value)
       return arg?.value ?? null;
