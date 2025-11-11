@@ -166,4 +166,45 @@ describe('"date" module', () => {
 
     expect(html).toBe(mockPut('05'));
   });
+
+  it('monthText defaults to genitive form when nominative flag is absent', () => {
+    const localized = BASE_DATE.setLocale('ru-RU').toLocaleString({ day: 'numeric', month: 'long' });
+    const expected = localized.replace(/[^\p{L}]/gu, '').toLowerCase();
+
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ date:monthText data.createdAt lang="ru-RU" timeZone="UTC" }}',
+      data: DATA,
+    }).trim();
+
+    expect(html).toBe(mockPut(expected));
+  });
+
+  it('honors Flext-level @timeZone when helper argument is omitted', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{!-- @timeZone "Asia/Almaty" --}}{{ date:hours data.createdAt padding=2 }}',
+      data: DATA,
+    }).trim();
+
+    expect(html).toBe(mockPut('19'));
+  });
+
+  it('uses fallback text when the source date is missing', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ date data.missing "day" fallback="—" timeZone="UTC" }}',
+      data: { data: {} },
+    }).trim();
+
+    expect(html).toBe(mockPut('—'));
+  });
+
+  it('throws a descriptive error when padding is combined with unsupported ops', () => {
+    expect(() => getHtml({
+      modules: MODULE_NAME,
+      template: '{{ date:text data.createdAt padding=2 timeZone="UTC" }}',
+      data: DATA,
+    })).toThrow(/argument 'pad'/i);
+  });
 });

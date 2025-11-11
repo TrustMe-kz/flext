@@ -138,4 +138,29 @@ describe('"math" module', () => {
 
     expect(html).toBe(mockPut('8'));
   });
+
+  it('mul alias matches multiply behavior', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:mul 4 3 }}',
+    }).trim();
+
+    expect(html).toBe(mockPut('12'));
+  });
+
+  it('respects custom color overrides on colored helpers', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math 2 "power" 3 color="text-green-600" }}',
+    }).trim();
+
+    expect(html).toBe(mockPut('8', 'text-green-600'));
+  });
+
+  it('round throws for unsupported rounding modes', () => {
+    expect(() => getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:round 5.2 "towardZero" }}',
+    })).toThrow(/Unknown operation/i);
+  });
 });

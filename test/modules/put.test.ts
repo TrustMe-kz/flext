@@ -57,4 +57,21 @@ describe('"put" module', () => {
     expect(overriddenColor).toBe(mockPut('Paris', 'text-red-600'));
     expect(zeroValue).toBe(mockPut('0'));
   });
+
+  it('keeps falsy but defined values without falling back', () => {
+    const falseValue = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put data.flag "Fallback" }}',
+      data: { data: { flag: false } },
+    }).trim();
+
+    const emptyValue = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put data.label "Fallback" }}',
+      data: { data: { label: '' } },
+    }).trim();
+
+    expect(falseValue).toBe(mockPut('false'));
+    expect(emptyValue).toBe(mockPut(''));
+  });
 });

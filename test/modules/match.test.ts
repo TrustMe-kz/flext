@@ -39,4 +39,24 @@ describe('"match" module', () => {
 
     expect(html).toBe('Working...');
   });
+
+  it('case supports multiple values inside a single block', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#match data.status}}{{#match:case "draft" "pending"}}Queue{{/match:case}}{{#match:fallback}}Live{{/match:fallback}}{{/match}}',
+      data: { data: { status: 'pending' } },
+    }).trim();
+
+    expect(html).toBe('Queue');
+  });
+
+  it('state is isolated between consecutive match blocks', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#match data.first}}{{#match:case "A"}}One{{/match:case}}{{#match:fallback}}Nope{{/match:fallback}}{{/match}}{{#match data.second}}{{#match:case "B"}}Two{{/match:case}}{{#match:fallback}}Nope{{/match:fallback}}{{/match}}',
+      data: { data: { first: 'A', second: 'B' } },
+    }).trim();
+
+    expect(html).toBe('OneTwo');
+  });
 });
