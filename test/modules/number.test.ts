@@ -40,18 +40,18 @@ describe('"number" module', () => {
   it('check distinguishes strict checks from the soft mode', () => {
     const strictResult = getHtml({
       modules: MODULE_NAME,
-      template: '{{ number:check data.value }}',
+      template: '{{ number:check data.value strict=true }}',
       data: { data: { value: '12' } },
     }).trim();
 
     const softResult = getHtml({
       modules: MODULE_NAME,
-      template: '{{ number:check data.value soft=true }}',
+      template: '{{ number:check data.value }}',
       data: { data: { value: '12' } },
     }).trim();
 
-    expect(strictResult).toBe(mockPut('false'));
-    expect(softResult).toBe(mockPut('true'));
+    expect(strictResult).toBe('false');
+    expect(softResult).toBe('true');
   });
 
   it('noColor returns the raw primitive without decorations', () => {

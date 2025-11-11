@@ -18,7 +18,7 @@ export function op(state: any): number|string|boolean {
   const args: any[] = state?.args ?? [];
   const namedArgs: Obj = state?.namedArgs ?? {};
   const [ number, op ] = args;
-  const { lang, soft } = namedArgs;
+  const { lang, strict } = namedArgs;
 
 
   // Getting the locale
@@ -32,7 +32,7 @@ export function op(state: any): number|string|boolean {
     case 'text':
       return writtenNumber(Number(number), { lang: newLang });
     case 'check':
-      return soft ? isNumber(number) : typeof number === 'number';
+      return strict ? typeof number === 'number' : isNumber(number);
     default:
       return Number(number);
   }
@@ -59,17 +59,11 @@ export function text(state: any): SafeString {
   });
 }
 
-export function check(state: any): SafeString {
+export function check(state: any): boolean {
   const args: any[] = state?.args ?? [];
-  const [ number, fallback ] = args;
-  const namedArgs: Obj = state?.namedArgs ?? {};
+  const [ number ] = args;
 
-  return opWithColor({
-    ...state,
-
-    args: [ number, 'check' ],
-    namedArgs: { ...namedArgs, fallback },
-  });
+  return op({ ...state, args: [ number, 'check' ] }) as boolean;
 }
 
 
