@@ -1,39 +1,18 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 @import "@/shadcn/index.tail.css";
 @import "@/fonts/Inter/index.css";
 @import "@/fonts/WixMadeforDisplay/index.css";
-@import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
 
 /* Third-parties */
 
-/*@tailwind base;*/
-/*@tailwind components;*/
 @tailwind utilities;
+
 
 /* System Styles */
 
-html {
-    font-family: "Inter", sans-serif;
-    font-size: 20px;
-}
-
-body {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    min-width: 720px;
-    min-height: 100vh;
-}
-
-#app, .mini_app {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-}
+@custom-variant dark (&:is(.dark *));
 
 :root {
     --sidebar: hsl(0 0% 98%);
@@ -75,4 +54,28 @@ body {
     body {
         @apply bg-background text-foreground;
     }
+}
+
+
+/* Base Styles */
+
+html {
+    font-family: "Inter", sans-serif;
+    font-size: 20px;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 720px;
+    min-height: 100vh;
+}
+
+#app {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
 }

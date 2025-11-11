@@ -86,8 +86,10 @@ export class SimpleFlext  {
     );
   }
 
-  public async getCss(data: Obj = {}, helpers: Obj = {}): Promise<string> {
+  public async getCss(data: Obj = {}, options: Obj = {}): Promise<string> {
     const template = getTemplate(this.ast);
+    const helpersObj = options?.helpers ?? {};
+    const helpers = { ...this.helpers, ...helpersObj };
 
 
     // Doing some checks
@@ -99,7 +101,7 @@ export class SimpleFlext  {
     return await getCss(
         template,
         { ...this.data, ...data },
-        { ...this.helpers, ...helpers },
+        { ...options, helpers },
     );
   }
 

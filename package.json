@@ -1,6 +1,6 @@
 {
   "name": "@trustme24/flext",
-  "version": "1.4.4",
+  "version": "1.5.0",
   "description": "A Powerful Templating Engine",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "module",
@@ -36,20 +36,21 @@
     "@babel/preset-env": "^7.28.5",
     "@babel/preset-typescript": "^7.28.5",
     "@handlebars/parser": "^2.2.1",
-    "@tailwindcss/cli": "^4.1.16",
-    "@types/node": "^24.9.1",
-    "esbuild": "^0.25.11",
+    "@tailwindcss/cli": "^4.1.17",
+    "@types/node": "^24.10.0",
+    "esbuild": "^0.27.0",
     "esbuild-plugin-import-glob": "^0.1.1",
-    "tailwindcss": "^4.1.16",
+    "tailwindcss": "^4.1.17",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.4"
+    "vitest": "^4.0.8"
   },
   "dependencies": {
-    "@unocss/preset-wind4": "^66.5.4",
+    "@unocss/preset-wind4": "^66.5.5",
     "handlebars": "^4.7.8",
     "luxon": "^3.7.2",
     "striptags": "^3.2.0",
-    "unocss": "^66.5.4"
+    "unocss": "^66.5.5",
+    "written-number": "^0.11.1"
   }
 }

@@ -106,4 +106,34 @@ describe('"cond" module', () => {
 
     expect(html).toBe('OK');
   });
+
+  it('not negates the provided value', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:not data.online)}}Offline{{else}}Online{{/if}}',
+      data: { data: { online: false } },
+    }).trim();
+
+    expect(html).toBe('Offline');
+  });
+
+  it('and supports more than two operands', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:and data.a data.b data.c)}}Ready{{else}}Not yet{{/if}}',
+      data: { data: { a: true, b: 1, c: 'ok' } },
+    }).trim();
+
+    expect(html).toBe('Ready');
+  });
+
+  it('soft comparisons treat numeric strings as numbers for notEqual', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:op data.count "notEqual" "5" soft=true)}}Different{{else}}Equal{{/if}}',
+      data: { data: { count: 5 } },
+    }).trim();
+
+    expect(html).toBe('Equal');
+  });
 });

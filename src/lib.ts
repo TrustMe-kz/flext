@@ -13,7 +13,11 @@ import Handlebars, { TemplateDelegate } from 'handlebars';
 export const uno = createGenerator({
   presets: [
     presetWind4(),
-    presetTypography() as unknown as Preset<Wind4Theme>,
+    presetTypography() as Preset<Wind4Theme>,
+  ],
+  preflights: [
+    // kr: Costyl for TW
+    { getCSS: () => ':host, :root { --un-text-opacity: 100%; }' },
   ],
   theme: {},
 });
@@ -158,10 +162,17 @@ export function getHtml(template: TemplateDelegate, data: Obj = {}, helpers: Obj
   return template(data, { helpers });
 }
 
-export async function getCss(template: TemplateDelegate, data: Obj = {}, helpers: Obj = {}): Promise<string> {
+export async function getCss(template: TemplateDelegate, data: Obj = {}, options: Obj = {}): Promise<string> {
+  const helpers = options?.helpers ?? {};
+  const doGenerateGlobalStyles = Boolean(options?.doGenerateGlobalStyles ?? true);
+
+
+  // Getting the CSS
+
   const generator = await uno;
   const html = getHtml(template, data, helpers);
-  const { css } = await generator.generate(html, { preflights: true });
+  const { css } = await generator.generate(html, { preflights: doGenerateGlobalStyles });
+
 
   return css;
 }

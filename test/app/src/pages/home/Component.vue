@@ -10,6 +10,8 @@ import exampleTemplateData from './example-template/data.json';
 
 // Defining the variables
 
+const sandboxEl = ref<any>();
+const styleEl = ref<any>();
 const previewEl = ref<any>();
 const template = ref<string|null>(exampleTemplateSyntax);
 const dataStr = ref<string|null>(JSON.stringify(exampleTemplateData, null, 2));
@@ -17,11 +19,16 @@ const dataStr = ref<string|null>(JSON.stringify(exampleTemplateData, null, 2));
 
 // Defining the functions
 
-const preview = (val: string): void => { previewEl.value.innerHTML = val; };
+const previewCss = (val: string): void => { styleEl.value.textContent = val; }
+
+const preview = (html: string, css?: string|null): void => {
+  previewEl.value.innerHTML = html;
+  previewCss(css || '');
+};
 
 const err = (e: Error): void => preview(e?.message ?? 'Unknown Error');
 
-const upd = (): void => {
+const upd = async (): Promise<void> => {
 
   // Getting the data
 
@@ -42,25 +49,51 @@ const upd = (): void => {
 
   const flext = new Flext().setTemplate(template.value).setData(data);
 
-  preview(flext.html);
+  const css = await flext.getCss();
+
+
+  preview(flext.html, css);
 }
 
 
 // Defining the watchers
 
-watch(template, () => {
-  upd();
+watch(template, async () => {
+  await upd();
 });
 
-watch(dataStr, () => {
-  upd();
+watch(dataStr, async () => {
+  await upd();
 });
 
 
-// Defining the hoooks
+// Defining the hooks
 
-onMounted(() => {
-  upd();
+onMounted(async () => {
+
+  // Getting the sandbox
+
+  const sandbox = sandboxEl.value.attachShadow({ mode: 'open' });
+
+
+  // Getting the styles
+
+  styleEl.value = document.createElement('style');
+  styleEl.value.setAttribute('type', 'text/css');
+
+  sandbox.appendChild(styleEl.value);
+
+
+  // Getting the preview
+
+  previewEl.value = document.createElement('body');
+
+  sandbox.appendChild(previewEl.value);
+
+
+  // Updating the data
+
+  await upd();
 });
 
 </script>
@@ -72,6 +105,6 @@ onMounted(() => {
       <Textarea v-model="dataStr" />
     </div>
 
-    <div ref="previewEl" />
+    <div ref="sandboxEl" />
   </div>
 </template>
