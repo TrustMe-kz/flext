@@ -1,25 +1,43 @@
 import { AST } from '@handlebars/parser';
 import { Obj, DataModelNode, Macro } from '@/types';
 import { BaseError, PotentialLoopError } from '@/errors';
-import { getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureTitle } from '@/lib';
+import { audit, getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureString, ensureTitle } from '@/lib';
 import { inarr, has } from '@/lib';
 import * as modules from './modules';
 
 
 // Types
 
-export type FieldType = 'string' | 'number' | 'boolean' | 'date';
+export type FieldType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'date' | 'mixed';
+
+export type FieldValue = string | number | boolean | Obj | FieldValue[] | null;
+
+export type FieldOption = {
+  name: string,
+  fieldName: string,
+  label?: string|null,
+  descr?: string|null,
+  value?: FieldValue | null,
+  isDisabled: boolean,
+};
 
 export type Field = {
+  type: FieldType,
   name: string,
   label?: string|null,
-  type: FieldType,
+  descr?: string|null,
+  hint?: string|null,
+  value?: FieldValue,
   isRequired: boolean,
 };
 
 export type MetadataModelNode = DataModelNode & {
-  label?: string|null,
   type: FieldType,
+  label?: string|null,
+  descr?: string|null,
+  hint?: string|null,
+  options?: FieldValue[] | null,
+  value?: string|null,
   isRequired: boolean,
 };
 
@@ -149,6 +167,8 @@ export class Flext extends SimpleFlext {
       return param?.value ?? null;
     };
 
+    const fieldToGroup = (_val: Field, type: FieldType = 'object'): Field => ({ ..._val, type });
+
 
     // Getting the data
 
@@ -158,12 +178,19 @@ export class Flext extends SimpleFlext {
     const timeZone = get('timeZone');
     const modulesMacros = getAll('use');
     const lineHeight = get('lineHeight');
+    const fieldGroupsMacros = getAll('group');
     const fieldMacros = getAll('field');
+    // const optionMacros = getAll('option');
+
+
+    // Getting the fields
+
+    const fieldGroups = fieldGroupsMacros?.map(macroToField)?.map(g => fieldToGroup(g)) ?? [];
+
+    const fields = fieldMacros?.map(macroToField) ?? [];
 
 
     // Setting the data
-
-    const fields = fieldMacros?.map(macroToField) ?? null;
 
     if (version)
       this.setVersion(version);
@@ -180,8 +207,8 @@ export class Flext extends SimpleFlext {
     if (lineHeight)
       this.setLineHeight(Number(lineHeight));
 
-    if (fields)
-      this.setFields(fields);
+    if (fieldGroups?.length || fields?.length)
+      this.setFields([ ...fieldGroups, ...fields ]);
 
 
     // Using the modules
@@ -384,6 +411,22 @@ export class Flext extends SimpleFlext {
 
 // Functions
 
+export function ensureFieldValue(val: any): FieldValue {
+
+  // If the value is a string
+
+  if (typeof val !== 'string') try {
+    return JSON.parse(val);
+  } catch (e) {
+    return val ?? null;
+  }
+
+
+  // If the value is other
+
+  else return val ?? null;
+}
+
 export function macroToModuleNames(val: Macro): string[] {
   const params = val?.params ?? [];
   return params.map(p => p?.value ?? null);
@@ -410,13 +453,78 @@ export function macroToField(val: Macro): Field {
 
   // Getting the data
 
-  const name = nameParam?.value ?? null;
-  const label = get('label');
   const type = get('type') ?? DEFAULT_FIELD_TYPE;
+  const name = nameParam?.value ?? null;
+  const label = ensureString(get('label'));
+  const descr = ensureString(get('descr'));
+  const hint = ensureString(get('hint'));
+  const value = ensureFieldValue(get('value'));
   const isRequired = !!get('required');
 
 
-  return { name, label, type, isRequired };
+  // Doing some checks
+
+  if (!name)
+    throw new BaseError(`Unable to get field: The 'name' param is not set: ` + audit(name));
+
+
+  return {
+    type,
+    name,
+    label,
+    descr,
+    hint,
+    value,
+    isRequired,
+  };
+}
+
+export function macroToFieldOption(val: Macro): FieldOption {
+  const params = val?.params ?? [];
+  const [ nameParam, ...args ] = params;
+
+
+  // Defining the functions
+
+  const get = (_val: string): any => {
+    const arg = args?.find(a => a?.name === _val) ?? null;
+
+    if (arg && arg?.value)
+      return arg?.value ?? null;
+    else if (arg && arg?.name)
+      return true;
+    else
+      return null;
+  }
+
+
+  // Getting the data
+
+  const name = nameParam?.value ?? null;
+  const fieldName = ensureString(get('for'));
+  const label = ensureString(get('label'));
+  const descr = ensureString(get('descr'));
+  const value = ensureFieldValue(get('value'));
+  const isDisabled = !!get('disabled');
+
+
+  // Doing some checks
+
+  if (!name)
+    throw new BaseError(`Unable to get field option: The 'name' param is not set: ` + audit(name));
+
+  if (!fieldName)
+    throw new BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + audit(name));
+
+
+  return {
+    name,
+    fieldName,
+    label,
+    descr,
+    value,
+    isDisabled,
+  };
 }
 
 

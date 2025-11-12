@@ -400,6 +400,10 @@ export function getHtmlH1(ast: AST.Program, doWarn: boolean = true): string[] {
 
 // Framework Functions
 
+export function ensureString(val: any): string {
+  return String(val ?? '');
+}
+
 export function ensureDate(val: Date | string | number): Date {
   const isDateObj = isObject(val) && val instanceof Date;
   const isDbDate = typeof val === 'string' && RegexHelper.dbDateStr.test(val);
