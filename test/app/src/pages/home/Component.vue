@@ -48,6 +48,7 @@ const upd = async (): Promise<void> => {
   // Getting the preview
 
   const flext = new Flext().setTemplate(template.value).setData(data);
+  console.log('flext', flext);
 
   const css = await flext.getCss();
 

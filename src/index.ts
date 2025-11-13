@@ -12,7 +12,8 @@ export type FieldType = 'string' | 'number' | 'boolean' | 'object' | 'array' | '
 
 export type FieldValue = string | number | boolean | Obj | FieldValue[] | null;
 
-export type FieldOption = {
+export type FieldValueOption = {
+  type: string,
   name: string,
   fieldName: string,
   label?: string|null,
@@ -27,6 +28,7 @@ export type Field = {
   label?: string|null,
   descr?: string|null,
   hint?: string|null,
+  options?: FieldValueOption[] | null,
   value?: FieldValue,
   isRequired: boolean,
 };
@@ -36,7 +38,7 @@ export type MetadataModelNode = DataModelNode & {
   label?: string|null,
   descr?: string|null,
   hint?: string|null,
-  options?: FieldValue[] | null,
+  options?: FieldValueOption[] | null,
   value?: string|null,
   isRequired: boolean,
 };
@@ -153,6 +155,7 @@ export class Flext extends SimpleFlext {
     // Defining the variables
 
     const [ titleStr ] = getHtmlH1(this.ast);
+
     const macros = getMacros(this.ast);
 
 
@@ -167,7 +170,7 @@ export class Flext extends SimpleFlext {
       return param?.value ?? null;
     };
 
-    const fieldToGroup = (_val: Field, type: FieldType = 'object'): Field => ({ ..._val, type });
+    const fieldToGroup = (_val: Field): Field => ({ ..._val, type: 'object' });
 
 
     // Getting the data
@@ -180,14 +183,21 @@ export class Flext extends SimpleFlext {
     const lineHeight = get('lineHeight');
     const fieldGroupsMacros = getAll('group');
     const fieldMacros = getAll('field');
-    // const optionMacros = getAll('option');
+    const optionMacros = getAll('option');
 
 
     // Getting the fields
 
-    const fieldGroups = fieldGroupsMacros?.map(macroToField)?.map(g => fieldToGroup(g)) ?? [];
+    const fieldGroups = fieldGroupsMacros?.map(macroToField)?.map(fieldToGroup) ?? [];
 
     const fields = fieldMacros?.map(macroToField) ?? [];
+
+
+    // Getting the field value options
+
+    const fieldValueOptions = optionMacros?.map(macroToFieldValueOption) ?? null;
+
+    applyValueOptionsToFields(fieldValueOptions, fields);
 
 
     // Setting the data
@@ -297,7 +307,7 @@ export class Flext extends SimpleFlext {
 
     // Defining the functions
 
-    const getMetadataModelNode = (node: DataModelNode, options: Obj = {}, _depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode => {
+    const getMetadataModelNode = (node: DataModelNode, _options: Obj = {}, _depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode => {
 
       // Doing some checks
 
@@ -307,7 +317,7 @@ export class Flext extends SimpleFlext {
 
       // Getting the metadata
 
-      const fieldName = options?.fieldName ?? null;
+      const fieldName = _options?.fieldName ?? null;
 
       const field = this.fields?.find(f => f?.name === fieldName) ?? null;
 
@@ -317,6 +327,7 @@ export class Flext extends SimpleFlext {
       const name = node?.name ?? null;
       const label = field?.label ?? null;
       const type = field?.type ?? DEFAULT_FIELD_TYPE;
+      const options = field?.options ?? null;
       const isRequired = !!field?.isRequired;
       const nodes = node?.$ ?? [];
 
@@ -334,7 +345,7 @@ export class Flext extends SimpleFlext {
       }
 
 
-      return { name, label, type, isRequired, $ };
+      return { name, label, type, options, isRequired, $ };
     }
 
     const isHelper = (node: DataModelNode): boolean => {
@@ -479,7 +490,7 @@ export function macroToField(val: Macro): Field {
   };
 }
 
-export function macroToFieldOption(val: Macro): FieldOption {
+export function macroToFieldValueOption(val: Macro): FieldValueOption {
   const params = val?.params ?? [];
   const [ nameParam, ...args ] = params;
 
@@ -500,6 +511,7 @@ export function macroToFieldOption(val: Macro): FieldOption {
 
   // Getting the data
 
+  const type = ensureString(get('type') ?? DEFAULT_FIELD_TYPE);
   const name = nameParam?.value ?? null;
   const fieldName = ensureString(get('for'));
   const label = ensureString(get('label'));
@@ -518,6 +530,7 @@ export function macroToFieldOption(val: Macro): FieldOption {
 
 
   return {
+    type,
     name,
     fieldName,
     label,
@@ -525,6 +538,22 @@ export function macroToFieldOption(val: Macro): FieldOption {
     value,
     isDisabled,
   };
+}
+
+export function applyValueOptionsToFields(options: FieldValueOption[], fields: Field[]): void {
+
+  // Defining the functions
+
+  const get = (fieldName: string): FieldValueOption[] => {
+    return options?.filter(o => o?.fieldName === fieldName) ?? [];
+  };
+
+
+  // Iterating for each field
+
+  for (const field of fields)
+    if (get(field.name)?.length)
+      field.options = get(field.name);
 }
 
 
