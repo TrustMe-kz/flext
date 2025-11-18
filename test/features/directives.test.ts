@@ -26,15 +26,21 @@ describe('Flext features', () => {
     expect(flext.lineHeight).toBe(1.6);
     expect(flext.fields).toEqual([
       {
+        type: 'number',
         name: 'data.user.age',
         label: 'Возраст',
-        type: 'number',
+        descr: "",
+        hint: "",
+        value: null,
         isRequired: true,
       },
       {
+        type: 'string',
         name: 'data.user.name',
         label: 'Имя',
-        type: 'string',
+        descr: "",
+        hint: "",
+        value: null,
         isRequired: false,
       },
     ]);
