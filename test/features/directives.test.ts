@@ -13,7 +13,7 @@ describe('Flext features', () => {
       {{!-- @field "data.user.name" label="Имя" --}}
       {{!-- @use "put" --}}
       <h1>Этот заголовок игнорируется</h1>
-      <p>{{ put data.user.name "—" }}</p>
+      <p>{{ put data.user.name "--" }}</p>
     `;
 
     const data = { data: { user: { name: 'Кайрат', age: 21 } } };

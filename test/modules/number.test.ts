@@ -71,4 +71,14 @@ describe('"number" module', () => {
 
     expect(html).toBe(mockPut('quinze'));
   });
+
+  it('uses fallback text when the value is missing', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number data.amount fallback="--" }}',
+      data: { data: {} },
+    }).trim();
+
+    expect(html).toBe(mockPut('--'));
+  });
 });

@@ -1,8 +1,8 @@
 import { DateTime } from 'luxon';
 import { SafeString } from 'handlebars';
 import { Obj } from '@/types';
-import { audit, ensureDate, defineModule } from '@/lib';
-import { BaseError } from '@/errors';
+import {audit, ensureDate, defineModule, inarr} from '@/lib';
+import { TemplateSyntaxError } from '@/errors';
 import { putWithColor } from '@/modules/put';
 
 
@@ -37,12 +37,12 @@ export function op(state: any): DateTime | string | number | null {
 
   // Defining the functions
 
-  const padStart = (val: string|number, pad: number = 2): string => String(val || '').padStart(pad, '0');
+  const padStart = (val: string|number, _padding: string|number = 2): string => String(val || '').padStart(Number(_padding), '0');
 
 
   // If the 'pad' was passed
 
-  if (padding) {
+  if (!inarr(padding, null, undefined)) {
     switch (op) {
       case 'seconds':
         return padStart(newDate.second, padding);
@@ -57,7 +57,7 @@ export function op(state: any): DateTime | string | number | null {
       case 'year':
         return padStart(newDate.year, 4);
       default:
-        throw new BaseError(`Date: Operation ${audit(op)} is not compatible with argument 'pad'`);
+        throw new TemplateSyntaxError(`Date: Operation ${audit(op)} is not compatible with argument 'padding'`);
     }
   }
 
@@ -69,7 +69,7 @@ export function op(state: any): DateTime | string | number | null {
 
         return monthText.toLowerCase();
       default:
-        throw new BaseError(`Date: Operation ${audit(op)} is not compatible with argument 'genitive'`);
+        throw new TemplateSyntaxError(`Date: Operation ${audit(op)} is not compatible with argument 'genitive'`);
     }
   }
 

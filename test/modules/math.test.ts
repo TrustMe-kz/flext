@@ -163,4 +163,20 @@ describe('"math" module', () => {
       template: '{{ math:round 5.2 "towardZero" }}',
     })).toThrow(/Unknown operation/i);
   });
+
+  it('allows using noColor subexpressions as numeric inputs', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math (math:noColor 10 "minus" 5) "multiply" 2 }}',
+    }).trim();
+
+    expect(html).toBe(mockPut('10'));
+  });
+
+  it('throws when requesting an unknown Math API fallback', () => {
+    expect(() => getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:op "percent" 100 }}',
+    })).toThrow(/Unknown operation/i);
+  });
 });

@@ -61,9 +61,9 @@ export class SimpleFlext  {
   declare public helpers: Obj;
 
   constructor(val: string|null = null, data: Obj = {}, helpers: Obj = {}) {
-    this.setData(data);
-    this.setHelpers(helpers);
     if (val) this.setTemplate(val);
+    this.setData({ ...this.data, ...data });
+    this.setHelpers({ ...this.helpers, ...helpers});
   }
 
   public setTemplate(val: string): this {
@@ -136,6 +136,7 @@ export class Flext extends SimpleFlext {
   declare public title: string;
   declare public timeZone: string;
   declare public lineHeight: number;
+  declare public assets: Obj<Blob>;
   declare public fields: Field[];
 
   public useModule(...val: string[]): this {
@@ -254,6 +255,16 @@ export class Flext extends SimpleFlext {
   public setLineHeight(val: number): this {
     this.lineHeight = val;
     return this;
+  }
+
+  public setAssets(val: Obj<Blob>): this {
+      this.assets = val;
+      return this;
+  }
+
+  public addAsset(name: string, val: Blob): this {
+      this.assets[name] = val;
+      return this;
   }
 
   public setFields(val: Field[]): this {

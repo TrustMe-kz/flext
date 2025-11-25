@@ -136,4 +136,12 @@ describe('"cond" module', () => {
 
     expect(html).toBe('Equal');
   });
+
+  it('throws when an unsupported operation name is provided', () => {
+    expect(() => getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:op data.state "unknown" "ready")}}OK{{/if}}',
+      data: { data: { state: 'ready' } },
+    })).toThrow(/Unknown operation/i);
+  });
 });
