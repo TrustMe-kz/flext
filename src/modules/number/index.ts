@@ -41,7 +41,7 @@ export function op(state: any): number|string|boolean {
 export function opWithColor(state: any): SafeString {
   const namedArgs: Obj = state?.namedArgs ?? {};
   const fallback = namedArgs?.fallback ?? '';
-  const result = op(state) ?? fallback;
+  const result = op(state) || fallback;
 
   return putWithColor({ ...state, args: [ result ] });
 }

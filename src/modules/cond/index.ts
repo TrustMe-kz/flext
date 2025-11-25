@@ -1,6 +1,6 @@
 import { Obj } from '@/types';
 import { audit, defineModule } from '@/lib';
-import { BaseError } from '@/errors';
+import { TemplateSyntaxError } from '@/errors';
 
 
 // Functions
@@ -26,7 +26,7 @@ export function op(state: any): boolean {
       case 'notEqual':
         return arg1 != arg3;
       default:
-        throw new BaseError('Condition: Unknown operation: ' + audit(arg2OrOp));
+        throw new TemplateSyntaxError('Condition: Unknown operation: ' + audit(arg2OrOp));
     }
   }
 
@@ -54,7 +54,7 @@ export function op(state: any): boolean {
     case 'less':
       return Number(arg1) < Number(arg3);
     default:
-      throw new BaseError('Condition: Unknown operation: ' + audit(arg2OrOp));
+      throw new TemplateSyntaxError('Condition: Unknown operation: ' + audit(arg2OrOp));
   }
 }
 

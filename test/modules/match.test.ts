@@ -59,4 +59,14 @@ describe('"match" module', () => {
 
     expect(html).toBe('OneTwo');
   });
+
+  it('passes the stored value into fallback blocks', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#match data.status}}{{#match:fallback}}{{ data.status }}{{/match:fallback}}{{/match}}',
+      data: { data: { status: 'delayed' } },
+    }).trim();
+
+    expect(html).toBe('delayed');
+  });
 });

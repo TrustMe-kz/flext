@@ -34,13 +34,13 @@ export function getHtml(options: GetHtmlOptions): string {
 
   const { modules, template, data = {}, helpers = {} } = options;
   const newModules = Array.isArray(modules) ? modules : [ modules ];
-  const newNewModules = newModules?.map(name => `"${name}"`)?.join(' ') || '""';
+  const modulesStr = newModules?.map(name => `"${name}"`)?.join(' ') || '""';
 
 
   // Getting the Flext
 
   const newTemplateSyntax = templateSyntax
-    .replace('{MODULES}', newNewModules)
+    .replace('{MODULES}', modulesStr)
     .replace('{CONTENT}', template);
 
   const flext = new Flext(newTemplateSyntax);

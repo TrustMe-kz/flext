@@ -1,5 +1,5 @@
 {
-  "exclude": [ "test/app/**" ],
+  "exclude": [ "dist/**", "test/**" ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
