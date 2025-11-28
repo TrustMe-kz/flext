@@ -477,9 +477,9 @@ export function macroToField(val: Macro): Field {
 
   const type = get('type') ?? DEFAULT_FIELD_TYPE;
   const name = nameParam?.value ?? null;
-  const label = ensureString(get('label'));
-  const descr = ensureString(get('descr'));
-  const hint = ensureString(get('hint'));
+  const label = get('label') ?? null;
+  const descr = get('descr') ?? null;
+  const hint = get('hint') ?? null;
   const value = ensureFieldValue(get('value'));
   const isRequired = !!get('required');
 
@@ -524,9 +524,9 @@ export function macroToFieldValueOption(val: Macro): FieldValueOption {
 
   const type = ensureString(get('type') ?? DEFAULT_FIELD_TYPE);
   const name = nameParam?.value ?? null;
-  const fieldName = ensureString(get('for'));
-  const label = ensureString(get('label'));
-  const descr = ensureString(get('descr'));
+  const fieldName = get('for') ?? null;
+  const label = get('label') ?? null;
+  const descr = get('descr') ?? null;
   const value = ensureFieldValue(get('value'));
   const isDisabled = !!get('disabled');
 
