@@ -14,65 +14,65 @@ export const DEFAULT_LANG = 'en';
 // Functions
 
 export function op(state: any): number|string|boolean {
-  const flext: Obj = state?.flext ?? {};
-  const args: any[] = state?.args ?? [];
-  const namedArgs: Obj = state?.namedArgs ?? {};
-  const [ number, op ] = args;
-  const { lang, strict } = namedArgs;
+    const flext: Obj = state?.flext ?? {};
+    const args: any[] = state?.args ?? [];
+    const namedArgs: Obj = state?.namedArgs ?? {};
+    const [ number, op ] = args;
+    const { lang, strict } = namedArgs;
 
 
-  // Getting the locale
+    // Getting the locale
 
-  const newLang = locales[lang] ?? locales[flext?.lang] ?? DEFAULT_LANG;
+    const newLang = locales[lang] ?? locales[flext?.lang] ?? DEFAULT_LANG;
 
 
-  // Matching an operation
+    // Matching an operation
 
-  switch (op) {
-    case 'text':
-      return writtenNumber(Number(number), { lang: newLang });
-    case 'check':
-      return strict ? typeof number === 'number' : isNumber(number);
-    default:
-      return Number(number);
-  }
+    switch (op) {
+        case 'text':
+            return writtenNumber(Number(number), { lang: newLang });
+        case 'check':
+            return strict ? typeof number === 'number' : isNumber(number);
+        default:
+            return Number(number);
+    }
 }
 
 export function opWithColor(state: any): SafeString {
-  const namedArgs: Obj = state?.namedArgs ?? {};
-  const fallback = namedArgs?.fallback ?? '';
-  const result = op(state) || fallback;
+    const namedArgs: Obj = state?.namedArgs ?? {};
+    const fallback = namedArgs?.fallback ?? '';
+    const result = op(state) || fallback;
 
-  return putWithColor({ ...state, args: [ result ] });
+    return putWithColor({ ...state, args: [ result ] });
 }
 
 export function text(state: any): SafeString {
-  const args: any[] = state?.args ?? [];
-  const [ number, fallback ] = args;
-  const namedArgs: Obj = state?.namedArgs ?? {};
+    const args: any[] = state?.args ?? [];
+    const [ number, fallback ] = args;
+    const namedArgs: Obj = state?.namedArgs ?? {};
 
-  return opWithColor({
-    ...state,
+    return opWithColor({
+        ...state,
 
-    args: [ number, 'text' ],
-    namedArgs: { ...namedArgs, fallback },
-  });
+        args: [ number, 'text' ],
+        namedArgs: { ...namedArgs, fallback },
+    });
 }
 
 export function check(state: any): boolean {
-  const args: any[] = state?.args ?? [];
-  const [ number ] = args;
+    const args: any[] = state?.args ?? [];
+    const [ number ] = args;
 
-  return op({ ...state, args: [ number, 'check' ] }) as boolean;
+    return op({ ...state, args: [ number, 'check' ] }) as boolean;
 }
 
 
 export default defineModule({
-  helpers: {
-    op: opWithColor,
-    text: text,
-    check: check,
-    noColor: op,
-    __default: opWithColor,
-  },
+    helpers: {
+        op: opWithColor,
+        text: text,
+        check: check,
+        noColor: op,
+        __default: opWithColor,
+    },
 });

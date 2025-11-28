@@ -13,34 +13,34 @@ export type FieldType = 'string' | 'number' | 'boolean' | 'object' | 'array' | '
 export type FieldValue = string | number | boolean | Obj | FieldValue[] | null;
 
 export type FieldValueOption = {
-  type: string,
-  name: string,
-  fieldName: string,
-  label?: string|null,
-  descr?: string|null,
-  value?: FieldValue | null,
-  isDisabled: boolean,
+    type: string,
+    name: string,
+    fieldName: string,
+    label?: string|null,
+    descr?: string|null,
+    value?: FieldValue | null,
+    isDisabled: boolean,
 };
 
 export type Field = {
-  type: FieldType,
-  name: string,
-  label?: string|null,
-  descr?: string|null,
-  hint?: string|null,
-  options?: FieldValueOption[] | null,
-  value?: FieldValue,
-  isRequired: boolean,
+    type: FieldType,
+    name: string,
+    label?: string|null,
+    descr?: string|null,
+    hint?: string|null,
+    options?: FieldValueOption[] | null,
+    value?: FieldValue,
+    isRequired: boolean,
 };
 
 export type MetadataModelNode = DataModelNode & {
-  type: FieldType,
-  label?: string|null,
-  descr?: string|null,
-  hint?: string|null,
-  options?: FieldValueOption[] | null,
-  value?: string|null,
-  isRequired: boolean,
+    type: FieldType,
+    label?: string|null,
+    descr?: string|null,
+    hint?: string|null,
+    options?: FieldValueOption[] | null,
+    value?: string|null,
+    isRequired: boolean,
 };
 
 
@@ -56,378 +56,379 @@ export const DEFAULT_MODEL_DEPTH = 10;
 // Classes
 
 export class SimpleFlext  {
-  declare public ast: AST.Program;
-  declare public data: Obj;
-  declare public helpers: Obj;
+    declare public ast: AST.Program;
+    declare public data: Obj;
+    declare public helpers: Obj;
 
-  constructor(val: string|null = null, data: Obj = {}, helpers: Obj = {}) {
-    if (val) this.setTemplate(val);
-    this.setData({ ...this.data, ...data });
-    this.setHelpers({ ...this.helpers, ...helpers});
-  }
+    constructor(val: string|null = null, data: Obj = {}, helpers: Obj = {}) {
+        if (val) this.setTemplate(val);
+        this.setData({ ...this.data, ...data });
+        this.setHelpers({ ...this.helpers, ...helpers});
+    }
 
-  public setTemplate(val: string): this {
-    this.data = {};
-    this.helpers = {};
-    this.ast = getAst(val);
+    public setTemplate(val: string): this {
+        this.data = {};
+        this.helpers = {};
+        this.ast = getAst(val);
 
-    return this;
-  }
+        return this;
+    }
 
-  public setData(val: Obj): this {
-    this.data = val;
-    return this;
-  }
+    public setData(val: Obj): this {
+        this.data = val;
+        return this;
+    }
 
-  public setHelpers(val: Obj): this {
-    this.helpers = val;
-    return this;
-  }
+    public setHelpers(val: Obj): this {
+        this.helpers = val;
+        return this;
+    }
 
-  public addHelper(name: string, val: any): this {
-    this.helpers[name] = val;
-    return this;
-  }
+    public addHelper(name: string, val: any): this {
+        this.helpers[name] = val;
+        return this;
+    }
 
-  public getHtml(data: Obj = {}, helpers: Obj = {}): string {
-    const template = getTemplate(this.ast);
-
-
-    // Doing some checks
-
-    if (!template)
-      throw new BaseError('Flext: Unable to get HTML: No template');
+    public getHtml(data: Obj = {}, helpers: Obj = {}): string {
+        const template = getTemplate(this.ast);
 
 
-    return getHtml(
-        template,
-        { ...this.data, ...data },
-        { ...this.helpers, ...helpers },
-    );
-  }
+        // Doing some checks
 
-  public async getCss(data: Obj = {}, options: Obj = {}): Promise<string> {
-    const template = getTemplate(this.ast);
-    const helpersObj = options?.helpers ?? {};
-    const helpers = { ...this.helpers, ...helpersObj };
+        if (!template)
+            throw new BaseError('Flext: Unable to get HTML: No template');
 
 
-    // Doing some checks
+        return getHtml(
+            template,
+            { ...this.data, ...data },
+            { ...this.helpers, ...helpers },
+        );
+    }
 
-    if (!template)
-      throw new BaseError('Flext: Unable to get CSS: No template');
+    public async getCss(data: Obj = {}, options: Obj = {}): Promise<string> {
+        const template = getTemplate(this.ast);
+        const helpersObj = options?.helpers ?? {};
+        const helpers = { ...this.helpers, ...helpersObj };
 
 
-    return await getCss(
-        template,
-        { ...this.data, ...data },
-        { ...options, helpers },
-    );
-  }
+        // Doing some checks
 
-  public get html(): string {
-    return this.getHtml();
-  }
+        if (!template)
+            throw new BaseError('Flext: Unable to get CSS: No template');
+
+
+        return await getCss(
+            template,
+            { ...this.data, ...data },
+            { ...options, helpers },
+        );
+    }
+
+    public get html(): string {
+        return this.getHtml();
+    }
 }
 
 export class Flext extends SimpleFlext {
-  declare public version: string;
-  declare public lang: string;
-  declare public title: string;
-  declare public timeZone: string;
-  declare public lineHeight: number;
-  declare public assets: Obj<Blob>;
-  declare public fields: Field[];
+    declare public version: string;
+    declare public lang: string;
+    declare public title: string;
+    declare public timeZone: string;
+    declare public lineHeight: number;
+    declare public assets: Obj<Blob>;
+    declare public fields: Field[];
 
-  public useModule(...val: string[]): this {
-    for (const name of val)
-      this.addModule(name, modules[name]);
+    public useModule(...val: string[]): this {
+        for (const name of val)
+            this.addModule(name, modules[name]);
 
-    return this;
-  }
-
-  public setTemplate(val: string): this {
-
-    // Setting the template
-
-    super.setTemplate(val);
-
-
-    // Defining the variables
-
-    const [ titleStr ] = getHtmlH1(this.ast);
-
-    const macros = getMacros(this.ast);
-
-
-    // Defining the functions
-
-    const getAll = (_val: string): Macro[] | null => macros?.filter(m => m?.name === _val) ?? null;
-
-    const get = (_val: string): string|null => {
-      const [ macro ] = getAll(_val);
-      const [ param ] = macro?.params ?? [];
-
-      return param?.value ?? null;
-    };
-
-    const fieldToGroup = (_val: Field): Field => ({ ..._val, type: 'object' });
-
-
-    // Getting the data
-
-    const version = get('v');
-    const lang = get('lang');
-    const title = get('title');
-    const timeZone = get('timeZone');
-    const modulesMacros = getAll('use');
-    const lineHeight = get('lineHeight');
-    const fieldGroupsMacros = getAll('group');
-    const fieldMacros = getAll('field');
-    const optionMacros = getAll('option');
-
-
-    // Getting the fields
-
-    const fieldGroups = fieldGroupsMacros?.map(macroToField)?.map(fieldToGroup) ?? [];
-
-    const fields = fieldMacros?.map(macroToField) ?? [];
-
-
-    // Getting the field value options
-
-    const fieldValueOptions = optionMacros?.map(macroToFieldValueOption) ?? null;
-
-    applyValueOptionsToFields(fieldValueOptions, fields);
-
-
-    // Setting the data
-
-    if (version)
-      this.setVersion(version);
-
-    if (lang)
-      this.setLang(lang);
-
-    if (title || titleStr)
-      this.setTitle(title ?? ensureTitle(titleStr));
-
-    if (timeZone)
-      this.setTimeZone(timeZone);
-
-    if (lineHeight)
-      this.setLineHeight(Number(lineHeight));
-
-    if (fieldGroups?.length || fields?.length)
-      this.setFields([ ...fieldGroups, ...fields ]);
-
-
-    // Using the modules
-
-    const moduleNames = modulesMacros.map(macroToModuleNames).flat();
-
-    this.useModule(...moduleNames);
-
-
-    return this;
-  }
-
-  public setVersion(val: string): this {
-    this.version = val;
-    return this;
-  }
-
-  public setLang(val: string): this {
-    this.lang = val;
-    return this;
-  }
-
-  public setTitle(val: string): this {
-    this.title = val;
-    return this;
-  }
-
-  public setTimeZone(val: string): this {
-    this.timeZone = val;
-    return this;
-  }
-
-  public setLineHeight(val: number): this {
-    this.lineHeight = val;
-    return this;
-  }
-
-  public setAssets(val: Obj<Blob>): this {
-      this.assets = val;
-      return this;
-  }
-
-  public addAsset(name: string, val: Blob): this {
-      this.assets[name] = val;
-      return this;
-  }
-
-  public setFields(val: Field[]): this {
-    this.fields = val;
-    return this;
-  }
-
-  public addModule(name: string, val: any): this {
-    const helpers = val?.helpers ?? {};
-
-
-    // Iterating for each helper
-
-    for (const helperName in helpers) {
-      if (!has(helpers, helperName)) continue;
-
-
-      // Getting the data
-
-      const handle = helpers[helperName];
-
-      const isDefault = helperName === DEFAULT_HELPER_NAME;
-
-
-      // Adding the helper
-
-      const flext = this;
-
-      const helper = function (...args1: any[]): any {
-        const args = args1?.slice(0, -1) ?? [];
-        const options = args1[args1.length - 1] ?? {};
-        const namedArgs = options?.hash ?? {};
-        // @ts-ignore
-        const self = this;
-        const getContent = () => options?.fn(self) ?? null;
-
-        return handle({ flext, args, options, namedArgs, self, getContent });
-      }
-
-      if (isDefault)
-        this.addHelper(name, helper);
-      else
-        this.addHelper(name + ':' + helperName, helper);
+        return this;
     }
 
+    public setTemplate(val: string): this {
 
-    return this;
-  }
+        // Setting the template
 
-  public getDataModel(depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode[] {
-
-    // Defining the functions
-
-    const getMetadataModelNode = (node: DataModelNode, _options: Obj = {}, _depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode => {
-
-      // Doing some checks
-
-      if (_depth <= 0)
-        throw new PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
+        super.setTemplate(val);
 
 
-      // Getting the metadata
+        // Defining the variables
 
-      const fieldName = _options?.fieldName ?? null;
+        const [ titleStr ] = getHtmlH1(this.ast);
 
-      const field = this.fields?.find(f => f?.name === fieldName) ?? null;
-
-
-      // Getting the data
-
-      const name = node?.name ?? null;
-      const label = field?.label ?? null;
-      const type = field?.type ?? DEFAULT_FIELD_TYPE;
-      const options = field?.options ?? null;
-      const isRequired = !!field?.isRequired;
-      const nodes = node?.$ ?? [];
+        const macros = getMacros(this.ast);
 
 
-      // Getting the sub-nodes
+        // Defining the functions
 
-      const $: MetadataModelNode[] = [];
+        const getAll = (_val: string): Macro[] | null => macros?.filter(m => m?.name === _val) ?? null;
 
-      for (const node of nodes) {
-        const nodeName = node?.name ?? null;
+        const get = (_val: string): string|null => {
+            const [ macro ] = getAll(_val);
+            const [ param ] = macro?.params ?? [];
 
-        $.push(getMetadataModelNode(node, {
-          fieldName: fieldName + '.' + nodeName,
-        }, _depth - 1));
-      }
+            return param?.value ?? null;
+        };
 
+        const fieldToGroup = (_val: Field): Field => ({ ..._val, type: 'object' });
 
-      return { name, label, type, options, isRequired, $ };
-    }
-
-    const isHelper = (node: DataModelNode): boolean => {
-      for (const helperName in this.helpers) {
-        if (!has(this.helpers, helperName)) continue;
-
-        if (node?.name === helperName)
-          return true;
-      }
-
-      return false;
-    }
-
-
-    // Getting the nodes
-
-    const model = getDataModel(this.ast);
-
-    const nodes: DataModelNode[] = model?.$ ?? [];
-
-
-    return nodes
-        .filter(n => !isHelper(n))
-        .map(n => getMetadataModelNode(n, { fieldName: n?.name ?? null }, depth));
-  }
-
-  public getIsValid(data: Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): boolean {
-
-    // Defining the functions
-
-    const isDataValidByModel = (_data: Obj, model: MetadataModelNode[], _depth: number = DEFAULT_MODEL_DEPTH): boolean => {
-
-      // Doing some checks
-
-      if (_depth <= 0)
-        throw new PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
-
-
-      // Iterating for each subnode
-
-      for (const node of model) {
 
         // Getting the data
 
-        const newData: Obj = _data[node.name] ?? null;
+        const version = get('v');
+        const lang = get('lang');
+        const title = get('title');
+        const timeZone = get('timeZone');
+        const modulesMacros = getAll('use');
+        const lineHeight = get('lineHeight');
+        const fieldGroupsMacros = getAll('group');
+        const fieldMacros = getAll('field');
+        const optionMacros = getAll('option');
 
 
-        // If the data was not found, but the field is required
+        // Getting the fields
 
-        if (inarr(newData, '', null, undefined) && node?.isRequired)
-          return false;
+        const fieldGroups = fieldGroupsMacros?.map(macroToField)?.map(fieldToGroup) ?? [];
 
-        if (!isDataValidByModel(newData ?? {}, node.$ as MetadataModelNode[], _depth - 1))
-          return false;
-      }
+        const fields = fieldMacros?.map(macroToField) ?? [];
 
 
-      return true;
+        // Getting the field value options
+
+        const fieldValueOptions = optionMacros?.map(macroToFieldValueOption) ?? null;
+
+        applyValueOptionsToFields(fieldValueOptions, fields);
+
+
+        // Setting the data
+
+        if (version)
+            this.setVersion(version);
+
+        if (lang)
+            this.setLang(lang);
+
+        if (title || titleStr)
+            this.setTitle(title ?? ensureTitle(titleStr));
+
+        if (timeZone)
+            this.setTimeZone(timeZone);
+
+        if (lineHeight)
+            this.setLineHeight(Number(lineHeight));
+
+        if (fieldGroups?.length || fields?.length)
+            this.setFields([ ...fieldGroups, ...fields ]);
+
+
+        // Using the modules
+
+        const moduleNames = modulesMacros.map(macroToModuleNames).flat();
+
+        this.useModule(...moduleNames);
+
+
+        return this;
     }
 
+    public setVersion(val: string): this {
+        this.version = val;
+        return this;
+    }
 
-    return isDataValidByModel({ ...this.data, ...data }, this.model, depth);
-  }
+    public setLang(val: string): this {
+        this.lang = val;
+        return this;
+    }
 
-  public get model(): MetadataModelNode[] {
-    return this.getDataModel();
-  }
+    public setTitle(val: string): this {
+        this.title = val;
+        return this;
+    }
 
-  public get isValid(): boolean {
-    return this.getIsValid();
-  }
+    public setTimeZone(val: string): this {
+        this.timeZone = val;
+        return this;
+    }
+
+    public setLineHeight(val: number): this {
+        this.lineHeight = val;
+        return this;
+    }
+
+    public setAssets(val: Obj<Blob>): this {
+        this.assets = val;
+        return this;
+    }
+
+    public addAsset(name: string, val: Blob): this {
+        this.assets[name] = val;
+        return this;
+    }
+
+    public setFields(val: Field[]): this {
+        this.fields = val;
+        return this;
+    }
+
+    public addModule(name: string, val: any): this {
+        const helpers = val?.helpers ?? {};
+
+
+        // Iterating for each helper
+
+        for (const helperName in helpers) {
+            if (!has(helpers, helperName)) continue;
+
+
+            // Getting the data
+
+            const handle = helpers[helperName];
+
+            const isDefault = helperName === DEFAULT_HELPER_NAME;
+
+
+            // Adding the helper
+
+            const flext = this;
+
+            const helper = function (...args1: any[]): any {
+                const args = args1?.slice(0, -1) ?? [];
+                const options = args1[args1.length - 1] ?? {};
+                const namedArgs = options?.hash ?? {};
+                // @ts-ignore
+                const self = this;
+                const getContent = () => options?.fn(self) ?? null;
+
+                return handle({ flext, args, options, namedArgs, self, getContent });
+            }
+
+            if (isDefault)
+                this.addHelper(name, helper);
+            else
+                this.addHelper(name + ':' + helperName, helper);
+        }
+
+
+        return this;
+    }
+
+    public getDataModel(depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode[] {
+
+        // Defining the functions
+
+        const getMetadataModelNode = (node: DataModelNode, _options: Obj = {}, _depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode => {
+
+            // Doing some checks
+
+            if (_depth <= 0)
+                throw new PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
+
+
+            // Getting the metadata
+
+            const fieldName = _options?.fieldName ?? null;
+
+            const field = this.fields?.find(f => f?.name === fieldName) ?? null;
+
+
+            // Getting the data
+
+            const type = field?.type ?? DEFAULT_FIELD_TYPE;
+            const name = node?.name ?? null;
+            const label = field?.label ?? null;
+            const hint = field?.hint ?? null;
+            const options = field?.options ?? null;
+            const isRequired = !!field?.isRequired;
+            const nodes = node?.$ ?? [];
+
+
+            // Getting the sub-nodes
+
+            const $: MetadataModelNode[] = [];
+
+            for (const node of nodes) {
+                const nodeName = node?.name ?? null;
+
+                $.push(getMetadataModelNode(node, {
+                    fieldName: fieldName + '.' + nodeName,
+                }, _depth - 1));
+            }
+
+
+            return { type, name, label, hint, options, isRequired, $ };
+        }
+
+        const isHelper = (node: DataModelNode): boolean => {
+            for (const helperName in this.helpers) {
+                if (!has(this.helpers, helperName)) continue;
+
+                if (node?.name === helperName)
+                    return true;
+            }
+
+            return false;
+        }
+
+
+        // Getting the nodes
+
+        const model = getDataModel(this.ast);
+
+        const nodes: DataModelNode[] = model?.$ ?? [];
+
+
+        return nodes
+            .filter(n => !isHelper(n))
+            .map(n => getMetadataModelNode(n, { fieldName: n?.name ?? null }, depth));
+    }
+
+    public getIsValid(data: Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): boolean {
+
+        // Defining the functions
+
+        const isDataValidByModel = (_data: Obj, model: MetadataModelNode[], _depth: number = DEFAULT_MODEL_DEPTH): boolean => {
+
+            // Doing some checks
+
+            if (_depth <= 0)
+                throw new PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
+
+
+            // Iterating for each subnode
+
+            for (const node of model) {
+
+                // Getting the data
+
+                const newData: Obj = _data[node.name] ?? null;
+
+
+                // If the data was not found, but the field is required
+
+                if (inarr(newData, '', null, undefined) && node?.isRequired)
+                    return false;
+
+                if (!isDataValidByModel(newData ?? {}, node.$ as MetadataModelNode[], _depth - 1))
+                    return false;
+            }
+
+
+            return true;
+        }
+
+
+        return isDataValidByModel({ ...this.data, ...data }, this.model, depth);
+    }
+
+    public get model(): MetadataModelNode[] {
+        return this.getDataModel();
+    }
+
+    public get isValid(): boolean {
+        return this.getIsValid();
+    }
 }
 
 
@@ -435,136 +436,136 @@ export class Flext extends SimpleFlext {
 
 export function ensureFieldValue(val: any): FieldValue {
 
-  // If the value is a string
+    // If the value is a string
 
-  if (typeof val !== 'string') try {
-    return JSON.parse(val);
-  } catch (e) {
-    return val ?? null;
-  }
+    if (typeof val !== 'string') try {
+        return JSON.parse(val);
+    } catch (e) {
+        return val ?? null;
+    }
 
 
-  // If the value is other
+    // If the value is other
 
-  else return val ?? null;
+    else return val ?? null;
 }
 
 export function macroToModuleNames(val: Macro): string[] {
-  const params = val?.params ?? [];
-  return params.map(p => p?.value ?? null);
+    const params = val?.params ?? [];
+    return params.map(p => p?.value ?? null);
 }
 
 export function macroToField(val: Macro): Field {
-  const params = val?.params ?? [];
-  const [ nameParam, ...args ] = params;
+    const params = val?.params ?? [];
+    const [ nameParam, ...args ] = params;
 
 
-  // Defining the functions
+    // Defining the functions
 
-  const get = (_val: string): any => {
-    const arg = args?.find(a => a?.name === _val) ?? null;
+    const get = (_val: string): any => {
+        const arg = args?.find(a => a?.name === _val) ?? null;
 
-    if (arg && arg?.value)
-      return arg?.value ?? null;
-    else if (arg && arg?.name)
-      return true;
-    else
-      return null;
-  }
-
-
-  // Getting the data
-
-  const type = get('type') ?? DEFAULT_FIELD_TYPE;
-  const name = nameParam?.value ?? null;
-  const label = get('label') ?? null;
-  const descr = get('descr') ?? null;
-  const hint = get('hint') ?? null;
-  const value = ensureFieldValue(get('value'));
-  const isRequired = !!get('required');
+        if (arg && arg?.value)
+            return arg?.value ?? null;
+        else if (arg && arg?.name)
+            return true;
+        else
+            return null;
+    }
 
 
-  // Doing some checks
+    // Getting the data
 
-  if (!name)
-    throw new BaseError(`Unable to get field: The 'name' param is not set: ` + audit(name));
+    const type = get('type') ?? DEFAULT_FIELD_TYPE;
+    const name = nameParam?.value ?? null;
+    const label = get('label') ?? null;
+    const descr = get('descr') ?? null;
+    const hint = get('hint') ?? null;
+    const value = ensureFieldValue(get('value'));
+    const isRequired = !!get('required');
 
 
-  return {
-    type,
-    name,
-    label,
-    descr,
-    hint,
-    value,
-    isRequired,
-  };
+    // Doing some checks
+
+    if (!name)
+        throw new BaseError(`Unable to get field: The 'name' param is not set: ` + audit(name));
+
+
+    return {
+        type,
+        name,
+        label,
+        descr,
+        hint,
+        value,
+        isRequired,
+    };
 }
 
 export function macroToFieldValueOption(val: Macro): FieldValueOption {
-  const params = val?.params ?? [];
-  const [ nameParam, ...args ] = params;
+    const params = val?.params ?? [];
+    const [ nameParam, ...args ] = params;
 
 
-  // Defining the functions
+    // Defining the functions
 
-  const get = (_val: string): any => {
-    const arg = args?.find(a => a?.name === _val) ?? null;
+    const get = (_val: string): any => {
+        const arg = args?.find(a => a?.name === _val) ?? null;
 
-    if (arg && arg?.value)
-      return arg?.value ?? null;
-    else if (arg && arg?.name)
-      return true;
-    else
-      return null;
-  }
-
-
-  // Getting the data
-
-  const type = ensureString(get('type') ?? DEFAULT_FIELD_TYPE);
-  const name = nameParam?.value ?? null;
-  const fieldName = get('for') ?? null;
-  const label = get('label') ?? null;
-  const descr = get('descr') ?? null;
-  const value = ensureFieldValue(get('value'));
-  const isDisabled = !!get('disabled');
+        if (arg && arg?.value)
+            return arg?.value ?? null;
+        else if (arg && arg?.name)
+            return true;
+        else
+            return null;
+    }
 
 
-  // Doing some checks
+    // Getting the data
 
-  if (!name)
-    throw new BaseError(`Unable to get field option: The 'name' param is not set: ` + audit(name));
+    const type = ensureString(get('type') ?? DEFAULT_FIELD_TYPE);
+    const name = nameParam?.value ?? null;
+    const fieldName = get('for') ?? null;
+    const label = get('label') ?? null;
+    const descr = get('descr') ?? null;
+    const value = ensureFieldValue(get('value'));
+    const isDisabled = !!get('disabled');
 
-  if (!fieldName)
-    throw new BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + audit(name));
+
+    // Doing some checks
+
+    if (!name)
+        throw new BaseError(`Unable to get field option: The 'name' param is not set: ` + audit(name));
+
+    if (!fieldName)
+        throw new BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + audit(name));
 
 
-  return {
-    type,
-    name,
-    fieldName,
-    label,
-    descr,
-    value,
-    isDisabled,
-  };
+    return {
+        type,
+        name,
+        fieldName,
+        label,
+        descr,
+        value,
+        isDisabled,
+    };
 }
 
 export function applyValueOptionsToFields(options: FieldValueOption[], fields: Field[]): void {
 
-  // Defining the functions
+    // Defining the functions
 
-  const get = (fieldName: string): FieldValueOption[] => {
-    return options?.filter(o => o?.fieldName === fieldName) ?? [];
-  };
+    const get = (fieldName: string): FieldValueOption[] => {
+        return options?.filter(o => o?.fieldName === fieldName) ?? [];
+    };
 
 
-  // Iterating for each field
+    // Iterating for each field
 
-  for (const field of fields)
-    if (get(field.name)?.length)
-      field.options = get(field.name);
+    for (const field of fields)
+        if (get(field.name)?.length)
+            field.options = get(field.name);
 }
 
 

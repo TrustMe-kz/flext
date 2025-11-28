@@ -32,7 +32,7 @@ document.body.innerHTML = flext.html;
 1. Install **dependencies**:
 
 ```shell
-npm i tailwindcss @trustme24/flext
+npm i @trustme24/flext tailwindcss
 ```
 
 2. Add the **CSS** import in your CSS file:
@@ -45,16 +45,16 @@ npm i tailwindcss @trustme24/flext
 
 ## Tests & Demo
 
+- **Unit** Tests:
+
+```shell
+npm run test
+```
+
 - Test **App**:
 
 ```shell
-npm run test-flext:app
-```
-
-- **All tests:**
-
-```shell
-npm run test-flext
+npm run test:app
 ```
 
 ---

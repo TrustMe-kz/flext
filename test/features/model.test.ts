@@ -22,8 +22,8 @@ describe('Flext data model and field options', () => {
         type: 'object',
         name: 'data.company',
         label: 'Компания',
-        descr: null,
         hint: null,
+        descr: null,
         value: null,
         isRequired: false,
       },
@@ -31,8 +31,8 @@ describe('Flext data model and field options', () => {
         type: 'string',
         name: 'data.company.name',
         label: 'Название компании',
-        descr: null,
         hint: null,
+        descr: null,
         value: null,
         isRequired: true,
       },
@@ -40,8 +40,8 @@ describe('Flext data model and field options', () => {
         type: 'string',
         name: 'data.contract.type',
         label: 'Тип договора',
-        descr: null,
         hint: null,
+        descr: null,
         options: [
           {
             type: 'string',
@@ -60,23 +60,26 @@ describe('Flext data model and field options', () => {
 
     expect(model).toEqual([
       {
+        type: 'string',
         name: 'data',
         label: null,
-        type: 'string',
+        hint: null,
         options: null,
         isRequired: false,
         $: [
           {
+            type: 'object',
             name: 'company',
             label: 'Компания',
-            type: 'object',
+            hint: null,
             options: null,
             isRequired: false,
             $: [
               {
+                type: 'string',
                 name: 'name',
                 label: 'Название компании',
-                type: 'string',
+                hint: null,
                 options: null,
                 isRequired: true,
                 $: [],
@@ -84,16 +87,18 @@ describe('Flext data model and field options', () => {
             ],
           },
           {
+            type: 'string',
             name: 'contract',
             label: null,
-            type: 'string',
+            hint: null,
             options: null,
             isRequired: false,
             $: [
               {
+                type: 'string',
                 name: 'type',
                 label: 'Тип договора',
-                type: 'string',
+                hint: null,
                 options: [
                   {
                     type: 'string',

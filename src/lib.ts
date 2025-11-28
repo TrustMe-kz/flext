@@ -11,15 +11,15 @@ import Handlebars, { TemplateDelegate } from 'handlebars';
 // Third-parties
 
 export const uno = createGenerator({
-  presets: [
-    presetWind4(),
-    presetTypography() as Preset<Wind4Theme>,
-  ],
-  preflights: [
-    // kr: Costyl for TW
-    { getCSS: () => ':host, :root { --un-text-opacity: 100%; }' },
-  ],
-  theme: {},
+    presets: [
+        presetWind4(),
+        presetTypography() as Preset<Wind4Theme>,
+    ],
+    preflights: [
+        // kr: Costyl for TW
+        { getCSS: () => ':host, :root { --un-text-opacity: 100%; }' },
+    ],
+    theme: {},
 });
 
 
@@ -41,459 +41,474 @@ export const stripHtml = striptags;
 // Classes
 
 export class HandlebarsCollector<T = any> extends Handlebars.Visitor {
-  public data: T[] = [];
-  public match: CollectorFilterHandler<T> = () => true;
+    public data: T[] = [];
+    public match: CollectorFilterHandler<T> = () => true;
 
-  constructor(filter?: CollectorFilterHandler<T>) {
-    super();
-    if (filter) this.setMatchHandler(filter);
-  }
+    constructor(filter?: CollectorFilterHandler<T>) {
+        super();
+        if (filter) this.setMatchHandler(filter);
+    }
 
-  public onCollect(val: T): void {
-    if (this.match(val))
-      this.data.push(val);
-  }
+    public onCollect(val: T): void {
+        if (this.match(val))
+            this.data.push(val);
+    }
 
-  public setMatchHandler(val: CollectorFilterHandler<T>): this {
-    this.match = val;
-    return this;
-  }
+    public setMatchHandler(val: CollectorFilterHandler<T>): this {
+        this.match = val;
+        return this;
+    }
 
-  public setAst(ast: AST.Program): this {
-    this.accept(ast);
-    return this;
-  }
+    public setAst(ast: AST.Program): this {
+        this.accept(ast);
+        return this;
+    }
 
-  public collect(ast: AST.Program): T[] {
-    this.data = [];
+    public collect(ast: AST.Program): T[] {
+        this.data = [];
 
-    this.setAst(ast);
+        this.setAst(ast);
 
-    return this.data;
-  }
+        return this.data;
+    }
 }
 
 class HandlebarsCommentCollector extends HandlebarsCollector<string> {
-  public CommentStatement(node) {
-    this.onCollect(node.value);
-    return super.CommentStatement(node);
-  }
+    public CommentStatement(node) {
+        this.onCollect(node.value);
+        return super.CommentStatement(node);
+    }
 }
 
 class HandlebarsContentCollector extends HandlebarsCollector<string> {
-  public ContentStatement(node) {
-    this.onCollect(node.value);
-    return super.ContentStatement(node);
-  }
+    public ContentStatement(node) {
+        this.onCollect(node.value);
+        return super.ContentStatement(node);
+    }
 }
 
 class HandlebarsPathCollector extends HandlebarsCollector<string> {
-  PathExpression(node) {
-    this.onCollect(node.original);
-    return super.PathExpression(node);
-  }
+    PathExpression(node) {
+        this.onCollect(node.original);
+        return super.PathExpression(node);
+    }
 }
 
 class FlextMacroCollector extends HandlebarsCommentCollector {
-  public match = FilterHelper.macro;
+    public match = FilterHelper.macro;
 }
 
 class FlextH1SomewhereContentCollector extends HandlebarsContentCollector {
-  public match = FilterHelper.htmlH1Somewhere;
+    public match = FilterHelper.htmlH1Somewhere;
 }
 
 
 // Checking Functions
 
 export function isNumber(val: any): boolean {
-  return !isNaN(Number(val));
+    return !isNaN(Number(val));
 }
 
 export function isObject(val: any): boolean {
-  return typeof val === 'object' && val !== null;
+    return typeof val === 'object' && val !== null;
 }
 
 export function has(obj: Obj, key: string): boolean {
-  return obj.hasOwnProperty(key);
+    return obj.hasOwnProperty(key);
 }
 
 export function inarr(val: any, ...arr: any): boolean {
-  return arr.includes(val);
+    return arr.includes(val);
 }
 
 
 // System Functions
 
 export function audit(val: any): string {
-  switch (typeof val) {
-    case 'string':
-      return `'${val}'`;
-    case 'object':
-      return JSON.stringify(val);
-    default:
-      return String(val);
-  }
+    switch (typeof val) {
+        case 'string':
+            return `'${val}'`;
+        case 'object':
+            return JSON.stringify(val);
+        default:
+            return String(val);
+    }
 }
 
 export function defineModule(options: any = {}): any {
-  const helpers = options?.helpers ?? null;
-  return { helpers };
+    const helpers = options?.helpers ?? null;
+    return { helpers };
 }
 
 
 // Transform Functions
 
 export function unique<T = any>(arr: T[]): T[] {
-  return [ ...new Set(arr) ];
+    return [ ...new Set(arr) ];
 }
 
 
 // Handlebars Functions
 
 export function getAst(val: string): AST.Program {
-  return Handlebars.parse(val);
+    return Handlebars.parse(val);
 }
 
 export function getTemplate(val: string | AST.Program): TemplateDelegate {
-  return Handlebars.compile(val);
+    return Handlebars.compile(val);
 }
 
 export function getHtml(template: TemplateDelegate, data: Obj = {}, helpers: Obj = {}): string {
-  return template(data, { helpers });
+    return template(data, { helpers });
 }
 
 export async function getCss(template: TemplateDelegate, data: Obj = {}, options: Obj = {}): Promise<string> {
-  const helpers = options?.helpers ?? {};
-  const doGenerateGlobalStyles = Boolean(options?.doGenerateGlobalStyles ?? true);
+    const helpers = options?.helpers ?? {};
+    const doGenerateGlobalStyles = Boolean(options?.doGenerateGlobalStyles ?? true);
 
 
-  // Getting the CSS
+    // Getting the CSS
 
-  const generator = await uno;
-  const html = getHtml(template, data, helpers);
-  const { css } = await generator.generate(html, { preflights: doGenerateGlobalStyles });
+    const generator = await uno;
+    const html = getHtml(template, data, helpers);
+    const { css } = await generator.generate(html, { preflights: doGenerateGlobalStyles });
 
 
-  return css;
+    return css;
 }
 
 
 // Analyze Functions
 
 export function getPaths(ast: AST.Program): string[] {
-  const paths = new HandlebarsPathCollector().collect(ast);
-  return unique(paths);
+    const paths = new HandlebarsPathCollector().collect(ast);
+    return unique(paths);
 }
 
 export function pathToDataModelNode(path: string, depth: number = DEFAULT_MODEL_DEPTH): DataModelNode {
 
-  // Doing some checks
+    // Doing some checks
 
-  if (depth <= 0)
-    throw new PotentialLoopError('Flext: Unable to get the model: The model is too deep');
-
-
-  // Getting the node
-
-  const [ name, ...items ] = path?.split('.') ?? [];
-  const result: DataModelNode = { name };
-
-  if (items?.length > 0)
-    result.$ = [ pathToDataModelNode(items?.join('.'), depth - 1) ];
+    if (depth <= 0)
+        throw new PotentialLoopError('Flext: Unable to get the model: The model is too deep');
 
 
-  // Getting the root mode
+    // Getting the root node
+
+    const [ name, ...items ] = path?.split('.') ?? [];
+    const result: DataModelNode = { name };
+
+    if (items?.length > 0)
+        result.$ = [ pathToDataModelNode(items.map(ensureFieldPathItem).join('.'), depth - 1) ];
 
 
-  return result;
+    return result;
 }
 
 export function pathToDataModel(path: string, depth: number = DEFAULT_MODEL_DEPTH): DataModel {
-  const node: any = pathToDataModelNode(path, depth);
-  const dataModel: any = { name: 'root', $: [ node ] };
+    const node: any = pathToDataModelNode(path, depth);
+    const dataModel: any = { name: 'root', $: [ node ] };
 
 
-  // Defining the methods
+    // Defining the methods
 
-  dataModel.addPath = (_path: string, _depth: number = DEFAULT_MODEL_DEPTH): void => {
-    const newNode = pathToDataModelNode(_path, _depth);
-    let cursorRef: DataModelNode = dataModel;
-    let cursor: DataModelNode | null = newNode;
-
-
-    // Iterating for each new node
-
-    for (let i = 0; i < 99; i++) {
-
-      // Doing some checks
-
-      if (!cursor) return;
+    dataModel.addPath = (_path: string, _depth: number = DEFAULT_MODEL_DEPTH): void => {
+        const newNode = pathToDataModelNode(_path, _depth);
+        let cursorRef: DataModelNode = dataModel;
+        let cursor: DataModelNode | null = newNode;
 
 
-      // Trying to match the model node
+        // Iterating for each new node
 
-      const nodesRef = cursorRef?.$ ?? [];
-      let nextCursorRef = null;
+        for (let i = 0; i < 99; i++) {
 
-      for (const nodeRef of nodesRef)
-        if (cursor?.name === nodeRef?.name)
-          nextCursorRef = nodeRef;
+            // Doing some checks
 
-
-      // If the model node does not exist
-
-      if (!nextCursorRef) {
-        cursorRef.$ = [ ...nodesRef, cursor ];
-        return;
-      }
+            if (!cursor) return;
 
 
-      // Setting the next cursor
+            // Trying to match the model node
 
-      const [ nextCursor ] = cursor.$ ?? [];
+            const nodesRef = cursorRef?.$ ?? [];
+            let nextCursorRef = null;
 
-      cursorRef = nextCursorRef;
-      cursor = nextCursor ?? null;
-    }
-  };
+            for (const nodeRef of nodesRef)
+                if (cursor?.name === nodeRef?.name)
+                    nextCursorRef = nodeRef;
 
 
-  return dataModel;
+            // If the model node does not exist
+
+            if (!nextCursorRef) {
+                cursorRef.$ = [ ...nodesRef, cursor ];
+                return;
+            }
+
+
+            // Setting the next cursor
+
+            const [ nextCursor ] = cursor.$ ?? [];
+
+            cursorRef = nextCursorRef;
+            cursor = nextCursor ?? null;
+        }
+    };
+
+
+    return dataModel;
 }
 
 export function getDataModel(ast: AST.Program): DataModel {
-  const [ first, ...paths ] = getPaths(ast);
-  const result: DataModel = pathToDataModel(first);
+    const [ first, ...paths ] = getPaths(ast);
+    const result: DataModel = pathToDataModel(first);
 
 
-  // Iterating for each path
+    // Iterating for each path
 
-  for (const path of paths)
-    result.addPath(path);
+    for (const path of paths)
+        result.addPath(path);
 
 
-  return result;
+    return result;
 }
 
 export function getMacroParam(val: string): MacroParam | null {
 
-  // Defining the functions
+    // Defining the functions
 
-  const match = (regex: RegExp): any => val?.match(regex) ?? null;
+    const match = (regex: RegExp): any => val?.match(regex) ?? null;
 
-  const get = (val: any): MacroParam => {
-    const value = val?.groups?.value ?? null;
-    const name = val?.groups?.name ?? value;
+    const get = (val: any): MacroParam => {
+        const value = val?.groups?.value ?? null;
+        const name = val?.groups?.name ?? value;
 
-    return { name, value };
-  }
-
-
-  // Guessing the param type
-
-  const param = match(RegexHelper.macroParam);
-  const namedParam = match(RegexHelper.macroNamedParam);
-  const simpleParam = match(RegexHelper.macroSimpleParam)
+        return { name, value };
+    }
 
 
-  // If the param type is known
+    // Guessing the param type
 
-  if (param)
-    return get(param);
-
-  if (namedParam)
-    return get(namedParam);
-
-  if (simpleParam)
-    return get(simpleParam);
+    const param = match(RegexHelper.macroParam);
+    const namedParam = match(RegexHelper.macroNamedParam);
+    const simpleParam = match(RegexHelper.macroSimpleParam)
 
 
-  return null;
+    // If the param type is known
+
+    if (param)
+        return get(param);
+
+    if (namedParam)
+        return get(namedParam);
+
+    if (simpleParam)
+        return get(simpleParam);
+
+
+    return null;
 }
 
 export function getMacroParams(val: string, doWarn: boolean = true): MacroParam[] {
-  const matches = val?.match(RegexHelper.macroParams) ?? [];
-  const result: MacroParam[] = [];
+    const matches = val?.match(RegexHelper.macroParams) ?? [];
+    const result: MacroParam[] = [];
 
 
-  // Iterating for each token
+    // Iterating for each token
 
-  for (const token of matches) {
-    const macro = getMacroParam(token);
+    for (const token of matches) {
+        const macro = getMacroParam(token);
 
-    if (macro)
-      result.push(macro);
-    else if (doWarn)
-      throw new BaseWarning('Flext: Unable to parse the macros: Bad token: ' + audit(token));
-  }
+        if (macro)
+            result.push(macro);
+        else if (doWarn)
+            throw new BaseWarning('Flext: Unable to parse the macros: Bad token: ' + audit(token));
+    }
 
 
-  return result;
+    return result;
 }
 
 export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
-  const macroArr = new FlextMacroCollector().collect(ast);
-  const result: Macro[] = [];
+    const macroArr = new FlextMacroCollector().collect(ast);
+    const result: Macro[] = [];
 
 
-  // Iterating for each macro string
+    // Iterating for each macro string
 
-  for (const macroStr of macroArr) {
-    const matches = macroStr?.trim()?.match(RegexHelper.macro) ?? null;
+    for (const macroStr of macroArr) {
+        const matches = macroStr?.trim()?.match(RegexHelper.macro) ?? null;
 
 
-    // Doing some checks
+        // Doing some checks
 
-    if (!matches) {
-      if (doWarn)
-        throw new BaseWarning('Flext: Unable to parse the macros: Bad macro: ' + audit(macroStr));
-      else
-        return null;
+        if (!matches) {
+            if (doWarn)
+                throw new BaseWarning('Flext: Unable to parse the macros: Bad macro: ' + audit(macroStr));
+            else
+                return null;
+        }
+
+
+        // Getting the data
+
+        const name = matches?.groups?.name ?? null;
+        const paramsStr = matches?.groups?.params ?? null;
+        const params = getMacroParams(paramsStr, doWarn);
+
+
+        result.push({ name, params });
     }
 
 
-    // Getting the data
-
-    const name = matches?.groups?.name ?? null;
-    const paramsStr = matches?.groups?.params ?? null;
-    const params = getMacroParams(paramsStr, doWarn);
-
-
-    result.push({ name, params });
-  }
-
-
-  return result;
+    return result;
 }
 
 export function getHtmlH1(ast: AST.Program, doWarn: boolean = true): string[] {
-  const titleArr = new FlextH1SomewhereContentCollector().collect(ast);
-  const result: string[] = [];
+    const titleArr = new FlextH1SomewhereContentCollector().collect(ast);
+    const result: string[] = [];
 
 
-  // Iterating for each macro string
+    // Iterating for each macro string
 
-  for (const titleStr of titleArr) {
-    const matches = titleStr?.trim()?.match(RegexHelper.htmlH1Somewhere) ?? null;
+    for (const titleStr of titleArr) {
+        const matches = titleStr?.trim()?.match(RegexHelper.htmlH1Somewhere) ?? null;
 
 
-    // Doing some checks
+        // Doing some checks
 
-    if (!matches) {
-      if (doWarn)
-        throw new BaseWarning('Flext: Unable to parse H1: Bad HTML: ' + audit(titleStr));
-      else
-        return null;
+        if (!matches) {
+            if (doWarn)
+                throw new BaseWarning('Flext: Unable to parse H1: Bad HTML: ' + audit(titleStr));
+            else
+                return null;
+        }
+
+
+        // Iterating for each match
+
+        for (const match of matches)
+            result.push(String(match));
     }
 
 
-    // Iterating for each match
-
-    for (const match of matches)
-      result.push(String(match));
-  }
-
-
-  return result;
+    return result;
 }
 
 
 // Framework Functions
 
 export function ensureString(val: any): string {
-  return String(val ?? '');
+    return String(val ?? '');
 }
 
 export function ensureDate(val: Date | string | number): Date {
-  const isDateObj = isObject(val) && val instanceof Date;
-  const isDbDate = typeof val === 'string' && RegexHelper.dbDateStr.test(val);
+    const isDateObj = isObject(val) && val instanceof Date;
+    const isDbDate = typeof val === 'string' && RegexHelper.dbDateStr.test(val);
 
 
-  // Defining the functions
+    // Defining the functions
 
-  const unixDate = (val1: string|number): Date => {
-    const date = new Date(val1);
+    const unixDate = (val1: string|number): Date => {
+        const date = new Date(val1);
 
-    if (isNaN(date.getTime()))
-      throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(val1));
+        if (isNaN(date.getTime()))
+            throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(val1));
+        else
+            return date;
+    }
+
+    const dbDate = (val1: string): Date => {
+        const [ year, month, day ] = val1?.split('-')?.map(Number) ?? [];
+
+        if (year && month && day)
+            return DateTime.fromObject({ year, month, day }).toJSDate();
+        else
+            throw new BaseError('Unable to get date: The date is invalid: ' + audit(val1));
+    }
+
+    const isoDate = (val1: string): Date => {
+        const date = DateTime.fromISO(val1);
+
+        if (date.isValid)
+            return date.toJSDate();
+        else
+            throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(val1));
+    }
+
+
+    if (isDateObj)
+        return val as Date;
+
+    if (isNumber(val))
+        return unixDate(val as number);
+
+    else if (isDbDate)
+        return dbDate(val as string);
+
     else
-      return date;
-  }
-
-  const dbDate = (val1: string): Date => {
-    const [ year, month, day ] = val1?.split('-')?.map(Number) ?? [];
-
-    if (year && month && day)
-      return DateTime.fromObject({ year, month, day }).toJSDate();
-    else
-      throw new BaseError('Unable to get date: The date is invalid: ' + audit(val1));
-  }
-
-  const isoDate = (val1: string): Date => {
-    const date = DateTime.fromISO(val1);
-
-    if (date.isValid)
-      return date.toJSDate();
-    else
-      throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(val1));
-  }
-
-
-  if (isDateObj)
-    return val as Date;
-
-  if (isNumber(val))
-    return unixDate(val as number);
-
-  else if (isDbDate)
-    return dbDate(val as string);
-
-  else
-    return isoDate(val as string);
+        return isoDate(val as string);
 }
 
 export function ensureTitle(val: string|number): string {
-  let title: string|null = stripHtml(String(val)).trim();
+    let title: string|null = stripHtml(String(val)).trim();
 
 
-  // Defining the functions
+    // Defining the functions
 
-  const filter1 = (search: string | RegExp, val: string = '') => title = title.replace(search, val);
-
-
-  // Getting the title
-
-  filter1('\n', ' ');
-  filter1(/\s{2,}/mg, ' ');
-  filter1(/[^\p{L}\d\s]/mgu);
+    const _filter = (search: string | RegExp, val: string = '') => title = title.replace(search, val);
 
 
-  return title.trim();
+    // Getting the title
+
+    _filter('\n', ' ');
+    _filter(/\s{2,}/mg, ' ');
+    _filter(/[^\p{L}\d\s]/mgu);
+
+
+    return title.trim();
+}
+
+export function ensureFieldPathItem(val: string): string {
+    let pathItem = val;
+
+
+    // Defining the functions
+
+    const _filter = (search: string, val: string = '') => pathItem = pathItem.replace(search, val);
+
+
+    // Getting the path item
+
+    _filter('['); // Filtering the '[0]' case
+    _filter(']'); // Filtering the '[0]' case
+
+
+    return pathItem.trim();
 }
 
 export function filter(regex: RegExp, val: string|number): boolean {
-  return !!String(val).trim().match(regex);
+    return !!String(val).trim().match(regex);
 }
 
 
 // Helpers
 
 export class RegexHelper {
-  public static dbDateStr = /^\d+-\d+-\d+$/;
-  public static macro = /^@(?<name>.+?) (?<params>.+)$/;
-  public static macroParams = /(?<param>".+?")|(?<namedParam>[a-zA-Z0-9]+=".+?")|(?<simplaeParam>[a-zA-Z0-9]+)/gm;
-  public static macroParam = /^"(?<value>.+)"$/;
-  public static macroNamedParam = /^(?<name>.+)="(?<value>.+)"$/;
-  public static macroSimpleParam = /^(?<name>[a-zA-Z]+)$/;
-  public static htmlH1Somewhere = /\<h1.*?\>(?<value>.*)\<\/h1.*?\>/gs;
+    public static dbDateStr = /^\d+-\d+-\d+$/;
+    public static macro = /^@(?<name>.+?) (?<params>.+)$/;
+    public static macroParams = /(?<param>".+?")|(?<namedParam>[a-zA-Z0-9]+=".+?")|(?<simplaeParam>[a-zA-Z0-9]+)/gm;
+    public static macroParam = /^"(?<value>.+)"$/;
+    public static macroNamedParam = /^(?<name>.+)="(?<value>.+)"$/;
+    public static macroSimpleParam = /^(?<name>[a-zA-Z]+)$/;
+    public static htmlH1Somewhere = /\<h1.*?\>(?<value>.*)\<\/h1.*?\>/gs;
 }
 
 export class FilterHelper {
-  public static macro(val: string): boolean {
-    return filter(RegexHelper.macro, val);
-  }
+    public static macro(val: string): boolean {
+        return filter(RegexHelper.macro, val);
+    }
 
-  public static htmlH1Somewhere(val: string): boolean {
-    return filter(RegexHelper.htmlH1Somewhere, val);
-  }
+    public static htmlH1Somewhere(val: string): boolean {
+        return filter(RegexHelper.htmlH1Somewhere, val);
+    }
 }

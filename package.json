@@ -1,6 +1,6 @@
 {
   "name": "@trustme24/flext",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "A Powerful Templating Engine",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "module",
@@ -43,7 +43,7 @@
     "tailwindcss": "^4.1.17",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.13"
+    "vitest": "^4.0.14"
   },
   "dependencies": {
     "@unocss/preset-wind4": "^66.5.9",
