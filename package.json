@@ -1,6 +1,6 @@
 {
   "name": "@trustme24/flext",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "A Powerful Templating Engine",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
   "type": "module",

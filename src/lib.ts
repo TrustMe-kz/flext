@@ -199,7 +199,7 @@ export function pathToDataModelNode(path: string, depth: number = DEFAULT_MODEL_
     const result: DataModelNode = { name };
 
     if (items?.length > 0)
-        result.$ = [ pathToDataModelNode(items.map(ensureFieldPathItem).join('.'), depth - 1) ];
+        result.$ = [ pathToDataModelNode(items?.join('.') || '', depth - 1) ];
 
 
     return result;
@@ -468,7 +468,7 @@ export function ensureTitle(val: string|number): string {
     return title.trim();
 }
 
-export function ensureFieldPathItem(val: string): string {
+export function ensureFieldName(val: string): string {
     let pathItem = val;
 
 
@@ -479,8 +479,8 @@ export function ensureFieldPathItem(val: string): string {
 
     // Getting the path item
 
-    _filter('['); // Filtering the '[0]' case
-    _filter(']'); // Filtering the '[0]' case
+    _filter('['); // Filtering the '[n]' case
+    _filter(']'); // Filtering the '[n]' case
 
 
     return pathItem.trim();

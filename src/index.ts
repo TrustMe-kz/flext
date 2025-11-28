@@ -1,7 +1,7 @@
 import { AST } from '@handlebars/parser';
 import { Obj, DataModelNode, Macro } from '@/types';
 import { BaseError, PotentialLoopError } from '@/errors';
-import { audit, getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureString, ensureTitle } from '@/lib';
+import { audit, getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureString, ensureTitle, ensureFieldName } from '@/lib';
 import { inarr, has } from '@/lib';
 import * as modules from './modules';
 
@@ -477,7 +477,7 @@ export function macroToField(val: Macro): Field {
     // Getting the data
 
     const type = get('type') ?? DEFAULT_FIELD_TYPE;
-    const name = nameParam?.value ?? null;
+    const nameStr = nameParam?.value ?? null;
     const label = get('label') ?? null;
     const descr = get('descr') ?? null;
     const hint = get('hint') ?? null;
@@ -487,8 +487,13 @@ export function macroToField(val: Macro): Field {
 
     // Doing some checks
 
-    if (!name)
-        throw new BaseError(`Unable to get field: The 'name' param is not set: ` + audit(name));
+    if (!nameStr)
+        throw new BaseError(`Unable to get field: The 'name' param is not set: ` + audit(nameStr));
+
+
+    // Getting the name
+
+    const name = ensureFieldName(nameStr);
 
 
     return {
