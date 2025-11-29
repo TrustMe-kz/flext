@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { AST } from '@handlebars/parser';
 import { createGenerator, presetTypography, Preset } from 'unocss';
 import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
-import { Obj, Macro, MacroParam, DataModelNode, DataModel } from '@/types';
+import {Obj, Macro, MacroParam, DataModelNode, DataModel, Isset, Inarr} from '@/types';
 import { BaseError, PotentialLoopError, BaseWarning } from '@/errors';
 import striptags from 'striptags';
 import Handlebars, { TemplateDelegate } from 'handlebars';
@@ -88,8 +88,26 @@ class HandlebarsContentCollector extends HandlebarsCollector<string> {
 }
 
 class HandlebarsPathCollector extends HandlebarsCollector<string> {
-    PathExpression(node) {
+    public PathExpression(node) {
+        const path = node.original;
+
+
+        // Defining the functions
+
+        const test = (val: string): boolean => path === val;
+
+
+        // TODO: kr: Costyl to skip '{{#if}}' paths in AST
+
+        if (test('if') || test('unless') || test('each') || test('with'))
+            return super.PathExpression(node);
+
+
+        // Collecting the path
+
         this.onCollect(node.original);
+
+
         return super.PathExpression(node);
     }
 }
@@ -117,8 +135,12 @@ export function has(obj: Obj, key: string): boolean {
     return obj.hasOwnProperty(key);
 }
 
-export function inarr(val: any, ...arr: any): boolean {
-    return arr.includes(val);
+export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): Inarr<T, A> {
+    return arr.includes(val) as Inarr<T, A>;
+}
+
+export function isset<T extends any>(val: T): Isset<T> {
+    return !inarr(val, null, undefined) as Isset<T>;
 }
 
 
@@ -265,8 +287,14 @@ export function getDataModel(ast: AST.Program): DataModel {
 
     // Iterating for each path
 
-    for (const path of paths)
-        result.addPath(path);
+    for (const path of paths) {
+        const test = (val: string): boolean => path.startsWith(val);
+
+        if (test('.') || test('/') || test('@') || test('this'))
+            continue; // TODO: kr: Costyl to skip 'this*' paths in AST
+        else
+            result.addPath(path);
+    }
 
 
     return result;
@@ -488,6 +516,17 @@ export function ensureFieldName(val: string): string {
 
 export function filter(regex: RegExp, val: string|number): boolean {
     return !!String(val).trim().match(regex);
+}
+
+export function compare(a: number|null|undefined, b: number|null|undefined): number {
+    if (!isset(a) && !isset(b))
+        return 0;
+    else if (!isset(a))
+        return 1;
+    else if (!isset(b))
+        return -1;
+    else
+        return a - b;
 }
 
 

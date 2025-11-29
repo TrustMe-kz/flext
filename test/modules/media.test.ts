@@ -36,4 +36,18 @@ describe('"media" module', () => {
     const flext = new Flext(template);
     expect(() => flext.html).toThrow(/Asset 'logo' does not exist/);
   });
+
+  it('supports adding assets after initialization', () => {
+    const blob = new Blob([ 'logo-2' ], { type: 'text/plain' });
+    const flext = new Flext(template).setAssets({});
+    const createSpy = vi.spyOn(URL, 'createObjectURL');
+
+    flext.addAsset('logo', blob);
+
+    const html = flext.html.trim();
+    expect(html).toMatch(/^<img src="blob:.+" alt="Company Seal">$/);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+
+    createSpy.mockRestore();
+  });
 });

@@ -31,8 +31,13 @@ describe('Flext features', () => {
         label: 'Возраст',
         descr: null,
         hint: null,
+        order: null,
         value: null,
         isRequired: true,
+        extra: {
+          macroName: 'field',
+          absoluteOrder: 0,
+        },
       },
       {
         type: 'string',
@@ -40,8 +45,13 @@ describe('Flext features', () => {
         label: 'Имя',
         descr: null,
         hint: null,
+        order: null,
         value: null,
         isRequired: false,
+        extra: {
+          macroName: 'field',
+          absoluteOrder: 1,
+        },
       },
     ]);
     expect(typeof flext.helpers.put).toBe('function');
@@ -64,5 +74,29 @@ describe('Flext features', () => {
     const flext = new Flext().setTemplate(template);
 
     expect(flext.title).toBe('Flext Main Title 2024');
+  });
+
+  it('captures explicit field order and absolute ordering sequence', () => {
+    const template = `
+      {{!-- @v "1.0.beta3" --}}
+      {{!-- @field "data.a" order="2" label="A" --}}
+      {{!-- @field "data.b" order="1" label="B" --}}
+      {{!-- @field "data.c" order="1" label="C" --}}
+      {{!-- @field "data.d" label="D" --}}
+      {{ data.a }} {{ data.b }} {{ data.c }} {{ data.d }}
+    `;
+
+    const flext = new Flext(template);
+
+    expect(flext.fields.map(f => ({
+      name: f.name,
+      order: f.order,
+      absoluteOrder: f.extra?.absoluteOrder,
+    }))).toEqual([
+      { name: 'data.a', order: 2, absoluteOrder: 0 },
+      { name: 'data.b', order: 1, absoluteOrder: 1 },
+      { name: 'data.c', order: 1, absoluteOrder: 2 },
+      { name: 'data.d', order: null, absoluteOrder: 3 },
+    ]);
   });
 });

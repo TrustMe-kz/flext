@@ -99,5 +99,17 @@ describe('education contract template', () => {
     expect(html).toContain(`Статус: в работе. К оплате ${mockPut('900000')} ₸`);
     expect(html).toContain(`Заказчик: ${mockPut('')} ИИН ${mockPut('')}`);
   });
-});
 
+  it('handles zero balances without falling back to placeholders', () => {
+    const html = inline(getHtml({
+      modules,
+      template,
+      data: {
+        ...baseData,
+        contract: { ...baseData.contract, status: 'draft', total: 500000, paid: 500000 },
+      },
+    }));
+
+    expect(html).toContain(`Статус: в работе. К оплате ${mockPut('0')} ₸`);
+  });
+});

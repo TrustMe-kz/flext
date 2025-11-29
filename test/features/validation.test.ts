@@ -34,5 +34,23 @@ describe('Flext validation workflow', () => {
 
     expect(flext.getIsValid(patchedData)).toBe(true);
   });
-});
 
+  it('treats zeroes and booleans as valid values for required fields', () => {
+    const templateWithZeroes = `
+      {{!-- @v "1.0.beta3" --}}
+      {{!-- @use "put" --}}
+      {{!-- @field "data.metrics.count" required --}}
+      {{!-- @field "data.flags.enabled" required --}}
+
+      <p>{{ put data.metrics.count "--" }}</p>
+      <p>{{ put data.flags.enabled "--" }}</p>
+    `;
+
+    const flext = new Flext(templateWithZeroes, {
+      data: { metrics: { count: 0 }, flags: { enabled: false } },
+    });
+
+    expect(flext.isValid).toBe(true);
+    expect(flext.getIsValid({ data: { metrics: { count: null } } })).toBe(false);
+  });
+});
