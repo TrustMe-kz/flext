@@ -32,4 +32,14 @@ describe('standard template scenarios', () => {
 
     expect(html).toBe('Pending as of 14:23:45.000Z');
   });
+
+  it('marks the flow as complete when remaining items drop to zero', () => {
+    const html = getHtml({
+      modules: [ 'match', 'cond', 'math', 'date' ],
+      template: template,
+      data: { data: { ...data.data, completed: data.data.total } },
+    }).trim();
+
+    expect(html).toBe('Completed at 14:23:45.000Z');
+  });
 });

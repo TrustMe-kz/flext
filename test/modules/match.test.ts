@@ -69,4 +69,14 @@ describe('"match" module', () => {
 
     expect(html).toBe('delayed');
   });
+
+  it('matches falsy values without coercion', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#match data.count}}{{#match:case 0}}Zero{{/match:case}}{{#match:fallback}}Non-zero{{/match:fallback}}{{/match}}',
+      data: { data: { count: 0 } },
+    }).trim();
+
+    expect(html).toBe('Zero');
+  });
 });
