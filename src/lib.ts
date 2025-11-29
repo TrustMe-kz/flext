@@ -88,8 +88,26 @@ class HandlebarsContentCollector extends HandlebarsCollector<string> {
 }
 
 class HandlebarsPathCollector extends HandlebarsCollector<string> {
-    PathExpression(node) {
+    public PathExpression(node) {
+        const path = node.original;
+
+
+        // Defining the functions
+
+        const test = (val: string): boolean => path === val;
+
+
+        // TODO: kr: Costyl to skip '{{#if}}' paths in AST
+
+        if (test('if') || test('unless') || test('each') || test('with'))
+            return super.PathExpression(node);
+
+
+        // Collecting the path
+
         this.onCollect(node.original);
+
+
         return super.PathExpression(node);
     }
 }
@@ -269,8 +287,14 @@ export function getDataModel(ast: AST.Program): DataModel {
 
     // Iterating for each path
 
-    for (const path of paths)
-        result.addPath(path);
+    for (const path of paths) {
+        const test = (val: string): boolean => path.startsWith(val);
+
+        if (test('.') || test('/') || test('@') || test('this'))
+            continue; // TODO: kr: Costyl to skip 'this*' paths in AST
+        else
+            result.addPath(path);
+    }
 
 
     return result;
