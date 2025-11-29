@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon';
 import { SafeString } from 'handlebars';
 import { Obj } from '@/types';
-import {audit, ensureDate, defineModule, inarr} from '@/lib';
+import { audit, ensureDate, defineModule, isset } from '@/lib';
 import { TemplateSyntaxError } from '@/errors';
 import { putWithColor } from '@/modules/put';
 
@@ -42,7 +42,7 @@ export function op(state: any): DateTime | string | number | null {
 
     // If the 'pad' was passed
 
-    if (!inarr(padding, null, undefined)) {
+    if (isset(padding)) {
         switch (op) {
             case 'seconds':
                 return padStart(newDate.second, padding);

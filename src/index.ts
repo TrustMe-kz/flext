@@ -1,7 +1,7 @@
 import { AST } from '@handlebars/parser';
 import { Obj, DataModelNode, Macro } from '@/types';
 import { BaseError, PotentialLoopError } from '@/errors';
-import { audit, getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureString, ensureTitle, ensureFieldName } from '@/lib';
+import { audit, isset, getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureString, ensureTitle, ensureFieldName, compare } from '@/lib';
 import { inarr, has } from '@/lib';
 import * as modules from './modules';
 
@@ -28,9 +28,14 @@ export type Field = {
     label?: string|null,
     descr?: string|null,
     hint?: string|null,
+    order?: number|null,
     options?: FieldValueOption[] | null,
     value?: FieldValue,
     isRequired: boolean,
+    extra?: {
+        macroName?: string|null,
+        absoluteOrder?: number|null,
+    }
 };
 
 export type MetadataModelNode = DataModelNode & {
@@ -38,9 +43,13 @@ export type MetadataModelNode = DataModelNode & {
     label?: string|null,
     descr?: string|null,
     hint?: string|null,
+    order?: number|null,
     options?: FieldValueOption[] | null,
     value?: string|null,
     isRequired: boolean,
+    extra?: {
+        fieldName?: string|null,
+    },
 };
 
 
@@ -162,7 +171,7 @@ export class Flext extends SimpleFlext {
 
         // Defining the functions
 
-        const getAll = (_val: string): Macro[] | null => macros?.filter(m => m?.name === _val) ?? null;
+        const getAll = (..._val: string[]): Macro[] | null => macros?.filter(m => inarr(m?.name, ..._val)) ?? null;
 
         const get = (_val: string): string|null => {
             const [ macro ] = getAll(_val);
@@ -170,8 +179,6 @@ export class Flext extends SimpleFlext {
 
             return param?.value ?? null;
         };
-
-        const fieldToGroup = (_val: Field): Field => ({ ..._val, type: 'object' });
 
 
         // Getting the data
@@ -182,23 +189,25 @@ export class Flext extends SimpleFlext {
         const timeZone = get('timeZone');
         const modulesMacros = getAll('use');
         const lineHeight = get('lineHeight');
-        const fieldGroupsMacros = getAll('group');
-        const fieldMacros = getAll('field');
         const optionMacros = getAll('option');
+        const fieldMacros = getAll('group', 'field');
 
 
         // Getting the fields
 
-        const fieldGroups = fieldGroupsMacros?.map(macroToField)?.map(fieldToGroup) ?? [];
-
+        const fieldValueOptions = optionMacros?.map(macroToFieldValueOption) ?? null;
         const fields = fieldMacros?.map(macroToField) ?? [];
 
-
-        // Getting the field value options
-
-        const fieldValueOptions = optionMacros?.map(macroToFieldValueOption) ?? null;
-
         applyValueOptionsToFields(fieldValueOptions, fields);
+        applyAbsoluteOrderToFields(fields);
+
+
+        // Getting the field groups
+
+        const fieldGroups = fields.filter(f => f?.extra?.macroName === 'group');
+
+        for (const fieldGroup of fieldGroups)
+            fieldGroup.type = 'object';
 
 
         // Setting the data
@@ -218,8 +227,8 @@ export class Flext extends SimpleFlext {
         if (lineHeight)
             this.setLineHeight(Number(lineHeight));
 
-        if (fieldGroups?.length || fields?.length)
-            this.setFields([ ...fieldGroups, ...fields ]);
+        if (fields && fields?.length)
+            this.setFields(fields);
 
 
         // Using the modules
@@ -326,45 +335,74 @@ export class Flext extends SimpleFlext {
                 throw new PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
 
 
-            // Getting the metadata
+            // Defining the functions
+
+            const get = (_fieldName: string): Field | null => this.fields?.find(f => f?.name === _fieldName) ?? null;
+
+
+            // Getting the field
 
             const fieldName = _options?.fieldName ?? null;
-
-            const field = this.fields?.find(f => f?.name === fieldName) ?? null;
+            const field = get(fieldName);
+            const order = field?.order ?? null;
 
 
             // Getting the data
 
-            const type = field?.type ?? DEFAULT_FIELD_TYPE;
+            const nodes = node?.$ ?? [];
+            const type = nodes?.length ? 'object' : field?.type ?? DEFAULT_FIELD_TYPE;
             const name = node?.name ?? null;
             const label = field?.label ?? null;
             const hint = field?.hint ?? null;
             const options = field?.options ?? null;
             const isRequired = !!field?.isRequired;
-            const nodes = node?.$ ?? [];
 
 
             // Getting the sub-nodes
 
-            const $: MetadataModelNode[] = [];
+            const newNodes: MetadataModelNode[] = [];
 
             for (const node of nodes) {
                 const nodeName = node?.name ?? null;
 
-                $.push(getMetadataModelNode(node, {
+                newNodes.push(getMetadataModelNode(node, {
                     fieldName: fieldName + '.' + nodeName,
                 }, _depth - 1));
             }
 
 
-            return { type, name, label, hint, options, isRequired, $ };
+            // Getting the ordered sub-nodes
+
+            const $ =  newNodes.sort((node, nodeRef) => {
+                const nodeFieldName = node?.extra?.fieldName ?? null;
+                const nodeField: Obj = get(nodeFieldName) ?? {};
+                const nodeFieldOrder = nodeField?.order ?? null;
+                const nodeFieldAbsoluteOrder = nodeField?.extra?.absoluteOrder ?? null;
+                const nodeFieldNameRef = nodeRef?.extra?.fieldName ?? null;
+                const nodeFieldRef: Obj = get(nodeFieldNameRef) ?? {};
+                const nodeFieldOrderRef = nodeFieldRef?.order ?? null;
+                const nodeFieldAbsoluteOrderRef = nodeFieldRef?.extra?.absoluteOrder ?? null;
+
+                if (compare(nodeFieldOrder, nodeFieldOrderRef) !== 0)
+                    return compare(nodeFieldOrder, nodeFieldOrderRef);
+                else
+                    return compare(nodeFieldAbsoluteOrder, nodeFieldAbsoluteOrderRef);
+            });
+
+
+            // Getting the extra
+
+            const extra = { fieldName };
+
+
+            return { type, name, label, hint, order, options, isRequired, extra, $ };
         }
 
-        const isHelper = (node: DataModelNode): boolean => {
+        const isHelperCall = (node: DataModelNode): boolean => {
             for (const helperName in this.helpers) {
-                if (!has(this.helpers, helperName)) continue;
-
-                if (node?.name === helperName)
+                if (!has(this.helpers, helperName))
+                    continue;
+                else if (node?.name === helperName)
                     return true;
             }
 
@@ -380,7 +418,7 @@ export class Flext extends SimpleFlext {
 
 
         return nodes
-            .filter(n => !isHelper(n))
+            .filter(n => !isHelperCall(n))
             .map(n => getMetadataModelNode(n, { fieldName: n?.name ?? null }, depth));
     }
 
@@ -434,6 +472,10 @@ export class Flext extends SimpleFlext {
 
 // Functions
 
+export function ensureFieldOrder(val: any): number|null {
+    return isset(val) ? Number(val) : null;
+}
+
 export function ensureFieldValue(val: any): FieldValue {
 
     // If the value is a string
@@ -456,6 +498,7 @@ export function macroToModuleNames(val: Macro): string[] {
 }
 
 export function macroToField(val: Macro): Field {
+    const macroName = val?.name ?? null;
     const params = val?.params ?? [];
     const [ nameParam, ...args ] = params;
 
@@ -481,6 +524,7 @@ export function macroToField(val: Macro): Field {
     const label = get('label') ?? null;
     const descr = get('descr') ?? null;
     const hint = get('hint') ?? null;
+    const order = ensureFieldOrder(get('order'));
     const value = ensureFieldValue(get('value'));
     const isRequired = !!get('required');
 
@@ -496,14 +540,21 @@ export function macroToField(val: Macro): Field {
     const name = ensureFieldName(nameStr);
 
 
+    // Gettign the extra
+
+    const extra = { macroName };
+
+
     return {
         type,
         name,
         label,
         descr,
         hint,
+        order,
         value,
         isRequired,
+        extra,
     };
 }
 
@@ -571,6 +622,15 @@ export function applyValueOptionsToFields(options: FieldValueOption[], fields: F
     for (const field of fields)
         if (get(field.name)?.length)
             field.options = get(field.name);
+}
+
+export function applyAbsoluteOrderToFields(fields: Field[]): void {
+    for (const [ i, field ] of fields.entries()) {
+        if (field?.extra)
+            field.extra.absoluteOrder = i;
+        else
+            field.extra = { absoluteOrder: i };
+    }
 }
 
 

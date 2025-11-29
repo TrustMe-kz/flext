@@ -24,8 +24,13 @@ describe('Flext data model and field options', () => {
         label: 'Компания',
         hint: null,
         descr: null,
+        order: null,
         value: null,
         isRequired: false,
+        extra: {
+          macroName: 'group',
+          absoluteOrder: 0,
+        },
       },
       {
         type: 'string',
@@ -33,8 +38,13 @@ describe('Flext data model and field options', () => {
         label: 'Название компании',
         hint: null,
         descr: null,
+        order: null,
         value: null,
         isRequired: true,
+        extra: {
+          macroName: 'field',
+          absoluteOrder: 1,
+        },
       },
       {
         type: 'string',
@@ -42,6 +52,7 @@ describe('Flext data model and field options', () => {
         label: 'Тип договора',
         hint: null,
         descr: null,
+        order: null,
         options: [
           {
             type: 'string',
@@ -55,50 +66,71 @@ describe('Flext data model and field options', () => {
         ],
         value: null,
         isRequired: false,
+        extra: {
+          macroName: 'field',
+          absoluteOrder: 2,
+        },
       },
     ]);
 
     expect(model).toEqual([
       {
-        type: 'string',
+        type: 'object',
         name: 'data',
         label: null,
         hint: null,
+        order: null,
         options: null,
         isRequired: false,
+        extra: {
+          fieldName: 'data',
+        },
         $: [
           {
             type: 'object',
             name: 'company',
             label: 'Компания',
             hint: null,
+            order: null,
             options: null,
             isRequired: false,
+            extra: {
+              fieldName: 'data.company',
+            },
             $: [
               {
                 type: 'string',
                 name: 'name',
                 label: 'Название компании',
                 hint: null,
+                order: null,
                 options: null,
                 isRequired: true,
+                extra: {
+                  fieldName: 'data.company.name',
+                },
                 $: [],
               },
             ],
           },
           {
-            type: 'string',
+            type: 'object',
             name: 'contract',
             label: null,
             hint: null,
+            order: null,
             options: null,
             isRequired: false,
+            extra: {
+              fieldName: 'data.contract',
+            },
             $: [
               {
                 type: 'string',
                 name: 'type',
                 label: 'Тип договора',
                 hint: null,
+                order: null,
                 options: [
                   {
                     type: 'string',
@@ -111,6 +143,9 @@ describe('Flext data model and field options', () => {
                   },
                 ],
                 isRequired: false,
+                extra: {
+                  fieldName: 'data.contract.type',
+                },
                 $: [],
               },
             ],

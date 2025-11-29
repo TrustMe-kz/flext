@@ -31,8 +31,13 @@ describe('Flext features', () => {
         label: 'Возраст',
         descr: null,
         hint: null,
+        order: null,
         value: null,
         isRequired: true,
+        extra: {
+          macroName: 'field',
+          absoluteOrder: 0,
+        },
       },
       {
         type: 'string',
@@ -40,8 +45,13 @@ describe('Flext features', () => {
         label: 'Имя',
         descr: null,
         hint: null,
+        order: null,
         value: null,
         isRequired: false,
+        extra: {
+          macroName: 'field',
+          absoluteOrder: 1,
+        },
       },
     ]);
     expect(typeof flext.helpers.put).toBe('function');

@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { AST } from '@handlebars/parser';
 import { createGenerator, presetTypography, Preset } from 'unocss';
 import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
-import { Obj, Macro, MacroParam, DataModelNode, DataModel } from '@/types';
+import {Obj, Macro, MacroParam, DataModelNode, DataModel, Isset, Inarr} from '@/types';
 import { BaseError, PotentialLoopError, BaseWarning } from '@/errors';
 import striptags from 'striptags';
 import Handlebars, { TemplateDelegate } from 'handlebars';
@@ -117,8 +117,12 @@ export function has(obj: Obj, key: string): boolean {
     return obj.hasOwnProperty(key);
 }
 
-export function inarr(val: any, ...arr: any): boolean {
-    return arr.includes(val);
+export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): Inarr<T, A> {
+    return arr.includes(val) as Inarr<T, A>;
+}
+
+export function isset<T extends any>(val: T): Isset<T> {
+    return !inarr(val, null, undefined) as Isset<T>;
 }
 
 
@@ -488,6 +492,17 @@ export function ensureFieldName(val: string): string {
 
 export function filter(regex: RegExp, val: string|number): boolean {
     return !!String(val).trim().match(regex);
+}
+
+export function compare(a: number|null|undefined, b: number|null|undefined): number {
+    if (!isset(a) && !isset(b))
+        return 0;
+    else if (!isset(a))
+        return 1;
+    else if (!isset(b))
+        return -1;
+    else
+        return a - b;
 }
 
 

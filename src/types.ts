@@ -1,4 +1,14 @@
-export type Obj<T = any> = Record<string, T>;
+
+// Base Data Types
+
+export type Obj<T extends any = any> = Record<string, T>;
+
+export type Inarr<T extends any, A extends any[]> = T extends A[any] ? true : false;
+
+export type Isset<T extends any> = T extends null|undefined ? false : true;
+
+
+// Base Struct Types
 
 export type DataModelNode = {
     name: string,
