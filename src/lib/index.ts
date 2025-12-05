@@ -2,7 +2,7 @@ import { DateTime } from 'luxon';
 import { AST } from '@handlebars/parser';
 import { createGenerator, presetTypography, Preset } from 'unocss';
 import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
-import {Obj, Macro, MacroParam, DataModelNode, DataModel, Isset, Inarr} from '@/types';
+import { Obj, Isset, Inarr, Macro, MacroParam, DataModel, DataModelNode, CollectorFilterHandler } from '@/types';
 import { BaseError, PotentialLoopError, BaseWarning } from '@/errors';
 import striptags from 'striptags';
 import Handlebars, { TemplateDelegate } from 'handlebars';
@@ -21,11 +21,6 @@ export const uno = createGenerator({
     ],
     theme: {},
 });
-
-
-// Types
-
-export type CollectorFilterHandler<T = any> = (val?: T) => boolean;
 
 
 // Constants
@@ -147,19 +142,14 @@ export function isset<T extends any>(val: T): Isset<T> {
 // System Functions
 
 export function audit(val: any): string {
-    switch (typeof val) {
-        case 'string':
-            return `'${val}'`;
-        case 'object':
-            return JSON.stringify(val);
-        default:
-            return String(val);
-    }
-}
+    if (isObject(val))
+        return JSON.stringify(val);
 
-export function defineModule(options: any = {}): any {
-    const helpers = options?.helpers ?? null;
-    return { helpers };
+    else if (typeof val === 'string')
+        return `'${val}'`;
+
+    else
+        return String(val);
 }
 
 
@@ -527,6 +517,11 @@ export function compare(a: number|null|undefined, b: number|null|undefined): num
         return -1;
     else
         return a - b;
+}
+
+export function defineModule(options: any = {}): any {
+    const helpers = options?.helpers ?? null;
+    return { helpers };
 }
 
 

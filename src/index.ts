@@ -1,63 +1,17 @@
 import { AST } from '@handlebars/parser';
-import { Obj, DataModelNode, Macro } from '@/types';
-import { BaseError, PotentialLoopError } from '@/errors';
-import { audit, isset, getAst, getTemplate, getHtml, getCss, getDataModel, getMacros, getHtmlH1, ensureString, ensureTitle, ensureFieldName, compare } from '@/lib';
-import { inarr, has } from '@/lib';
+import { Obj, Macro, Field, FieldType, FieldValue, FieldValueOption, DataModel, DataModelNode, MetadataModelNode, CollectorFilterHandler, GetTemplateAstHandler, GetTemplateTitleHandler, GetTemplateMacroHandler } from '@/types';
+import { BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError } from '@/errors';
+import * as types from '@/types';
+import * as lib from '@/lib';
+import * as errors from '@/errors';
 import * as modules from './modules';
-
-
-// Types
-
-export type FieldType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'date' | 'mixed';
-
-export type FieldValue = string | number | boolean | Obj | FieldValue[] | null;
-
-export type FieldValueOption = {
-    type: string,
-    name: string,
-    fieldName: string,
-    label?: string|null,
-    descr?: string|null,
-    value?: FieldValue | null,
-    isDisabled: boolean,
-};
-
-export type Field = {
-    type: FieldType,
-    name: string,
-    label?: string|null,
-    descr?: string|null,
-    hint?: string|null,
-    order?: number|null,
-    options?: FieldValueOption[] | null,
-    value?: FieldValue,
-    isRequired: boolean,
-    extra?: {
-        macroName?: string|null,
-        absoluteOrder?: number|null,
-    }
-};
-
-export type MetadataModelNode = DataModelNode & {
-    type: FieldType,
-    label?: string|null,
-    descr?: string|null,
-    hint?: string|null,
-    order?: number|null,
-    options?: FieldValueOption[] | null,
-    value?: string|null,
-    isRequired: boolean,
-    extra?: {
-        fieldName?: string|null,
-    },
-};
 
 
 // Constants
 
 export const DEFAULT_HELPER_NAME = '__default';
 
-export const DEFAULT_FIELD_TYPE: FieldType = 'string';
+export const DEFAULT_FIELD_TYPE: types.FieldType = 'string';
 
 export const DEFAULT_MODEL_DEPTH = 10;
 
@@ -66,29 +20,41 @@ export const DEFAULT_MODEL_DEPTH = 10;
 
 export class SimpleFlext  {
     declare public ast: AST.Program;
-    declare public data: Obj;
-    declare public helpers: Obj;
+    declare public data: types.Obj;
+    declare public helpers: types.Obj;
+    public onGetProcessed: types.GetProcessedTemplateHandler = defaultGetProcessed;
+    public onGetAst: types.GetTemplateAstHandler = lib.getAst;
 
-    constructor(val: string|null = null, data: Obj = {}, helpers: Obj = {}) {
+    constructor(val: string|null = null, data: types.Obj = {}, helpers: types.Obj = {}) {
         if (val) this.setTemplate(val);
         this.setData({ ...this.data, ...data });
         this.setHelpers({ ...this.helpers, ...helpers});
     }
 
     public setTemplate(val: string): this {
+
+        // Clearing the data
+
         this.data = {};
         this.helpers = {};
-        this.ast = getAst(val);
+
+
+        // Getting the AST
+
+        const template = this.onGetProcessed(val);
+
+        this.ast = this.onGetAst(template);
+
 
         return this;
     }
 
-    public setData(val: Obj): this {
+    public setData(val: types.Obj): this {
         this.data = val;
         return this;
     }
 
-    public setHelpers(val: Obj): this {
+    public setHelpers(val: types.Obj): this {
         this.helpers = val;
         return this;
     }
@@ -98,25 +64,35 @@ export class SimpleFlext  {
         return this;
     }
 
-    public getHtml(data: Obj = {}, helpers: Obj = {}): string {
-        const template = getTemplate(this.ast);
+    public setOnGetProcessed(val: types.GetProcessedTemplateHandler): this {
+        this.onGetProcessed = val;
+        return this;
+    }
+
+    public setOnGetAst(val: types.GetTemplateAstHandler): this {
+        this.onGetAst = val;
+        return this;
+    }
+
+    public getHtml(data: types.Obj = {}, helpers: types.Obj = {}): string {
+        const template = lib.getTemplate(this.ast);
 
 
         // Doing some checks
 
         if (!template)
-            throw new BaseError('Flext: Unable to get HTML: No template');
+            throw new errors.BaseError('Flext: Unable to get HTML: No template');
 
 
-        return getHtml(
+        return lib.getHtml(
             template,
             { ...this.data, ...data },
             { ...this.helpers, ...helpers },
         );
     }
 
-    public async getCss(data: Obj = {}, options: Obj = {}): Promise<string> {
-        const template = getTemplate(this.ast);
+    public async getCss(data: types.Obj = {}, options: types.Obj = {}): Promise<string> {
+        const template = lib.getTemplate(this.ast);
         const helpersObj = options?.helpers ?? {};
         const helpers = { ...this.helpers, ...helpersObj };
 
@@ -124,10 +100,10 @@ export class SimpleFlext  {
         // Doing some checks
 
         if (!template)
-            throw new BaseError('Flext: Unable to get CSS: No template');
+            throw new errors.BaseError('Flext: Unable to get CSS: No template');
 
 
-        return await getCss(
+        return await lib.getCss(
             template,
             { ...this.data, ...data },
             { ...options, helpers },
@@ -145,8 +121,18 @@ export class Flext extends SimpleFlext {
     declare public title: string;
     declare public timeZone: string;
     declare public lineHeight: number;
-    declare public assets: Obj<Blob>;
-    declare public fields: Field[];
+    declare public assets: types.Obj<Blob>;
+    declare public fields: types.Field[];
+    public onGetTitle: types.GetTemplateTitleHandler = lib.getHtmlH1;
+    public onGetMacro: types.GetTemplateMacroHandler = lib.getMacros;
+
+    constructor(val: string|null = null, data: types.Obj = {}, helpers: types.Obj = {}) {
+        super(null, data, helpers);
+
+        if (val) this.setTemplate(val);
+        this.setData({ ...this.data, ...data });
+        this.setHelpers({ ...this.helpers, ...helpers});
+    }
 
     public useModule(...val: string[]): this {
         for (const name of val)
@@ -164,14 +150,14 @@ export class Flext extends SimpleFlext {
 
         // Defining the variables
 
-        const [ titleStr ] = getHtmlH1(this.ast);
+        const [ titleStr ] = this.onGetTitle(this.ast);
 
-        const macros = getMacros(this.ast);
+        const macros = this.onGetMacro(this.ast);
 
 
         // Defining the functions
 
-        const getAll = (..._val: string[]): Macro[] | null => macros?.filter(m => inarr(m?.name, ..._val)) ?? null;
+        const getAll = (..._val: string[]): types.Macro[] | null => macros?.filter(m => lib.inarr(m?.name, ..._val)) ?? null;
 
         const get = (_val: string): string|null => {
             const [ macro ] = getAll(_val);
@@ -219,7 +205,7 @@ export class Flext extends SimpleFlext {
             this.setLang(lang);
 
         if (title || titleStr)
-            this.setTitle(title ?? ensureTitle(titleStr));
+            this.setTitle(title ?? lib.ensureTitle(titleStr));
 
         if (timeZone)
             this.setTimeZone(timeZone);
@@ -266,7 +252,7 @@ export class Flext extends SimpleFlext {
         return this;
     }
 
-    public setAssets(val: Obj<Blob>): this {
+    public setAssets(val: types.Obj<Blob>): this {
         this.assets = val;
         return this;
     }
@@ -276,7 +262,7 @@ export class Flext extends SimpleFlext {
         return this;
     }
 
-    public setFields(val: Field[]): this {
+    public setFields(val: types.Field[]): this {
         this.fields = val;
         return this;
     }
@@ -288,7 +274,7 @@ export class Flext extends SimpleFlext {
         // Iterating for each helper
 
         for (const helperName in helpers) {
-            if (!has(helpers, helperName)) continue;
+            if (!lib.has(helpers, helperName)) continue;
 
 
             // Getting the data
@@ -323,21 +309,31 @@ export class Flext extends SimpleFlext {
         return this;
     }
 
-    public getDataModel(depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode[] {
+    public setOnGetTitle(val: types.GetTemplateTitleHandler): this {
+        this.onGetTitle = val;
+        return this;
+    }
+
+    public setOnGetMacro(val: types.GetTemplateMacroHandler): this {
+        this.onGetMacro = val;
+        return this;
+    }
+
+    public getDataModel(depth: number = DEFAULT_MODEL_DEPTH): types.MetadataModelNode[] {
 
         // Defining the functions
 
-        const getMetadataModelNode = (node: DataModelNode, _options: Obj = {}, _depth: number = DEFAULT_MODEL_DEPTH): MetadataModelNode => {
+        const getMetadataModelNode = (node: types.DataModelNode, _options: types.Obj = {}, _depth: number = DEFAULT_MODEL_DEPTH): types.MetadataModelNode => {
 
             // Doing some checks
 
             if (_depth <= 0)
-                throw new PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
+                throw new errors.PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
 
 
             // Defining the functions
 
-            const get = (_fieldName: string): Field | null => this.fields?.find(f => f?.name === _fieldName) ?? null;
+            const get = (_fieldName: string): types.Field | null => this.fields?.find(f => f?.name === _fieldName) ?? null;
 
 
             // Getting the field
@@ -360,7 +356,7 @@ export class Flext extends SimpleFlext {
 
             // Getting the sub-nodes
 
-            const newNodes: MetadataModelNode[] = [];
+            const newNodes: types.MetadataModelNode[] = [];
 
             for (const node of nodes) {
                 const nodeName = node?.name ?? null;
@@ -375,18 +371,18 @@ export class Flext extends SimpleFlext {
 
             const $ =  newNodes.sort((node, nodeRef) => {
                 const nodeFieldName = node?.extra?.fieldName ?? null;
-                const nodeField: Obj = get(nodeFieldName) ?? {};
+                const nodeField: types.Obj = get(nodeFieldName) ?? {};
                 const nodeFieldOrder = nodeField?.order ?? null;
                 const nodeFieldAbsoluteOrder = nodeField?.extra?.absoluteOrder ?? null;
                 const nodeFieldNameRef = nodeRef?.extra?.fieldName ?? null;
-                const nodeFieldRef: Obj = get(nodeFieldNameRef) ?? {};
+                const nodeFieldRef: types.Obj = get(nodeFieldNameRef) ?? {};
                 const nodeFieldOrderRef = nodeFieldRef?.order ?? null;
                 const nodeFieldAbsoluteOrderRef = nodeFieldRef?.extra?.absoluteOrder ?? null;
 
-                if (compare(nodeFieldOrder, nodeFieldOrderRef) !== 0)
-                    return compare(nodeFieldOrder, nodeFieldOrderRef);
+                if (lib.compare(nodeFieldOrder, nodeFieldOrderRef) !== 0)
+                    return lib.compare(nodeFieldOrder, nodeFieldOrderRef);
                 else
-                    return compare(nodeFieldAbsoluteOrder, nodeFieldAbsoluteOrderRef);
+                    return lib.compare(nodeFieldAbsoluteOrder, nodeFieldAbsoluteOrderRef);
             });
 
 
@@ -398,9 +394,9 @@ export class Flext extends SimpleFlext {
             return { type, name, label, hint, order, options, isRequired, extra, $ };
         }
 
-        const isHelperCall = (node: DataModelNode): boolean => {
+        const isHelperCall = (node: types.DataModelNode): boolean => {
             for (const helperName in this.helpers) {
-                if (!has(this.helpers, helperName))
+                if (!lib.has(this.helpers, helperName))
                     continue;
                 else if (node?.name === helperName)
                     return true;
@@ -412,9 +408,9 @@ export class Flext extends SimpleFlext {
 
         // Getting the nodes
 
-        const model = getDataModel(this.ast);
+        const model = lib.getDataModel(this.ast);
 
-        const nodes: DataModelNode[] = model?.$ ?? [];
+        const nodes: types.DataModelNode[] = model?.$ ?? [];
 
 
         return nodes
@@ -422,16 +418,16 @@ export class Flext extends SimpleFlext {
             .map(n => getMetadataModelNode(n, { fieldName: n?.name ?? null }, depth));
     }
 
-    public getIsValid(data: Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): boolean {
+    public getIsValid(data: types.Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): boolean {
 
         // Defining the functions
 
-        const isDataValidByModel = (_data: Obj, model: MetadataModelNode[], _depth: number = DEFAULT_MODEL_DEPTH): boolean => {
+        const isDataValidByModel = (_data: types.Obj, model: types.MetadataModelNode[], _depth: number = DEFAULT_MODEL_DEPTH): boolean => {
 
             // Doing some checks
 
             if (_depth <= 0)
-                throw new PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
+                throw new errors.PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
 
 
             // Iterating for each subnode
@@ -440,15 +436,15 @@ export class Flext extends SimpleFlext {
 
                 // Getting the data
 
-                const newData: Obj = _data[node.name] ?? null;
+                const newData: types.Obj = _data[node.name] ?? null;
 
 
                 // If the data was not found, but the field is required
 
-                if (inarr(newData, '', null, undefined) && node?.isRequired)
+                if (lib.inarr(newData, '', null, undefined) && node?.isRequired)
                     return false;
 
-                if (!isDataValidByModel(newData ?? {}, node.$ as MetadataModelNode[], _depth - 1))
+                if (!isDataValidByModel(newData ?? {}, node.$ as types.MetadataModelNode[], _depth - 1))
                     return false;
             }
 
@@ -460,7 +456,7 @@ export class Flext extends SimpleFlext {
         return isDataValidByModel({ ...this.data, ...data }, this.model, depth);
     }
 
-    public get model(): MetadataModelNode[] {
+    public get model(): types.MetadataModelNode[] {
         return this.getDataModel();
     }
 
@@ -473,10 +469,10 @@ export class Flext extends SimpleFlext {
 // Functions
 
 export function ensureFieldOrder(val: any): number|null {
-    return isset(val) ? Number(val) : null;
+    return lib.isset(val) ? Number(val) : null;
 }
 
-export function ensureFieldValue(val: any): FieldValue {
+export function ensureFieldValue(val: any): types.FieldValue {
 
     // If the value is a string
 
@@ -492,12 +488,12 @@ export function ensureFieldValue(val: any): FieldValue {
     else return val ?? null;
 }
 
-export function macroToModuleNames(val: Macro): string[] {
+export function macroToModuleNames(val: types.Macro): string[] {
     const params = val?.params ?? [];
     return params.map(p => p?.value ?? null);
 }
 
-export function macroToField(val: Macro): Field {
+export function macroToField(val: types.Macro): types.Field {
     const macroName = val?.name ?? null;
     const params = val?.params ?? [];
     const [ nameParam, ...args ] = params;
@@ -532,12 +528,12 @@ export function macroToField(val: Macro): Field {
     // Doing some checks
 
     if (!nameStr)
-        throw new BaseError(`Unable to get field: The 'name' param is not set: ` + audit(nameStr));
+        throw new errors.BaseError(`Unable to get field: The 'name' param is not set: ` + lib.audit(nameStr));
 
 
     // Getting the name
 
-    const name = ensureFieldName(nameStr);
+    const name = lib.ensureFieldName(nameStr);
 
 
     // Gettign the extra
@@ -558,7 +554,7 @@ export function macroToField(val: Macro): Field {
     };
 }
 
-export function macroToFieldValueOption(val: Macro): FieldValueOption {
+export function macroToFieldValueOption(val: types.Macro): types.FieldValueOption {
     const params = val?.params ?? [];
     const [ nameParam, ...args ] = params;
 
@@ -579,7 +575,7 @@ export function macroToFieldValueOption(val: Macro): FieldValueOption {
 
     // Getting the data
 
-    const type = ensureString(get('type') ?? DEFAULT_FIELD_TYPE);
+    const type = lib.ensureString(get('type') ?? DEFAULT_FIELD_TYPE);
     const name = nameParam?.value ?? null;
     const fieldName = get('for') ?? null;
     const label = get('label') ?? null;
@@ -591,10 +587,10 @@ export function macroToFieldValueOption(val: Macro): FieldValueOption {
     // Doing some checks
 
     if (!name)
-        throw new BaseError(`Unable to get field option: The 'name' param is not set: ` + audit(name));
+        throw new errors.BaseError(`Unable to get field option: The 'name' param is not set: ` + lib.audit(name));
 
     if (!fieldName)
-        throw new BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + audit(name));
+        throw new errors.BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + lib.audit(name));
 
 
     return {
@@ -608,11 +604,11 @@ export function macroToFieldValueOption(val: Macro): FieldValueOption {
     };
 }
 
-export function applyValueOptionsToFields(options: FieldValueOption[], fields: Field[]): void {
+export function applyValueOptionsToFields(options: types.FieldValueOption[], fields: types.Field[]): void {
 
     // Defining the functions
 
-    const get = (fieldName: string): FieldValueOption[] => {
+    const get = (fieldName: string): types.FieldValueOption[] => {
         return options?.filter(o => o?.fieldName === fieldName) ?? [];
     };
 
@@ -624,7 +620,7 @@ export function applyValueOptionsToFields(options: FieldValueOption[], fields: F
             field.options = get(field.name);
 }
 
-export function applyAbsoluteOrderToFields(fields: Field[]): void {
+export function applyAbsoluteOrderToFields(fields: types.Field[]): void {
     for (const [ i, field ] of fields.entries()) {
         if (field?.extra)
             field.extra.absoluteOrder = i;
@@ -633,5 +629,37 @@ export function applyAbsoluteOrderToFields(fields: Field[]): void {
     }
 }
 
+export function defaultGetProcessed(val: string): string {
+    return val;
+}
+
 
 export default Flext;
+
+export {
+    Obj,
+    Macro,
+    Field,
+    FieldType,
+    FieldValue,
+    FieldValueOption,
+    DataModel,
+    DataModelNode,
+    MetadataModelNode,
+    CollectorFilterHandler,
+    GetTemplateAstHandler,
+    GetTemplateTitleHandler,
+    GetTemplateMacroHandler,
+
+    BaseThrowable,
+    BaseWarning,
+    BaseError,
+    PotentialLoopError,
+    TemplateError,
+    TemplateSyntaxError,
+
+    types,
+    lib,
+    errors,
+    modules,
+};

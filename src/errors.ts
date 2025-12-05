@@ -10,12 +10,12 @@ export class BaseThrowable extends Error {
     }
 }
 
-export class BaseError extends BaseThrowable {
-    public name = 'BaseError';
-}
-
 export class BaseWarning extends BaseThrowable {
     public name = 'BaseWarning';
+}
+
+export class BaseError extends BaseThrowable {
+    public name = 'BaseError';
 }
 
 
