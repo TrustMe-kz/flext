@@ -181,11 +181,11 @@ export class Flext extends SimpleFlext {
 
         // Getting the fields
 
-        const fieldValueOptions = optionMacros?.map(macroToFieldValueOption) ?? null;
-        const fields = fieldMacros?.map(macroToField) ?? [];
+        const fieldValueOptions = optionMacros?.map(lib.macroToFieldValueOption) ?? null;
+        const fields = fieldMacros?.map(lib.macroToField) ?? [];
 
-        applyValueOptionsToFields(fieldValueOptions, fields);
-        applyAbsoluteOrderToFields(fields);
+        lib.applyValueOptionsToFields(fieldValueOptions, fields);
+        lib.applyAbsoluteOrderToFields(fields);
 
 
         // Getting the field groups
@@ -219,7 +219,7 @@ export class Flext extends SimpleFlext {
 
         // Using the modules
 
-        const moduleNames = modulesMacros.map(macroToModuleNames).flat();
+        const moduleNames = modulesMacros.map(lib.macroToModuleNames).flat();
 
         this.useModule(...moduleNames);
 
@@ -467,167 +467,6 @@ export class Flext extends SimpleFlext {
 
 
 // Functions
-
-export function ensureFieldOrder(val: any): number|null {
-    return lib.isset(val) ? Number(val) : null;
-}
-
-export function ensureFieldValue(val: any): types.FieldValue {
-
-    // If the value is a string
-
-    if (typeof val !== 'string') try {
-        return JSON.parse(val);
-    } catch (e) {
-        return val ?? null;
-    }
-
-
-    // If the value is other
-
-    else return val ?? null;
-}
-
-export function macroToModuleNames(val: types.Macro): string[] {
-    const params = val?.params ?? [];
-    return params.map(p => p?.value ?? null);
-}
-
-export function macroToField(val: types.Macro): types.Field {
-    const macroName = val?.name ?? null;
-    const params = val?.params ?? [];
-    const [ nameParam, ...args ] = params;
-
-
-    // Defining the functions
-
-    const get = (_val: string): any => {
-        const arg = args?.find(a => a?.name === _val) ?? null;
-
-        if (arg && arg?.value)
-            return arg?.value ?? null;
-        else if (arg && arg?.name)
-            return true;
-        else
-            return null;
-    }
-
-
-    // Getting the data
-
-    const type = get('type') ?? DEFAULT_FIELD_TYPE;
-    const nameStr = nameParam?.value ?? null;
-    const label = get('label') ?? null;
-    const descr = get('descr') ?? null;
-    const hint = get('hint') ?? null;
-    const order = ensureFieldOrder(get('order'));
-    const value = ensureFieldValue(get('value'));
-    const isRequired = !!get('required');
-
-
-    // Doing some checks
-
-    if (!nameStr)
-        throw new errors.BaseError(`Unable to get field: The 'name' param is not set: ` + lib.audit(nameStr));
-
-
-    // Getting the name
-
-    const name = lib.ensureFieldName(nameStr);
-
-
-    // Gettign the extra
-
-    const extra = { macroName };
-
-
-    return {
-        type,
-        name,
-        label,
-        descr,
-        hint,
-        order,
-        value,
-        isRequired,
-        extra,
-    };
-}
-
-export function macroToFieldValueOption(val: types.Macro): types.FieldValueOption {
-    const params = val?.params ?? [];
-    const [ nameParam, ...args ] = params;
-
-
-    // Defining the functions
-
-    const get = (_val: string): any => {
-        const arg = args?.find(a => a?.name === _val) ?? null;
-
-        if (arg && arg?.value)
-            return arg?.value ?? null;
-        else if (arg && arg?.name)
-            return true;
-        else
-            return null;
-    }
-
-
-    // Getting the data
-
-    const type = lib.ensureString(get('type') ?? DEFAULT_FIELD_TYPE);
-    const name = nameParam?.value ?? null;
-    const fieldName = get('for') ?? null;
-    const label = get('label') ?? null;
-    const descr = get('descr') ?? null;
-    const value = ensureFieldValue(get('value'));
-    const isDisabled = !!get('disabled');
-
-
-    // Doing some checks
-
-    if (!name)
-        throw new errors.BaseError(`Unable to get field option: The 'name' param is not set: ` + lib.audit(name));
-
-    if (!fieldName)
-        throw new errors.BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + lib.audit(name));
-
-
-    return {
-        type,
-        name,
-        fieldName,
-        label,
-        descr,
-        value,
-        isDisabled,
-    };
-}
-
-export function applyValueOptionsToFields(options: types.FieldValueOption[], fields: types.Field[]): void {
-
-    // Defining the functions
-
-    const get = (fieldName: string): types.FieldValueOption[] => {
-        return options?.filter(o => o?.fieldName === fieldName) ?? [];
-    };
-
-
-    // Iterating for each field
-
-    for (const field of fields)
-        if (get(field.name)?.length)
-            field.options = get(field.name);
-}
-
-export function applyAbsoluteOrderToFields(fields: types.Field[]): void {
-    for (const [ i, field ] of fields.entries()) {
-        if (field?.extra)
-            field.extra.absoluteOrder = i;
-        else
-            field.extra = { absoluteOrder: i };
-    }
-}
 
 export function defaultGetProcessed(val: string): string {
     return val;

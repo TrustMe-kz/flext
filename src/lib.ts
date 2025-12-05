@@ -6,6 +6,9 @@ import { Obj, Isset, Inarr, Macro, MacroParam, DataModel, DataModelNode, Collect
 import { BaseError, PotentialLoopError, BaseWarning } from '@/errors';
 import striptags from 'striptags';
 import Handlebars, { TemplateDelegate } from 'handlebars';
+import * as types from "@/types";
+import * as errors from "@/errors";
+import {DEFAULT_FIELD_TYPE} from "@/index";
 
 
 // Third-parties
@@ -504,6 +507,26 @@ export function ensureFieldName(val: string): string {
     return pathItem.trim();
 }
 
+export function ensureFieldOrder(val: any): number|null {
+    return isset(val) ? Number(val) : null;
+}
+
+export function ensureFieldValue(val: any): types.FieldValue {
+
+    // If the value is a string
+
+    if (typeof val !== 'string') try {
+        return JSON.parse(val);
+    } catch (e) {
+        return val ?? null;
+    }
+
+
+    // If the value is other
+
+    else return val ?? null;
+}
+
 export function filter(regex: RegExp, val: string|number): boolean {
     return !!String(val).trim().match(regex);
 }
@@ -517,6 +540,147 @@ export function compare(a: number|null|undefined, b: number|null|undefined): num
         return -1;
     else
         return a - b;
+}
+
+export function macroToModuleNames(val: types.Macro): string[] {
+    const params = val?.params ?? [];
+    return params.map(p => p?.value ?? null);
+}
+
+export function macroToField(val: types.Macro): types.Field {
+    const macroName = val?.name ?? null;
+    const params = val?.params ?? [];
+    const [ nameParam, ...args ] = params;
+
+
+    // Defining the functions
+
+    const get = (_val: string): any => {
+        const arg = args?.find(a => a?.name === _val) ?? null;
+
+        if (arg && arg?.value)
+            return arg?.value ?? null;
+        else if (arg && arg?.name)
+            return true;
+        else
+            return null;
+    }
+
+
+    // Getting the data
+
+    const type = get('type') ?? DEFAULT_FIELD_TYPE;
+    const nameStr = nameParam?.value ?? null;
+    const label = get('label') ?? null;
+    const descr = get('descr') ?? null;
+    const hint = get('hint') ?? null;
+    const order = ensureFieldOrder(get('order'));
+    const value = ensureFieldValue(get('value'));
+    const isRequired = !!get('required');
+
+
+    // Doing some checks
+
+    if (!nameStr)
+        throw new errors.BaseError(`Unable to get field: The 'name' param is not set: ` + audit(nameStr));
+
+
+    // Getting the name
+
+    const name = ensureFieldName(nameStr);
+
+
+    // Gettign the extra
+
+    const extra = { macroName };
+
+
+    return {
+        type,
+        name,
+        label,
+        descr,
+        hint,
+        order,
+        value,
+        isRequired,
+        extra,
+    };
+}
+
+export function macroToFieldValueOption(val: types.Macro): types.FieldValueOption {
+    const params = val?.params ?? [];
+    const [ nameParam, ...args ] = params;
+
+
+    // Defining the functions
+
+    const get = (_val: string): any => {
+        const arg = args?.find(a => a?.name === _val) ?? null;
+
+        if (arg && arg?.value)
+            return arg?.value ?? null;
+        else if (arg && arg?.name)
+            return true;
+        else
+            return null;
+    }
+
+
+    // Getting the data
+
+    const type = ensureString(get('type') ?? DEFAULT_FIELD_TYPE);
+    const name = nameParam?.value ?? null;
+    const fieldName = get('for') ?? null;
+    const label = get('label') ?? null;
+    const descr = get('descr') ?? null;
+    const value = ensureFieldValue(get('value'));
+    const isDisabled = !!get('disabled');
+
+
+    // Doing some checks
+
+    if (!name)
+        throw new errors.BaseError(`Unable to get field option: The 'name' param is not set: ` + audit(name));
+
+    if (!fieldName)
+        throw new errors.BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + audit(name));
+
+
+    return {
+        type,
+        name,
+        fieldName,
+        label,
+        descr,
+        value,
+        isDisabled,
+    };
+}
+
+export function applyValueOptionsToFields(options: types.FieldValueOption[], fields: types.Field[]): void {
+
+    // Defining the functions
+
+    const get = (fieldName: string): types.FieldValueOption[] => {
+        return options?.filter(o => o?.fieldName === fieldName) ?? [];
+    };
+
+
+    // Iterating for each field
+
+    for (const field of fields)
+        if (get(field.name)?.length)
+            field.options = get(field.name);
+}
+
+export function applyAbsoluteOrderToFields(fields: types.Field[]): void {
+    for (const [ i, field ] of fields.entries()) {
+        if (field?.extra)
+            field.extra.absoluteOrder = i;
+        else
+            field.extra = { absoluteOrder: i };
+    }
 }
 
 export function defineModule(options: any = {}): any {
