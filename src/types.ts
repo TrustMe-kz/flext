@@ -5,9 +5,15 @@ import { AST } from '@handlebars/parser';
 
 export type Obj<T extends any = any> = Record<string, T>;
 
-export type Inarr<T extends any, A extends any[]> = T extends A[any] ? true : false;
-
 export type Isset<T extends any> = T extends null|undefined ? false : true;
+
+export type IsNumber<T extends any> = T extends number ? true : false;
+
+export type IsObject<T extends any, O extends Obj = Obj> = T extends O ? true : false;
+
+export type Has<T extends Obj, K extends keyof T> = T[K];
+
+export type Inarr<T extends any, A extends any[]> = T extends A[any] ? true : false;
 
 export type FieldType = 'string' | 'number' | 'boolean' | 'object' | 'array' | 'date' | 'mixed';
 

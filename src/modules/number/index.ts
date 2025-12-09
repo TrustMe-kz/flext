@@ -41,9 +41,14 @@ export function op(state: any): number|string|boolean {
 export function opWithColor(state: any): SafeString {
     const namedArgs: Obj = state?.namedArgs ?? {};
     const fallback = namedArgs?.fallback ?? '';
-    const result = op(state) || fallback;
+    const result = op(state);
 
-    return putWithColor({ ...state, args: [ result ] });
+    if (result === 0)
+        return putWithColor({ ...state, args: [ '0' ] });
+    else if (typeof result === 'number' && isNaN(result))
+        return putWithColor({ ...state, args: [ fallback ] });
+    else
+        return putWithColor({ ...state, args: [ result || fallback ] });
 }
 
 export function text(state: any): SafeString {
@@ -55,7 +60,7 @@ export function text(state: any): SafeString {
         ...state,
 
         args: [ number, 'text' ],
-        namedArgs: { ...namedArgs, fallback },
+        namedArgs: { fallback, ...namedArgs },
     });
 }
 

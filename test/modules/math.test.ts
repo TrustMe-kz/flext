@@ -94,6 +94,21 @@ describe('"math" module', () => {
     expect(floorRound).toBe(mockPut('2'));
   });
 
+  it('round supports ceil and trunc helpers explicitly', () => {
+    const ceilRound = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:round 1.1 "ceil" }}',
+    }).trim();
+
+    const truncRound = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:round "-2.9" "trunc" }}',
+    }).trim();
+
+    expect(ceilRound).toBe(mockPut('2'));
+    expect(truncRound).toBe(mockPut('-2'));
+  });
+
   it('sqrt calculates the square root', () => {
     const html = getHtml({
       modules: MODULE_NAME,
@@ -148,6 +163,15 @@ describe('"math" module', () => {
     expect(html).toBe(mockPut('12'));
   });
 
+  it('div alias mirrors divide output', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:div 9 4 }}',
+    }).trim();
+
+    expect(html).toBe(mockPut(String(9 / 4)));
+  });
+
   it('respects custom color overrides on colored helpers', () => {
     const html = getHtml({
       modules: MODULE_NAME,
@@ -171,6 +195,15 @@ describe('"math" module', () => {
     }).trim();
 
     expect(html).toBe(mockPut('10'));
+  });
+
+  it('delegates unknown operations to the native Math API', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:op "max" 12 7 }}',
+    }).trim();
+
+    expect(html).toBe(mockPut('12'));
   });
 
   it('throws when requesting an unknown Math API fallback', () => {

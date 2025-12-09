@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import Flext from '@flext';
+import Flext, { PotentialLoopError } from '@flext';
 
 describe('Flext data model and field options', () => {
   it('merges @group, @field and @option metadata into the model tree', () => {
     const template = `
       {{!-- @use "put" --}}
+      {{!-- @use "math" --}}
       {{!-- @group "data.company" label="Компания" --}}
       {{!-- @field "data.company.name" label="Название компании" required --}}
       {{!-- @field "data.contract.type" label="Тип договора" --}}
@@ -198,5 +199,32 @@ describe('Flext data model and field options', () => {
     ]);
     expect(flext.fields.find(f => f.name === 'data.user.lastName')?.extra?.absoluteOrder).toBe(1);
     expect(flext.fields.find(f => f.name === 'data.user.middleName')?.extra?.absoluteOrder).toBe(3);
+  });
+
+  it('ignores helper nodes while building the data model tree', () => {
+    const template = `
+      {{!-- @use "put" --}}
+      {{!-- @field "data.stats.total" type="number" --}}
+      {{!-- @field "data.stats.done" type="number" --}}
+      {{ put data.stats.total "--" }}
+      {{ math data.stats.total "minus" data.stats.done }}
+    `;
+
+    const flext = new Flext(template);
+    const [ dataNode ] = flext.model;
+    const [ statsNode ] = dataNode.$;
+
+    expect(dataNode.name).toBe('data');
+    expect(statsNode.name).toBe('stats');
+    expect(statsNode.$.map(node => node.name)).toEqual([ 'total', 'done' ]);
+  });
+
+  it('throws PotentialLoopError when requested model depth is exhausted', () => {
+    const template = `
+      {{ data.company.address.city }}
+    `;
+
+    const flext = new Flext(template);
+    expect(() => flext.getDataModel(1)).toThrow(PotentialLoopError);
   });
 });

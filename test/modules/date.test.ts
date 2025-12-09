@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { DateTime } from 'luxon';
 import { getHtml, mockPut } from '@test-lib';
 
@@ -28,22 +28,6 @@ describe('"date" module', () => {
 
         expect(html).toBe(mockPut('05'));
     });
-
-    // it('now returns the current DateTime respecting timezone', () => {
-    //   vi.useFakeTimers();
-    //   vi.setSystemTime(new Date('2024-07-08T09:10:11Z'));
-    //
-    //   try {
-    //     const html = getHtml({
-    //       modules: MODULE_NAME,
-    //       template: '{{#with (date:now timeZone="UTC") as |dt|}}{{ dt.year }}-{{ dt.month }}-{{ dt.day }}{{/with}}',
-    //     }).trim();
-    //
-    //     expect(html).toBe('2024-7-8');
-    //   } finally {
-    //     vi.useRealTimers();
-    //   }
-    // });
 
     it('seconds returns zero-padded seconds', () => {
         const html = getHtml({

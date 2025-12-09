@@ -67,6 +67,16 @@ describe('"cond" module', () => {
     expect(html).toBe('Locked');
   });
 
+  it('or accepts more than two operands', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:or false 0 data.stage)}}Visible{{else}}Hidden{{/if}}',
+      data: { data: { stage: 'published' } },
+    }).trim();
+
+    expect(html).toBe('Visible');
+  });
+
   it('greater compares numbers using strict greater-than', () => {
     const html = getHtml({
       modules: MODULE_NAME,
@@ -135,6 +145,14 @@ describe('"cond" module', () => {
     }).trim();
 
     expect(html).toBe('Equal');
+  });
+
+  it('rejects soft comparisons for unsupported operations', () => {
+    expect(() => getHtml({
+      modules: MODULE_NAME,
+      template: '{{ cond:op data.score "greater" 50 soft=true }}',
+      data: { data: { score: 60 } },
+    })).toThrow(/Condition: Unknown operation/i);
   });
 
   it('throws when an unsupported operation name is provided', () => {

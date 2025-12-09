@@ -81,4 +81,29 @@ describe('"number" module', () => {
 
     expect(html).toBe(mockPut('--'));
   });
+
+  it('preserves zero-like values without triggering fallbacks', () => {
+    const zeroHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number 0 fallback="--" }}',
+    }).trim();
+
+    const falseHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number false fallback="**" }}',
+    }).trim();
+
+    expect(zeroHtml).toBe(mockPut('0'));
+    expect(falseHtml).toBe(mockPut('0'));
+  });
+
+  it('applies fallbacks to the text helper as well', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number:text data.amount fallback="n/a" }}',
+      data: { data: {} },
+    }).trim();
+
+    expect(html).toBe(mockPut('n/a'));
+  });
 });

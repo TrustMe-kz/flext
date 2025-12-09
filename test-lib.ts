@@ -32,7 +32,7 @@ export function getHtml(options: GetHtmlOptions): string {
 
   // Getting the data
 
-  const { modules, template, data = {}, helpers = {} } = options;
+  const { modules, template, data = null, helpers = null } = options;
   const newModules = Array.isArray(modules) ? modules : [ modules ];
   const modulesStr = newModules?.map(name => `"${name}"`)?.join(' ') || '""';
 

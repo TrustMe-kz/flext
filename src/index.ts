@@ -1,6 +1,6 @@
 import { AST } from '@handlebars/parser';
 import { Obj, Macro, Field, FieldType, FieldValue, FieldValueOption, DataModel, DataModelNode, MetadataModelNode, CollectorFilterHandler, GetTemplateAstHandler, GetTemplateTitleHandler, GetTemplateMacroHandler } from '@/types';
-import { BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError } from '@/errors';
+import { BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError, TemplateDataValidationError } from '@/errors';
 import * as types from '@/types';
 import * as lib from '@/lib';
 import * as errors from '@/errors';
@@ -74,7 +74,7 @@ export class SimpleFlext  {
         return this;
     }
 
-    public getHtml(data: types.Obj = {}, helpers: types.Obj = {}): string {
+    public getHtml(data?: types.Obj | null, helpers?: types.Obj | null): string {
         const template = lib.getTemplate(this.ast);
 
 
@@ -86,12 +86,12 @@ export class SimpleFlext  {
 
         return lib.getHtml(
             template,
-            { ...this.data, ...data },
-            { ...this.helpers, ...helpers },
+            data ?? this.data,
+            helpers ?? this.helpers,
         );
     }
 
-    public async getCss(data: types.Obj = {}, options: types.Obj = {}): Promise<string> {
+    public async getCss(data?: types.Obj | null, options: types.Obj = {}): Promise<string> {
         const template = lib.getTemplate(this.ast);
         const helpersObj = options?.helpers ?? {};
         const helpers = { ...this.helpers, ...helpersObj };
@@ -105,7 +105,7 @@ export class SimpleFlext  {
 
         return await lib.getCss(
             template,
-            { ...this.data, ...data },
+            data ?? this.data,
             { ...options, helpers },
         );
     }
@@ -418,46 +418,25 @@ export class Flext extends SimpleFlext {
             .map(n => getMetadataModelNode(n, { fieldName: n?.name ?? null }, depth));
     }
 
-    public getIsValid(data: types.Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): boolean {
+    public getValidationErrors(data?: types.Obj | null, depth: number = DEFAULT_MODEL_DEPTH): errors.TemplateDataValidationError[] {
+        return lib.getValidationErrorsByDataModel(data ?? this.data, this.model, depth);
+    }
 
-        // Defining the functions
-
-        const isDataValidByModel = (_data: types.Obj, model: types.MetadataModelNode[], _depth: number = DEFAULT_MODEL_DEPTH): boolean => {
-
-            // Doing some checks
-
-            if (_depth <= 0)
-                throw new errors.PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
-
-
-            // Iterating for each subnode
-
-            for (const node of model) {
-
-                // Getting the data
-
-                const newData: types.Obj = _data[node.name] ?? null;
-
-
-                // If the data was not found, but the field is required
-
-                if (lib.inarr(newData, '', null, undefined) && node?.isRequired)
-                    return false;
-
-                if (!isDataValidByModel(newData ?? {}, node.$ as types.MetadataModelNode[], _depth - 1))
-                    return false;
-            }
-
-
-            return true;
-        }
-
-
-        return isDataValidByModel({ ...this.data, ...data }, this.model, depth);
+    public getIsValid(data?: types.Obj | null, depth: number = DEFAULT_MODEL_DEPTH): boolean {
+        const errors = this.getValidationErrors(data ?? this.data, depth);
+        return !errors?.length;
     }
 
     public get model(): types.MetadataModelNode[] {
         return this.getDataModel();
+    }
+
+    public get validationErrors(): errors.TemplateDataValidationError[] {
+        return this.getValidationErrors();
+    }
+
+    public get errors(): errors.BaseError[] {
+        return this.validationErrors;
     }
 
     public get isValid(): boolean {
@@ -496,6 +475,7 @@ export {
     PotentialLoopError,
     TemplateError,
     TemplateSyntaxError,
+    TemplateDataValidationError,
 
     types,
     lib,

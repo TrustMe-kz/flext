@@ -2,8 +2,8 @@ import { DateTime } from 'luxon';
 import { AST } from '@handlebars/parser';
 import { createGenerator, presetTypography, Preset } from 'unocss';
 import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
-import { Obj, Isset, Inarr, Macro, MacroParam, DataModel, DataModelNode, CollectorFilterHandler } from '@/types';
-import { BaseError, PotentialLoopError, BaseWarning } from '@/errors';
+import { Obj, Isset, IsNumber, IsObject, Has, Inarr, Macro, MacroParam, DataModel, DataModelNode, CollectorFilterHandler } from '@/types';
+import { BaseError, BaseWarning, PotentialLoopError, TemplateDataValidationError } from '@/errors';
 import striptags from 'striptags';
 import Handlebars, { TemplateDelegate } from 'handlebars';
 import * as types from "@/types";
@@ -20,7 +20,11 @@ export const uno = createGenerator({
     ],
     preflights: [
         // kr: Costyl for TW
-        { getCSS: () => ':host, :root { --un-text-opacity: 100%; }' },
+        { getCSS: () => `:host, :root {
+  --un-border-opacity: 100%;
+  --un-text-opacity: 100%;
+  --un-bg-opacity: 100%;
+}` },
     ],
     theme: {},
 });
@@ -121,16 +125,16 @@ class FlextH1SomewhereContentCollector extends HandlebarsContentCollector {
 
 // Checking Functions
 
-export function isNumber(val: any): boolean {
-    return !isNaN(Number(val));
+export function isNumber<T extends any>(val: T): IsNumber<T> {
+    return !isNaN(Number(val)) as IsNumber<T>;
 }
 
-export function isObject(val: any): boolean {
-    return typeof val === 'object' && val !== null;
+export function isObject<T extends any>(val: T): IsObject<T> {
+    return (typeof val === 'object' && val !== null) as IsObject<T>;
 }
 
-export function has(obj: Obj, key: string): boolean {
-    return obj.hasOwnProperty(key);
+export function has<T extends Obj, K extends keyof T>(obj: T, key: K): Has<T, K> {
+    return obj.hasOwnProperty(key) as Has<T, K>;
 }
 
 export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): Inarr<T, A> {
@@ -153,13 +157,6 @@ export function audit(val: any): string {
 
     else
         return String(val);
-}
-
-
-// Transform Functions
-
-export function unique<T = any>(arr: T[]): T[] {
-    return [ ...new Set(arr) ];
 }
 
 
@@ -195,6 +192,10 @@ export async function getCss(template: TemplateDelegate, data: Obj = {}, options
 
 // Analyze Functions
 
+export function unique<T = any>(arr: T[]): T[] {
+    return [ ...new Set(arr) ];
+}
+
 export function getPaths(ast: AST.Program): string[] {
     const paths = new HandlebarsPathCollector().collect(ast);
     return unique(paths);
@@ -211,7 +212,11 @@ export function pathToDataModelNode(path: string, depth: number = DEFAULT_MODEL_
     // Getting the root node
 
     const [ name, ...items ] = path?.split('.') ?? [];
+
     const result: DataModelNode = { name };
+
+
+    // If the node has children
 
     if (items?.length > 0)
         result.$ = [ pathToDataModelNode(items?.join('.') || '', depth - 1) ];
@@ -409,6 +414,51 @@ export function getHtmlH1(ast: AST.Program, doWarn: boolean = true): string[] {
 
         for (const match of matches)
             result.push(String(match));
+    }
+
+
+    return result;
+}
+
+export function getValidationErrorsByDataModel(_data: types.Obj, model: types.MetadataModelNode[], _depth: number = DEFAULT_MODEL_DEPTH): TemplateDataValidationError[] {
+
+    // Doing some checks
+
+    if (_depth <= 0)
+        throw new errors.PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
+
+
+    // Getting the data
+
+    const result: TemplateDataValidationError[] = [];
+
+
+    // Defining the functions
+
+    const err = (message: string, fieldName?: string|null): void => { result.push(new TemplateDataValidationError(message, fieldName)); };
+
+
+    // Iterating for each child node
+
+    for (const node of model) {
+
+        // Getting the data
+
+        const newData: types.Obj = _data[node.name] ?? null;
+
+
+        // Doing some checks
+
+        if (inarr(newData, '', null, undefined) && node?.isRequired) {
+            const fieldName = node?.extra?.fieldName ?? node?.name ?? 'Unknown';
+
+            err(`Field '${fieldName}' is required: ${audit(newData)} is passed`, node?.extra?.fieldName ?? null);
+
+            continue;
+        }
+
+
+        result.push(...getValidationErrorsByDataModel(newData ?? {}, node.$ as types.MetadataModelNode[], _depth - 1));
     }
 
 

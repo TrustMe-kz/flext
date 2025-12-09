@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import Flext from '@flext';
+import Flext, { PotentialLoopError } from '@flext';
 
 describe('Flext validation workflow', () => {
   const template = `
@@ -52,5 +52,40 @@ describe('Flext validation workflow', () => {
 
     expect(flext.isValid).toBe(true);
     expect(flext.getIsValid({ data: { metrics: { count: null } } })).toBe(false);
+  });
+
+  it('merges nested overrides while validating deep objects', () => {
+    const template = `
+      {{!-- @v "1.0.beta3" --}}
+      {{!-- @use "put" --}}
+      {{!-- @field "data.org.name" label="Name" required --}}
+      {{!-- @field "data.org.contacts.email" label="Email" required --}}
+
+      <p>{{ put data.org.name "--" }}</p>
+      <p>{{ put data.org.contacts.email "--" }}</p>
+    `;
+
+    const flext = new Flext(template, {
+      data: {
+        org: { name: 'TrustMe', contacts: { email: 'hello@trustme24.com' } },
+      },
+    });
+
+    expect(flext.isValid).toBe(true);
+    expect(flext.getIsValid({ data: { org: { contacts: { email: '' } } } })).toBe(false);
+  });
+
+  it('throws PotentialLoopError when validation depth is insufficient', () => {
+    const template = `
+      {{!-- @v "1.0.beta3" --}}
+      {{!-- @field "data.company.address.city" label="City" required --}}
+      {{ data.company.address.city }}
+    `;
+
+    const flext = new Flext(template, {
+      data: { company: { address: { city: 'Almaty' } } },
+    });
+
+    expect(() => flext.getIsValid({}, 1)).toThrow(PotentialLoopError);
   });
 });
