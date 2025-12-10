@@ -128,24 +128,24 @@ class FlextH1SomewhereContentCollector extends HandlebarsContentCollector {
 
 // Checking Functions
 
-export function isNumber<T extends any>(val: T): IsNumber<T> {
-    return !isNaN(Number(val)) as IsNumber<T>;
-}
-
-export function isObject<T extends any>(val: T): IsObject<T> {
-    return (typeof val === 'object' && val !== null) as IsObject<T>;
+export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): Inarr<T, A> {
+    return arr.includes(val) as Inarr<T, A>;
 }
 
 export function has<T extends Obj, K extends keyof T>(obj: T, key: K): Has<T, K> {
     return obj.hasOwnProperty(key) as Has<T, K>;
 }
 
-export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): Inarr<T, A> {
-    return arr.includes(val) as Inarr<T, A>;
-}
-
 export function isset<T extends any>(val: T): Isset<T> {
     return !inarr(val, null, undefined) as Isset<T>;
+}
+
+export function isNumber<T extends any>(val: T): IsNumber<T> {
+    return (isset(val) && !isNaN(Number(val))) as IsNumber<T>;
+}
+
+export function isObject<T extends any>(val: T): IsObject<T> {
+    return (typeof val === 'object' && val !== null) as IsObject<T>;
 }
 
 
@@ -530,7 +530,7 @@ export function getTemplateValidationErrorsByMetadata(data: types.Obj, model: ty
 
     // Defining the functions
 
-    const isval = (val: any): boolean => inarr(val, '', null, undefined);
+    const isval = (val: any): boolean => !inarr(val, '', null, undefined);
 
     const len = (val: any): number => String(val).length;
 
@@ -550,7 +550,7 @@ export function getTemplateValidationErrorsByMetadata(data: types.Obj, model: ty
 
         // If the value is required
 
-        if (isval(fieldValue) && node?.isRequired) {
+        if (!isval(fieldValue) && node?.isRequired) {
             err(`Field '${fieldName}' is required (${audit(fieldValue)} is passed)`, fieldNameStr);
             continue;
         }

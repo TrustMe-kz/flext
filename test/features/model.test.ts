@@ -188,6 +188,31 @@ describe('Flext data model and field options', () => {
     ]);
   });
 
+  it('retains numeric and textual range constraints defined via @field directives', () => {
+    const template = `
+      {{!-- @field "data.stats.score" type="number" min="10" max="100" --}}
+      {{!-- @field "data.profile.bio" minLength="12" maxLength="40" --}}
+      {{ data.stats.score }}
+      {{ data.profile.bio }}
+    `;
+
+    const flext = new Flext(template);
+    const scoreField = flext.fields.find(field => field.name === 'data.stats.score');
+    const bioField = flext.fields.find(field => field.name === 'data.profile.bio');
+
+    expect(scoreField).toMatchObject({ min: '10', max: '100' });
+    expect(bioField).toMatchObject({ minLength: '12', maxLength: '40' });
+
+    const [ dataNode ] = flext.model;
+    const statsNode = dataNode.$?.find(node => node.name === 'stats');
+    const profileNode = dataNode.$?.find(node => node.name === 'profile');
+    const scoreNode = statsNode?.$?.find(node => node.name === 'score');
+    const bioNode = profileNode?.$?.find(node => node.name === 'bio');
+
+    expect(scoreNode).toMatchObject({ min: '10', max: '100' });
+    expect(bioNode).toMatchObject({ minLength: '12', maxLength: '40' });
+  });
+
   it('persists zero as an explicit order value inside the model', () => {
     const template = `
       {{!-- @field "data.zero" order="0" label="Zero" --}}
