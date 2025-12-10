@@ -50,4 +50,29 @@ describe('"media" module', () => {
 
     createSpy.mockRestore();
   });
+
+  it('updates the rendered URL when an asset is replaced', () => {
+    const firstBlob = new Blob([ 'logo-v1' ], { type: 'text/plain' });
+    const secondBlob = new Blob([ 'logo-v2' ], { type: 'text/plain' });
+    const flext = new Flext(template).setAssets({ logo: firstBlob });
+    const createSpy = vi.spyOn(URL, 'createObjectURL');
+
+    const firstHtml = flext.html.trim();
+    const firstUrl = firstHtml.match(/src="([^"]+)"/)?.[1];
+
+    flext.addAsset('logo', secondBlob);
+
+    const secondHtml = flext.html.trim();
+    const secondUrl = secondHtml.match(/src="([^"]+)"/)?.[1];
+
+    if (firstUrl) URL.revokeObjectURL(firstUrl);
+    if (secondUrl) URL.revokeObjectURL(secondUrl);
+
+    expect(firstUrl).toBeDefined();
+    expect(secondUrl).toBeDefined();
+    expect(firstUrl).not.toBe(secondUrl);
+    expect(createSpy).toHaveBeenCalledTimes(2);
+
+    createSpy.mockRestore();
+  });
 });

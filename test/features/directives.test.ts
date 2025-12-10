@@ -31,6 +31,10 @@ describe('Flext features', () => {
         label: 'Возраст',
         descr: null,
         hint: null,
+        min: null,
+        max: null,
+        minLength: null,
+        maxLength: null,
         order: null,
         value: null,
         isRequired: true,
@@ -45,6 +49,10 @@ describe('Flext features', () => {
         label: 'Имя',
         descr: null,
         hint: null,
+        min: null,
+        max: null,
+        minLength: null,
+        maxLength: null,
         order: null,
         value: null,
         isRequired: false,
@@ -98,5 +106,31 @@ describe('Flext features', () => {
       { name: 'data.c', order: 1, absoluteOrder: 2 },
       { name: 'data.d', order: null, absoluteOrder: 3 },
     ]);
+  });
+
+  it('reinitializes directive metadata and modules when setTemplate is reused', () => {
+    const firstTemplate = `
+      {{!-- @v "1.0.beta3" --}}
+      {{!-- @use "put" --}}
+      {{!-- @field "data.value" label="Value" --}}
+      <p>{{ put data.value "--" }}</p>
+    `;
+
+    const secondTemplate = `
+      {{!-- @v "2.0.beta1" --}}
+      {{!-- @use "math" --}}
+      {{!-- @field "data.total" type="number" label="Total" --}}
+      <p>{{ math data.total "plus" 1 }}</p>
+    `;
+
+    const flext = new Flext(firstTemplate, { data: { value: 'Initial' } });
+    expect(flext.fields.map(f => f.name)).toEqual([ 'data.value' ]);
+
+    flext.setTemplate(secondTemplate).setData({ data: { total: 4 } });
+
+    expect(flext.version).toBe('2.0.beta1');
+    expect(flext.fields.map(f => f.name)).toEqual([ 'data.total' ]);
+    expect(flext.helpers.put).toBeUndefined();
+    expect(flext.html.trim()).toContain('<span class="text-blue-500">5</span>');
   });
 });

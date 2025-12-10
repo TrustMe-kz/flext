@@ -222,7 +222,7 @@ export function text(state: any): SafeString {
         ...state,
 
         args: [ date, 'text' ],
-        namedArgs: { ...namedArgs, fallback },
+        namedArgs: { fallback, ...namedArgs },
     });
 }
 

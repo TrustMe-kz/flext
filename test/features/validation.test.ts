@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import Flext from '@flext';
+import Flext, { PotentialLoopError } from '@flext';
 
 describe('Flext validation workflow', () => {
   const template = `
@@ -52,5 +52,76 @@ describe('Flext validation workflow', () => {
 
     expect(flext.isValid).toBe(true);
     expect(flext.getIsValid({ data: { metrics: { count: null } } })).toBe(false);
+  });
+
+  it('merges nested overrides while validating deep objects', () => {
+    const template = `
+      {{!-- @v "1.0.beta3" --}}
+      {{!-- @use "put" --}}
+      {{!-- @field "data.org.name" label="Name" required --}}
+      {{!-- @field "data.org.contacts.email" label="Email" required --}}
+
+      <p>{{ put data.org.name "--" }}</p>
+      <p>{{ put data.org.contacts.email "--" }}</p>
+    `;
+
+    const flext = new Flext(template, {
+      data: {
+        org: { name: 'TrustMe', contacts: { email: 'hello@trustme24.com' } },
+      },
+    });
+
+    expect(flext.isValid).toBe(true);
+    expect(flext.getIsValid({ data: { org: { contacts: { email: '' } } } })).toBe(false);
+  });
+
+  it('throws PotentialLoopError when validation depth is insufficient', () => {
+    const template = `
+      {{!-- @v "1.0.beta3" --}}
+      {{!-- @field "data.company.address.city" label="City" required --}}
+      {{ data.company.address.city }}
+    `;
+
+    const flext = new Flext(template, {
+      data: { company: { address: { city: 'Almaty' } } },
+    });
+
+    expect(() => flext.getIsValid(null, 1)).toThrow(PotentialLoopError);
+  });
+
+  it('validates numeric values and string lengths against @field min/max constraints', () => {
+    const template = `
+      {{!-- @v "1.0.beta3" --}}
+      {{!-- @field "data.metrics.score" type="number" min="10" max="20" --}}
+      {{!-- @field "data.profile.username" minLength="4" maxLength="10" --}}
+
+      {{ data.metrics.score }}
+      {{ data.profile.username }}
+    `;
+
+    const flext = new Flext(template, {
+      data: {
+        metrics: { score: 15 },
+        profile: { username: 'Andrey' },
+      },
+    });
+
+    expect(flext.isValid).toBe(true);
+
+    const invalidData = {
+      data: {
+        metrics: { score: 5 },
+        profile: { username: 'QA' },
+      },
+    };
+
+    expect(flext.getIsValid(invalidData)).toBe(false);
+
+    const errors = flext.getValidationErrors(invalidData);
+    expect(errors).toHaveLength(2);
+    expect(errors[0].message).toContain('less than the range');
+    expect(errors[0].fieldName).toBe('data.metrics.score');
+    expect(errors[1].message).toContain('shorter than the range');
+    expect(errors[1].fieldName).toBe('data.profile.username');
   });
 });

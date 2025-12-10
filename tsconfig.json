@@ -21,7 +21,7 @@
     /* Bundler mode */
     "outDir": "dist",
     "moduleResolution": "node",
-    "isolatedModules": true,
+    "isolatedModules": false,
     "moduleDetection": "force",
     "declaration": true,
     "sourceMap": false,

@@ -1,5 +1,6 @@
 import { SafeString } from 'handlebars';
-import { defineModule, audit } from '@/lib';
+import { Obj } from '@/types';
+import { audit, defineModule } from '@/lib';
 import { TemplateSyntaxError } from '@/errors';
 import { putWithColor } from '../put';
 
@@ -50,8 +51,16 @@ export function op(state: any): number {
 }
 
 export function opWithColor(state: any): SafeString {
+    const namedArgs: Obj = state?.namedArgs ?? {};
+    const fallback = namedArgs?.fallback ?? '';
     const result = op(state);
-    return putWithColor({ ...state, args: [ result ] });
+
+    if (result === 0)
+        return putWithColor({ ...state, args: [ '0' ] });
+    if (typeof result === 'number' && isNaN(result))
+        return putWithColor({ ...state, args: [ fallback ] });
+    else
+        return putWithColor({ ...state, args: [ result ?? fallback ] });
 }
 
 export function plus(state: any): SafeString {

@@ -79,4 +79,14 @@ describe('"match" module', () => {
 
     expect(html).toBe('Zero');
   });
+
+  it('handles boolean values as match targets', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#match data.visible}}{{#match:case true}}Shown{{/match:case}}{{#match:fallback}}Hidden{{/match:fallback}}{{/match}}',
+      data: { data: { visible: true } },
+    }).trim();
+
+    expect(html).toBe('Shown');
+  });
 });
