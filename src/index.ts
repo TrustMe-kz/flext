@@ -323,78 +323,10 @@ export class Flext extends SimpleFlext {
 
         // Defining the functions
 
-        const getMetadataModelNode = (node: types.DataModelNode, _options: types.Obj = {}, _depth: number = DEFAULT_MODEL_DEPTH): types.MetadataModelNode => {
-
-            // Doing some checks
-
-            if (_depth <= 0)
-                throw new errors.PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
-
-
-            // Defining the functions
-
-            const get = (_fieldName: string): types.Field | null => this.fields?.find(f => f?.name === _fieldName) ?? null;
-
-
-            // Getting the field
-
-            const fieldName = _options?.fieldName ?? null;
-            const field = get(fieldName);
-            const order = field?.order ?? null;
-
-
-            // Getting the data
-
-            const nodes = node?.$ ?? [];
-            const type = nodes?.length ? 'object' : field?.type ?? DEFAULT_FIELD_TYPE;
-            const name = node?.name ?? null;
-            const label = field?.label ?? null;
-            const hint = field?.hint ?? null;
-            const options = field?.options ?? null;
-            const isRequired = !!field?.isRequired;
-
-
-            // Getting the sub-nodes
-
-            const newNodes: types.MetadataModelNode[] = [];
-
-            for (const node of nodes) {
-                const nodeName = node?.name ?? null;
-
-                newNodes.push(getMetadataModelNode(node, {
-                    fieldName: fieldName + '.' + nodeName,
-                }, _depth - 1));
-            }
-
-
-            // Getting the ordered sub-nodes
-
-            const $ =  newNodes.sort((node, nodeRef) => {
-                const nodeFieldName = node?.extra?.fieldName ?? null;
-                const nodeField: types.Obj = get(nodeFieldName) ?? {};
-                const nodeFieldOrder = nodeField?.order ?? null;
-                const nodeFieldAbsoluteOrder = nodeField?.extra?.absoluteOrder ?? null;
-                const nodeFieldNameRef = nodeRef?.extra?.fieldName ?? null;
-                const nodeFieldRef: types.Obj = get(nodeFieldNameRef) ?? {};
-                const nodeFieldOrderRef = nodeFieldRef?.order ?? null;
-                const nodeFieldAbsoluteOrderRef = nodeFieldRef?.extra?.absoluteOrder ?? null;
-
-                if (lib.compare(nodeFieldOrder, nodeFieldOrderRef) !== 0)
-                    return lib.compare(nodeFieldOrder, nodeFieldOrderRef);
-                else
-                    return lib.compare(nodeFieldAbsoluteOrder, nodeFieldAbsoluteOrderRef);
-            });
-
-
-            // Getting the extra
-
-            const extra = { fieldName };
-
-
-            return { type, name, label, hint, order, options, isRequired, extra, $ };
-        }
-
-        const isHelperCall = (node: types.DataModelNode): boolean => {
+        /**
+         * TODO: kr: Costyl: Detects if it is a helper call (like 'put:noColor')
+         */
+        const isHelper = (node: types.DataModelNode): boolean => {
             for (const helperName in this.helpers) {
                 if (!lib.has(this.helpers, helperName))
                     continue;
@@ -405,21 +337,25 @@ export class Flext extends SimpleFlext {
             return false;
         }
 
+        /**
+         * TODO: kr: Costyl: Filters the helper calls (like 'put:noColor')
+         */
+        const isValid = (node: types.DataModelNode): boolean => !isHelper(node);
+
+        const dataModelNodeToMetadata = (node: types.DataModelNode): types.MetadataModelNode => lib.dataModelNodeToMetadata(node, this.fields, {}, depth);
+
 
         // Getting the nodes
 
         const model = lib.getDataModel(this.ast);
-
         const nodes: types.DataModelNode[] = model?.$ ?? [];
 
 
-        return nodes
-            .filter(n => !isHelperCall(n))
-            .map(n => getMetadataModelNode(n, { fieldName: n?.name ?? null }, depth));
+        return nodes.filter(isValid).map(dataModelNodeToMetadata);
     }
 
     public getValidationErrors(data?: types.Obj | null, depth: number = DEFAULT_MODEL_DEPTH): errors.TemplateDataValidationError[] {
-        return lib.getValidationErrorsByDataModel(data ?? this.data, this.model, depth);
+        return lib.getTemplateValidationErrorsByMetadata(data ?? this.data, this.model, depth);
     }
 
     public getIsValid(data?: types.Obj | null, depth: number = DEFAULT_MODEL_DEPTH): boolean {

@@ -86,6 +86,6 @@ describe('Flext validation workflow', () => {
       data: { company: { address: { city: 'Almaty' } } },
     });
 
-    expect(() => flext.getIsValid({}, 1)).toThrow(PotentialLoopError);
+    expect(() => flext.getIsValid(null, 1)).toThrow(PotentialLoopError);
   });
 });

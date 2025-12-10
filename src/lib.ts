@@ -21,12 +21,12 @@ export const uno = createGenerator({
     preflights: [
         // kr: Costyl for TW
         { getCSS: () => `:host, :root {
-  --un-bg-opacity: 1;
-  --un-text-opacity: 1;
-  --un-border-opacity: 1;
-  --un-ring-opacity: 1;
-  --un-divide-opacity: 1;
-  --un-placeholder-opacity: 1;
+  --un-bg-opacity: 100%;
+  --un-text-opacity: 100%;
+  --un-border-opacity: 100%;
+  --un-ring-opacity: 100%;
+  --un-divide-opacity: 100%;
+  --un-placeholder-opacity: 100%;
 }` },
     ],
     theme: {},
@@ -301,6 +301,98 @@ export function getDataModel(ast: AST.Program): DataModel {
     return result;
 }
 
+export function dataModelNodeToMetadata(node: types.DataModelNode, fields: types.Field[], _options: types.Obj = {}, depth: number = DEFAULT_MODEL_DEPTH): types.MetadataModelNode {
+
+    // Doing some checks
+
+    if (depth <= 0)
+        throw new errors.PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
+
+
+    // Defining the functions
+
+    const getField = (_fieldName: string): types.Field | null => fields?.find(f => f?.name === _fieldName) ?? null;
+
+
+    // Getting the data
+
+    const fieldName = _options?.fieldName ?? node?.name ?? null;
+    const field = getField(fieldName);
+    const order = field?.order ?? null;
+    const nodes = node?.$ ?? [];
+    const type = nodes?.length ? 'object' : field?.type ?? DEFAULT_FIELD_TYPE;
+    const name = node?.name ?? null;
+    const label = field?.label ?? null;
+    const hint = field?.hint ?? null;
+    const min = field?.min ?? null;
+    const max = field?.max ?? null;
+    const minLength = field?.minLength ?? null;
+    const maxLength = field?.maxLength ?? null;
+    const options = field?.options ?? null;
+    const isRequiredBool = field?.isRequired ?? null;
+
+
+    // Getting the sub-nodes
+
+    const newNodes: types.MetadataModelNode[] = [];
+
+    for (const node of nodes) {
+        const nodeName = node?.name ?? null;
+
+        newNodes.push(dataModelNodeToMetadata(node, fields, {
+            fieldName: fieldName + '.' + nodeName,
+        }, depth - 1));
+    }
+
+
+    // Getting the ordered sub-nodes
+
+    const $ =  newNodes.sort((node, nodeRef) => {
+        const nodeFieldName = node?.extra?.fieldName ?? null;
+        const nodeField: types.Obj = getField(nodeFieldName) ?? {};
+        const nodeFieldOrder = nodeField?.order ?? null;
+        const nodeFieldAbsoluteOrder = nodeField?.extra?.absoluteOrder ?? null;
+        const nodeFieldNameRef = nodeRef?.extra?.fieldName ?? null;
+        const nodeFieldRef: types.Obj = getField(nodeFieldNameRef) ?? {};
+        const nodeFieldOrderRef = nodeFieldRef?.order ?? null;
+        const nodeFieldAbsoluteOrderRef = nodeFieldRef?.extra?.absoluteOrder ?? null;
+
+        if (compare(nodeFieldOrder, nodeFieldOrderRef) !== 0)
+            return compare(nodeFieldOrder, nodeFieldOrderRef);
+        else
+            return compare(nodeFieldAbsoluteOrder, nodeFieldAbsoluteOrderRef);
+    });
+
+
+    // Getting the required
+
+    const isAllChildrenRequired = newNodes?.length && newNodes.every(n => n?.isRequired);
+
+    const isRequired = isset(isRequiredBool) ? isRequiredBool : isAllChildrenRequired;
+
+
+    // Getting the extra
+
+    const extra = { fieldName };
+
+
+    return {
+        type,
+        name,
+        label,
+        hint,
+        min,
+        max,
+        minLength,
+        maxLength,
+        order,
+        options,
+        isRequired,
+        extra,
+        $,
+    };
+}
+
 export function getMacroParam(val: string): MacroParam | null {
 
     // Defining the functions
@@ -423,11 +515,11 @@ export function getHtmlH1(ast: AST.Program, doWarn: boolean = true): string[] {
     return result;
 }
 
-export function getValidationErrorsByDataModel(_data: types.Obj, model: types.MetadataModelNode[], _depth: number = DEFAULT_MODEL_DEPTH): TemplateDataValidationError[] {
+export function getTemplateValidationErrorsByMetadata(data: types.Obj, model: types.MetadataModelNode[], depth: number = DEFAULT_MODEL_DEPTH): TemplateDataValidationError[] {
 
     // Doing some checks
 
-    if (_depth <= 0)
+    if (depth <= 0)
         throw new errors.PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
 
 
@@ -438,6 +530,10 @@ export function getValidationErrorsByDataModel(_data: types.Obj, model: types.Me
 
     // Defining the functions
 
+    const isval = (val: any): boolean => inarr(val, '', null, undefined);
+
+    const len = (val: any): number => String(val).length;
+
     const err = (message: string, fieldName?: string|null): void => { result.push(new TemplateDataValidationError(message, fieldName)); };
 
 
@@ -447,21 +543,56 @@ export function getValidationErrorsByDataModel(_data: types.Obj, model: types.Me
 
         // Getting the data
 
-        const newData: types.Obj = _data[node.name] ?? null;
+        const fieldNameStr = node?.extra?.fieldName ?? null;
+        const fieldName = fieldNameStr ?? node?.name ?? 'Unknown';
+        const fieldValue: types.Obj = data[node.name] ?? null;
 
 
-        // Doing some checks
+        // If the value is required
 
-        if (inarr(newData, '', null, undefined) && node?.isRequired) {
-            const fieldName = node?.extra?.fieldName ?? node?.name ?? 'Unknown';
-
-            err(`Field '${fieldName}' is required: ${audit(newData)} is passed`, node?.extra?.fieldName ?? null);
-
+        if (isval(fieldValue) && node?.isRequired) {
+            err(`Field '${fieldName}' is required (${audit(fieldValue)} is passed)`, fieldNameStr);
             continue;
         }
 
 
-        result.push(...getValidationErrorsByDataModel(newData ?? {}, node.$ as types.MetadataModelNode[], _depth - 1));
+        // If the value has value range (e.g. 10 < value < 20)
+
+        if (inarr(node?.type, 'number', 'date') && isval(node?.min) && isval(fieldValue) && node?.min > fieldValue) {
+            err(`'${fieldName}' field value is less than the range (${audit(fieldValue)} is passed, the minimum is ${audit(node?.min)})`, fieldNameStr);
+            continue;
+        }
+
+        if (inarr(node?.type, 'number', 'date') && isval(node?.max) && isval(fieldValue) && node?.max < fieldValue) {
+            err(`'${fieldName}' field value is greater than the range (${audit(fieldValue)} is passed, the maximum is ${audit(node?.max)})`, fieldNameStr);
+            continue;
+        }
+
+
+        // If the value has length range (e.g. 100 < length < 200)
+
+        if (!inarr(node?.type, 'object', 'array', 'mixed') && isval(node?.minLength) && isval(fieldValue) && node?.minLength > len(fieldValue)) {
+            err(`'${fieldName}' field value is shorter than the range (${audit(fieldValue)} is passed, the minimum is ${audit(node?.minLength)})`, fieldNameStr);
+            continue;
+        }
+
+        if (!inarr(node?.type, 'object', 'array', 'mixed') && isval(node?.maxLength) && isval(fieldValue) && node?.maxLength < len(fieldValue)) {
+            err(`'${fieldName}' field value is longer than the range (${audit(fieldValue)} is passed, the maximum is ${audit(node?.maxLength)})`, fieldNameStr);
+            continue;
+        }
+
+        if (inarr(node?.type, 'string') && isNumber(node?.min) && isval(fieldValue) && Number(node?.min) > len(fieldValue)) {
+            err(`'${fieldName}' field value is shorter than the range (${audit(fieldValue)} is passed, the minimum is ${audit(node?.min)})`, fieldNameStr);
+            continue;
+        }
+
+        if (inarr(node?.type, 'string') && isNumber(node?.max) && isval(fieldValue) && Number(node?.max) < len(fieldValue)) {
+            err(`'${fieldName}' field value is longer than the range (${audit(fieldValue)} is passed, the maximum is ${audit(node?.max)})`, fieldNameStr);
+            continue;
+        }
+
+
+        result.push(...getTemplateValidationErrorsByMetadata(fieldValue ?? {}, node.$ as types.MetadataModelNode[], depth - 1));
     }
 
 
@@ -475,6 +606,13 @@ export function ensureString(val: any): string {
     return String(val ?? '');
 }
 
+export function ensureNullableString(val: any): string|null {
+    if (inarr(val, null, undefined))
+        return null;
+    else
+        return ensureString(val);
+}
+
 export function ensureDate(val: Date | string | number): Date {
     const isDateObj = isObject(val) && val instanceof Date;
     const isDbDate = typeof val === 'string' && RegexHelper.dbDateStr.test(val);
@@ -482,31 +620,31 @@ export function ensureDate(val: Date | string | number): Date {
 
     // Defining the functions
 
-    const unixDate = (val1: string|number): Date => {
-        const date = new Date(val1);
+    const unixDate = (_val: string|number): Date => {
+        const date = new Date(_val);
 
         if (isNaN(date.getTime()))
-            throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(val1));
+            throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(_val));
         else
             return date;
     }
 
-    const dbDate = (val1: string): Date => {
-        const [ year, month, day ] = val1?.split('-')?.map(Number) ?? [];
+    const dbDate = (_val: string): Date => {
+        const [ year, month, day ] = _val?.split('-')?.map(Number) ?? [];
 
         if (year && month && day)
             return DateTime.fromObject({ year, month, day }).toJSDate();
         else
-            throw new BaseError('Unable to get date: The date is invalid: ' + audit(val1));
+            throw new BaseError('Unable to get date: The date is invalid: ' + audit(_val));
     }
 
-    const isoDate = (val1: string): Date => {
-        const date = DateTime.fromISO(val1);
+    const isoDate = (_val: string): Date => {
+        const date = DateTime.fromISO(_val);
 
         if (date.isValid)
             return date.toJSDate();
         else
-            throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(val1));
+            throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(_val));
     }
 
 
@@ -560,7 +698,23 @@ export function ensureFieldName(val: string): string {
     return pathItem.trim();
 }
 
-export function ensureFieldOrder(val: any): number|null {
+export function ensureNullableFieldMinMax(val: any): Date | number | null {
+    if (isNumber(val))
+        return val;
+    else if (isObject(val) && val instanceof Date)
+        return val;
+    else
+        return null;
+}
+
+export function ensureNullableFieldMinMaxLength(val: any): number|null {
+    if (isNumber(val))
+        return val;
+    else
+        return null;
+}
+
+export function ensureNullableFieldOrder(val: any): number|null {
     return isset(val) ? Number(val) : null;
 }
 
@@ -622,12 +776,16 @@ export function macroToField(val: types.Macro): types.Field {
 
     // Getting the data
 
-    const type = get('type') ?? DEFAULT_FIELD_TYPE;
-    const nameStr = nameParam?.value ?? null;
-    const label = get('label') ?? null;
-    const descr = get('descr') ?? null;
-    const hint = get('hint') ?? null;
-    const order = ensureFieldOrder(get('order'));
+    const type = ensureString(get('type') ?? DEFAULT_FIELD_TYPE) as types.FieldType;
+    const nameStr = ensureNullableString(nameParam?.value);
+    const label = ensureNullableString(get('label'));
+    const descr = ensureNullableString(get('descr'));
+    const hint = ensureNullableString(get('hint'));
+    const min = ensureNullableFieldMinMax(get('min'));
+    const max = ensureNullableFieldMinMax(get('max'));
+    const minLength = ensureNullableFieldMinMaxLength(get('minLength'));
+    const maxLength = ensureNullableFieldMinMaxLength(get('maxLength'));
+    const order = ensureNullableFieldOrder(get('order'));
     const value = ensureFieldValue(get('value'));
     const isRequired = !!get('required');
 
@@ -654,6 +812,10 @@ export function macroToField(val: types.Macro): types.Field {
         label,
         descr,
         hint,
+        min,
+        max,
+        minLength,
+        maxLength,
         order,
         value,
         isRequired,

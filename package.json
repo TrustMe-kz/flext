@@ -37,7 +37,7 @@
     "@babel/preset-typescript": "^7.28.5",
     "@handlebars/parser": "^2.2.2",
     "@tailwindcss/cli": "^4.1.17",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.2",
     "esbuild": "^0.27.1",
     "esbuild-plugin-import-glob": "^0.1.1",
     "tailwindcss": "^4.1.17",
