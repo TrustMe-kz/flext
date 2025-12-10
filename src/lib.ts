@@ -21,9 +21,12 @@ export const uno = createGenerator({
     preflights: [
         // kr: Costyl for TW
         { getCSS: () => `:host, :root {
-  --un-border-opacity: 100%;
-  --un-text-opacity: 100%;
-  --un-bg-opacity: 100%;
+  --un-bg-opacity: 1;
+  --un-text-opacity: 1;
+  --un-border-opacity: 1;
+  --un-ring-opacity: 1;
+  --un-divide-opacity: 1;
+  --un-placeholder-opacity: 1;
 }` },
     ],
     theme: {},
