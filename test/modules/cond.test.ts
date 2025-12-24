@@ -97,16 +97,6 @@ describe('"cond" module', () => {
     expect(html).toBe('Low');
   });
 
-  it('noColor mirrors op for boolean output', () => {
-    const html = getHtml({
-      modules: MODULE_NAME,
-      template: '{{#if (cond:noColor data.status "equal" "ok")}}OK{{else}}Fail{{/if}}',
-      data: { data: { status: 'ok' } },
-    }).trim();
-
-    expect(html).toBe('OK');
-  });
-
   it('default helper matches the base op behavior', () => {
     const html = getHtml({
       modules: MODULE_NAME,

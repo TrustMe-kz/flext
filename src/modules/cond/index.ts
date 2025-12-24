@@ -118,7 +118,6 @@ export default defineModule({
         or: or,
         greater: greater,
         less: less,
-        noColor: op,
         __default: op,
     },
 });

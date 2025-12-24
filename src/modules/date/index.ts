@@ -6,6 +6,11 @@ import { TemplateSyntaxError } from '@/errors';
 import { putWithColor } from '@/modules/put';
 
 
+// Constants
+
+export const DEFAULT_COLOR_OP = 'text';
+
+
 // Functions
 
 export function op(state: any): DateTime | string | number | null {
@@ -104,9 +109,11 @@ export function op(state: any): DateTime | string | number | null {
 }
 
 export function opWithColor(state: any): SafeString {
+    const args: any[] = state?.args ?? [];
+    const [ date, _op ] = args;
     const namedArgs: Obj = state?.namedArgs ?? {};
     const fallback = namedArgs?.fallback ?? '';
-    const result = op(state) ?? fallback;
+    const result = op({ ...state, args: [ date, _op ?? DEFAULT_COLOR_OP ] }) ?? fallback;
 
     return putWithColor({ ...state, args: [ result ] });
 }

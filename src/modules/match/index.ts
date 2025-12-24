@@ -3,7 +3,7 @@ import { defineModule } from '@/lib';
 
 // Functions
 
-export function matchHelper(state: any): any {
+export function _match(state: any): any {
     const args: any[] = state?.args ?? [];
     const [ value ] = args;
     const self = state?.self ?? null;
@@ -19,7 +19,7 @@ export function matchHelper(state: any): any {
     return render();
 }
 
-export function caseHelper(state: any): any {
+export function _case(state: any): any {
     const args: any[] = state?.args ?? [];
     const self = state?.self ?? null;
     const value = self.__flext_match_value ?? null;
@@ -37,18 +37,18 @@ export function caseHelper(state: any): any {
     return '';
 }
 
-export function fallbackHelper(state: any): any {
+export function _fallback(state: any): any {
     const self = state?.self ?? null;
     const value = self.__flext_match_value ?? null;
 
-    return caseHelper({ ...state, args: [ value ] });
+    return _case({ ...state, args: [ value ] });
 }
 
 
 export default defineModule({
     helpers: {
-        case: caseHelper,
-        fallback: fallbackHelper,
-        __default: matchHelper,
+        case: _case,
+        fallback: _fallback,
+        __default: _match,
     },
 });
