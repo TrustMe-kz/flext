@@ -3,12 +3,17 @@ import { Obj } from '@/types';
 import { isNumber, defineModule } from '@/lib';
 import { putWithColor } from '@/modules/put';
 import writtenNumber from 'written-number';
-import locales from './locales.json';
+import kkKz from './locales/kkKz.json';
+import localeNames from './localeNames.json';
 
 
 // Constants
 
 export const DEFAULT_LANG = 'en';
+
+export const LOCALES: Obj = {
+    'kk-KZ': kkKz,
+};
 
 
 // Functions
@@ -21,9 +26,16 @@ export function op(state: any): number|string|boolean {
     const { lang, strict } = namedArgs;
 
 
+    // Defining the functions
+
+    const locale = (lang: string): string | Obj | null => {
+        return localeNames[lang] ?? LOCALES[lang] ?? null;
+    };
+
+
     // Getting the locale
 
-    const newLang = locales[lang] ?? locales[flext?.lang] ?? DEFAULT_LANG;
+    const newLang = locale(lang) ?? locale(flext?.lang) ?? DEFAULT_LANG;
 
 
     // Matching an operation
