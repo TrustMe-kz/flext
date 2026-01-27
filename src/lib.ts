@@ -25,6 +25,7 @@ export const uno = createGenerator({
   --un-text-opacity: 100%;
   --un-border-opacity: 100%;
   --un-outline-opacity: 100%;
+  --un-outline-style: solid;
   --un-ring-opacity: 100%;
   --un-divide-opacity: 100%;
   --un-placeholder-opacity: 100%;
