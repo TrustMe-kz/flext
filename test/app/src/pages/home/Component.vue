@@ -51,8 +51,6 @@ const upd = async (): Promise<void> => {
 
   const css = await flext.getCss();
 
-  console.log('flext.model', flext.model);
-
 
   preview(flext.html, css);
 }

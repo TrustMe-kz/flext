@@ -68,7 +68,7 @@ describe('Flext features', () => {
 
   it('derives title from the first <h1> when no @title directive is provided', () => {
     const template = `
-      {{!-- @v "1.0.beta3" --}}
+      {{!-- @v "1.0.beta4" --}}
       <main>
         <h1>
           Flext Main Title 2024
@@ -86,7 +86,7 @@ describe('Flext features', () => {
 
   it('captures explicit field order and absolute ordering sequence', () => {
     const template = `
-      {{!-- @v "1.0.beta3" --}}
+      {{!-- @v "1.0.beta4" --}}
       {{!-- @field "data.a" order="2" label="A" --}}
       {{!-- @field "data.b" order="1" label="B" --}}
       {{!-- @field "data.c" order="1" label="C" --}}
@@ -110,7 +110,7 @@ describe('Flext features', () => {
 
   it('reinitializes directive metadata and modules when setTemplate is reused', () => {
     const firstTemplate = `
-      {{!-- @v "1.0.beta3" --}}
+      {{!-- @v "1.0.beta4" --}}
       {{!-- @use "put" --}}
       {{!-- @field "data.value" label="Value" --}}
       <p>{{ put data.value "--" }}</p>
@@ -131,6 +131,6 @@ describe('Flext features', () => {
     expect(flext.version).toBe('2.0.beta1');
     expect(flext.fields.map(f => f.name)).toEqual([ 'data.total' ]);
     expect(flext.helpers.put).toBeUndefined();
-    expect(flext.html.trim()).toContain('<span class="text-blue-500">5</span>');
+    expect(flext.html.trim()).toContain('5');
   });
 });

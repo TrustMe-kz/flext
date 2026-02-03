@@ -5,21 +5,23 @@ import babelPlugin from '../babel-plugin.js';
 
 esbuild.build({
     entryPoints: [ 'src/index.ts' ],
+    plugins: [ babelPlugin() ],
+    loader: { '.css': 'text' },
     outfile: 'dist/index.cjs',
-    bundle: true,
     platform: 'node',
     format: 'cjs',
+    bundle: true,
     sourcemap: false,
     minify: true,
-    plugins: [ babelPlugin() ],
 }).catch(() => process.exit(1));
 
 esbuild.build({
     entryPoints: [ 'src/index.ts' ],
+    loader: { '.css': 'text' },
     outfile: 'dist/index.js',
-    bundle: true,
     platform: 'node',
     format: 'esm',
+    bundle: true,
     sourcemap: false,
     minify: true,
 }).catch(() => process.exit(1));

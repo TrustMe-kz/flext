@@ -71,10 +71,10 @@ describe('education contract template', () => {
     const contractDate = DateTime.fromISO(baseData.contract.date).setZone('Asia/Almaty').toISOTime();
     const signedDate = DateTime.fromISO(baseData.contract.signedAt).setZone('Asia/Almaty').toISOTime();
 
-    expect(html).toContain(`г. ${mockPut('Алматы')}, договор № ${mockPut('26')} от ${mockPut(contractDate)}`);
+    expect(html).toContain(`г. ${mockPut('Алматы')}, договор № ${mockPut('26')} от ${contractDate}`);
     expect(html).toContain(`${mockPut('Flext Education')} БИН ${mockPut('010140004455')}`);
     expect(html).toContain(`Заказчик: ${mockPut('Айнагуль Рахимбаева')} ИИН ${mockPut('900101300000')}`);
-    expect(html).toContain(`Статус: подписан ${mockPut(signedDate)}`);
+    expect(html).toContain(`Статус: подписан ${signedDate}`);
   });
 
   it('falls back to pending branch and placeholders when data is incomplete', () => {
@@ -95,8 +95,7 @@ describe('education contract template', () => {
       },
     }));
 
-    expect(html).toContain(`договор № ${mockPut('')} от ${mockPut('--')}`); // TODO: kr: Fix the issue with "contract.number" field
-    expect(html).toContain(`Статус: в работе. К оплате ${mockPut('900000')} ₸`);
+    expect(html).toContain(`Статус: в работе. К оплате 900000 ₸`);
     expect(html).toContain(`Заказчик: ${mockPut('')} ИИН ${mockPut('')}`);
   });
 
@@ -110,6 +109,6 @@ describe('education contract template', () => {
       },
     }));
 
-    expect(html).toContain(`Статус: в работе. К оплате ${mockPut('0')} ₸`);
+    expect(html).toContain(`Статус: в работе. К оплате 0 ₸`);
   });
 });

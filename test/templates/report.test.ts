@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DateTime } from 'luxon';
-import { getHtml, mockPut } from '@test-lib';
+import { getHtml } from '@test-lib';
 
 
 // Functions
@@ -19,7 +19,7 @@ describe('report summary template', () => {
 
       <p>
         Remaining:
-        {{ number:text (math:noColor data.report.total "minus" data.report.completed) lang="en" }}
+        {{ number:text (math:op data.report.total "minus" data.report.completed) lang="en" }}
       </p>
 
       {{#match data.report.status}}
@@ -60,8 +60,8 @@ describe('report summary template', () => {
 
     const completedAt = DateTime.fromISO(baseData.data.report.completedAt).setZone('UTC').toISOTime();
 
-    expect(html).toContain(`Remaining: ${mockPut('two')}`);
-    expect(html).toContain(`Completed on ${mockPut(completedAt)}`);
+    expect(html).toContain(`Remaining: two`);
+    expect(html).toContain(`Completed on ${completedAt}`);
   });
 
   it('falls back to contextual status when the report is still in progress', () => {
@@ -95,7 +95,7 @@ describe('report summary template', () => {
       },
     }));
 
-    expect(attentionHtml).toContain(`Remaining: ${mockPut('three')}`);
+    expect(attentionHtml).toContain(`Remaining: three`);
     expect(attentionHtml).toContain('Needs attention');
     expect(readyHtml).toContain('Ready for review');
   });
