@@ -1,14 +1,12 @@
 import { DateTime } from 'luxon';
 import { AST } from '@handlebars/parser';
-import { createGenerator, presetTypography, Preset } from 'unocss';
-import { presetWind4, Theme as Wind4Theme } from '@unocss/preset-wind4';
-import { Obj, Isset, IsNumber, IsObject, Has, Inarr, Macro, MacroParam, DataModel, DataModelNode, CollectorFilterHandler } from '@/types';
+import { createGenerator, presetTypography } from 'unocss';
+import { presetWind4 } from '@unocss/preset-wind4';
 import { BaseError, BaseWarning, PotentialLoopError, TemplateDataValidationError } from '@/errors';
 import striptags from 'striptags';
+import unocssShadowDomHack from './unocssShadowDomHack.css';
 import Handlebars, { TemplateDelegate } from 'handlebars';
-import * as types from "@/types";
-import * as errors from "@/errors";
-import {DEFAULT_FIELD_TYPE} from "@/index";
+import * as types from '@/types';
 
 
 // Third-parties
@@ -16,20 +14,12 @@ import {DEFAULT_FIELD_TYPE} from "@/index";
 export const uno = createGenerator({
     presets: [
         presetWind4(),
-        presetTypography() as Preset<Wind4Theme>,
+        presetTypography(),
     ],
     preflights: [
-        // kr: Costyl for TW
-        { getCSS: () => `:host, :root {
-  --un-bg-opacity: 100%;
-  --un-text-opacity: 100%;
-  --un-border-opacity: 100%;
-  --un-outline-opacity: 100%;
-  --un-outline-style: solid;
-  --un-ring-opacity: 100%;
-  --un-divide-opacity: 100%;
-  --un-placeholder-opacity: 100%;
-}` },
+        // @remarks NOTE: kr: UnoCSS needs a hack to make Shadow DOM work in Tailwind v4
+        // @see https://github.com/tailwindlabs/tailwindcss/discussions/15556
+        { getCSS: () => unocssShadowDomHack },
     ],
     theme: {},
 });
@@ -38,6 +28,8 @@ export const uno = createGenerator({
 // Constants
 
 export const DEFAULT_MODEL_DEPTH = 10;
+
+export const DEFAULT_FIELD_TYPE: types.FieldType = 'string';
 
 
 // Variables
@@ -49,9 +41,9 @@ export const stripHtml = striptags;
 
 export class HandlebarsCollector<T = any> extends Handlebars.Visitor {
     public data: T[] = [];
-    public match: CollectorFilterHandler<T> = () => true;
+    public match: types.CollectorFilterHandler<T> = () => true;
 
-    constructor(filter?: CollectorFilterHandler<T>) {
+    constructor(filter?: types.CollectorFilterHandler<T>) {
         super();
         if (filter) this.setMatchHandler(filter);
     }
@@ -61,7 +53,7 @@ export class HandlebarsCollector<T = any> extends Handlebars.Visitor {
             this.data.push(val);
     }
 
-    public setMatchHandler(val: CollectorFilterHandler<T>): this {
+    public setMatchHandler(val: types.CollectorFilterHandler<T>): this {
         this.match = val;
         return this;
     }
@@ -130,24 +122,24 @@ class FlextH1SomewhereContentCollector extends HandlebarsContentCollector {
 
 // Checking Functions
 
-export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): Inarr<T, A> {
-    return arr.includes(val) as Inarr<T, A>;
+export function inarr<T extends any, A extends any[]>(val: T, ...arr: A): types.Inarr<T, A> {
+    return arr.includes(val) as types.Inarr<T, A>;
 }
 
-export function has<T extends Obj, K extends keyof T>(obj: T, key: K): Has<T, K> {
-    return obj.hasOwnProperty(key) as Has<T, K>;
+export function has<T extends types.Obj, K extends keyof T>(obj: T, key: K): types.Has<T, K> {
+    return obj.hasOwnProperty(key) as types.Has<T, K>;
 }
 
-export function isset<T extends any>(val: T): Isset<T> {
-    return !inarr(val, null, undefined) as Isset<T>;
+export function isset<T extends any>(val: T): types.Isset<T> {
+    return !inarr(val, null, undefined) as types.Isset<T>;
 }
 
-export function isNumber<T extends any>(val: T): IsNumber<T> {
-    return (isset(val) && !isNaN(Number(val))) as IsNumber<T>;
+export function isNumber<T extends any>(val: T): types.IsNumber<T> {
+    return (isset(val) && !isNaN(Number(val))) as types.IsNumber<T>;
 }
 
-export function isObject<T extends any>(val: T): IsObject<T> {
-    return (typeof val === 'object' && val !== null) as IsObject<T>;
+export function isObject<T extends any>(val: T): types.IsObject<T> {
+    return (typeof val === 'object' && val !== null) as types.IsObject<T>;
 }
 
 
@@ -175,11 +167,11 @@ export function getTemplate(val: string | AST.Program): TemplateDelegate {
     return Handlebars.compile(val);
 }
 
-export function getHtml(template: TemplateDelegate, data: Obj = {}, helpers: Obj = {}): string {
+export function getHtml(template: TemplateDelegate, data: types.Obj = {}, helpers: types.Obj = {}): string {
     return template(data, { helpers });
 }
 
-export async function getCss(template: TemplateDelegate, data: Obj = {}, options: Obj = {}): Promise<string> {
+export async function getCss(template: TemplateDelegate, data: types.Obj = {}, options: types.Obj = {}): Promise<string> {
     const helpers = options?.helpers ?? {};
     const doGenerateGlobalStyles = Boolean(options?.doGenerateGlobalStyles ?? true);
 
@@ -206,7 +198,7 @@ export function getPaths(ast: AST.Program): string[] {
     return unique(paths);
 }
 
-export function pathToDataModelNode(path: string, depth: number = DEFAULT_MODEL_DEPTH): DataModelNode {
+export function pathToDataModelNode(path: string, depth: number = DEFAULT_MODEL_DEPTH): types.DataModelNode {
 
     // Doing some checks
 
@@ -218,7 +210,7 @@ export function pathToDataModelNode(path: string, depth: number = DEFAULT_MODEL_
 
     const [ name, ...items ] = path?.split('.') ?? [];
 
-    const result: DataModelNode = { name };
+    const result: types.DataModelNode = { name };
 
 
     // If the node has children
@@ -230,7 +222,7 @@ export function pathToDataModelNode(path: string, depth: number = DEFAULT_MODEL_
     return result;
 }
 
-export function pathToDataModel(path: string, depth: number = DEFAULT_MODEL_DEPTH): DataModel {
+export function pathToDataModel(path: string, depth: number = DEFAULT_MODEL_DEPTH): types.DataModel {
     const node: any = pathToDataModelNode(path, depth);
     const dataModel: any = { name: 'root', $: [ node ] };
 
@@ -239,8 +231,8 @@ export function pathToDataModel(path: string, depth: number = DEFAULT_MODEL_DEPT
 
     dataModel.addPath = (_path: string, _depth: number = DEFAULT_MODEL_DEPTH): void => {
         const newNode = pathToDataModelNode(_path, _depth);
-        let cursorRef: DataModelNode = dataModel;
-        let cursor: DataModelNode | null = newNode;
+        let cursorRef: types.DataModelNode = dataModel;
+        let cursor: types.DataModelNode | null = newNode;
 
 
         // Iterating for each new node
@@ -283,9 +275,9 @@ export function pathToDataModel(path: string, depth: number = DEFAULT_MODEL_DEPT
     return dataModel;
 }
 
-export function getDataModel(ast: AST.Program): DataModel {
+export function getDataModel(ast: AST.Program): types.DataModel {
     const [ first, ...paths ] = getPaths(ast);
-    const result: DataModel = pathToDataModel(first);
+    const result: types.DataModel = pathToDataModel(first);
 
 
     // Iterating for each path
@@ -308,7 +300,7 @@ export function dataModelNodeToMetadata(node: types.DataModelNode, fields: types
     // Doing some checks
 
     if (depth <= 0)
-        throw new errors.PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
+        throw new PotentialLoopError('Flext: Unable to get data model: The data model is too deep');
 
 
     // Defining the functions
@@ -395,13 +387,13 @@ export function dataModelNodeToMetadata(node: types.DataModelNode, fields: types
     };
 }
 
-export function getMacroParam(val: string): MacroParam | null {
+export function getMacroParam(val: string): types.MacroParam | null {
 
     // Defining the functions
 
     const match = (regex: RegExp): any => val?.match(regex) ?? null;
 
-    const get = (val: any): MacroParam => {
+    const get = (val: any): types.MacroParam => {
         const value = val?.groups?.value ?? null;
         const name = val?.groups?.name ?? value;
 
@@ -431,9 +423,9 @@ export function getMacroParam(val: string): MacroParam | null {
     return null;
 }
 
-export function getMacroParams(val: string, doWarn: boolean = true): MacroParam[] {
+export function getMacroParams(val: string, doWarn: boolean = true): types.MacroParam[] {
     const matches = val?.match(RegexHelper.macroParams) ?? [];
-    const result: MacroParam[] = [];
+    const result: types.MacroParam[] = [];
 
 
     // Iterating for each token
@@ -451,9 +443,9 @@ export function getMacroParams(val: string, doWarn: boolean = true): MacroParam[
     return result;
 }
 
-export function getMacros(ast: AST.Program, doWarn: boolean = true): Macro[] {
+export function getMacros(ast: AST.Program, doWarn: boolean = true): types.Macro[] {
     const macroArr = new FlextMacroCollector().collect(ast);
-    const result: Macro[] = [];
+    const result: types.Macro[] = [];
 
 
     // Iterating for each macro string
@@ -522,7 +514,7 @@ export function getTemplateValidationErrorsByMetadata(data: types.Obj, model: ty
     // Doing some checks
 
     if (depth <= 0)
-        throw new errors.PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
+        throw new PotentialLoopError('Flext: Unable to verify the data: The data model is too deep');
 
 
     // Getting the data
@@ -615,38 +607,44 @@ export function ensureNullableString(val: any): string|null {
         return ensureString(val);
 }
 
-export function ensureDate(val: Date | string | number): Date {
+export function ensureDate<T extends boolean = true>(val: Date | string | number, doWarn: T = true as T): T extends true ? Date : Date | null {
     const isDateObj = isObject(val) && val instanceof Date;
     const isDbDate = typeof val === 'string' && RegexHelper.dbDateStr.test(val);
 
 
     // Defining the functions
 
-    const unixDate = (_val: string|number): Date => {
+    const unixDate = <R extends boolean = true>(_val: string|number, _doWarn: R = true as R): R extends true ? Date : Date | null => {
         const date = new Date(_val);
 
-        if (isNaN(date.getTime()))
+        if (isNaN(date.getTime()) && _doWarn)
             throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(_val));
+        else if (isNaN(date.getTime()))
+            return null;
         else
             return date;
     }
 
-    const dbDate = (_val: string): Date => {
+    const dbDate = <R extends boolean = true>(_val: string, _doWarn: R = true as R): R extends true ? Date : Date | null => {
         const [ year, month, day ] = _val?.split('-')?.map(Number) ?? [];
 
         if (year && month && day)
-            return DateTime.fromObject({ year, month, day }).toJSDate();
+            return DateTime.fromtypes.Object({ year, month, day }).toJSDate();
+        else if (_doWarn)
+            throw new BaseError('Flext: Unable to get date: The date is invalid: ' + audit(_val));
         else
-            throw new BaseError('Unable to get date: The date is invalid: ' + audit(_val));
+            return null;
     }
 
-    const isoDate = (_val: string): Date => {
+    const isoDate = <R extends boolean = true>(_val: string, _doWarn: R = true as R): R extends true ? Date : Date | null => {
         const date = DateTime.fromISO(_val);
 
         if (date.isValid)
             return date.toJSDate();
-        else
+        else if (_doWarn)
             throw new BaseWarning('Flext: Unable to get date: The date is invalid: ' + audit(_val));
+        else
+            return null;
     }
 
 
@@ -654,13 +652,13 @@ export function ensureDate(val: Date | string | number): Date {
         return val as Date;
 
     if (isNumber(val))
-        return unixDate(val as number);
+        return unixDate(val as number, doWarn);
 
     else if (isDbDate)
-        return dbDate(val as string);
+        return dbDate(val as string, doWarn);
 
     else
-        return isoDate(val as string);
+        return isoDate(val as string, doWarn);
 }
 
 export function ensureTitle(val: string|number): string {
@@ -669,14 +667,14 @@ export function ensureTitle(val: string|number): string {
 
     // Defining the functions
 
-    const _filter = (search: string | RegExp, val: string = '') => title = title.replace(search, val);
+    const filter = (search: string | RegExp, val: string = '') => title = title.replace(search, val);
 
 
     // Getting the title
 
-    _filter('\n', ' ');
-    _filter(/\s{2,}/mg, ' ');
-    _filter(/[^\p{L}\d\s]/mgu);
+    filter('\n', ' ');
+    filter(/\s{2,}/mg, ' ');
+    filter(/[^\p{L}\d\s]/mgu);
 
 
     return title.trim();
@@ -688,13 +686,13 @@ export function ensureFieldName(val: string): string {
 
     // Defining the functions
 
-    const _filter = (search: string, val: string = '') => pathItem = pathItem.replace(search, val);
+    const filter = (search: string, val: string = '') => pathItem = pathItem.replace(search, val);
 
 
     // Getting the path item
 
-    _filter('['); // Filtering the '[n]' case
-    _filter(']'); // Filtering the '[n]' case
+    filter('['); // Filtering the '[n]' case
+    filter(']'); // Filtering the '[n]' case
 
 
     return pathItem.trim();
@@ -736,19 +734,23 @@ export function ensureFieldValue(val: any): types.FieldValue {
     else return val ?? null;
 }
 
-export function filter(regex: RegExp, val: string|number): boolean {
+export function sum(...args: number[]): number {
+    return args.reduce((acc, val) => Number(acc) + Number(val), 0);
+}
+
+export function matches(regex: RegExp, val: string|number): boolean {
     return !!String(val).trim().match(regex);
 }
 
-export function compare(a: number|null|undefined, b: number|null|undefined): number {
-    if (!isset(a) && !isset(b))
+export function compare(val: number|null|undefined, valRef: number|null|undefined): number {
+    if (!isset(val) && !isset(valRef))
         return 0;
-    else if (!isset(a))
+    else if (!isset(val))
         return 1;
-    else if (!isset(b))
+    else if (!isset(valRef))
         return -1;
     else
-        return a - b;
+        return val - valRef;
 }
 
 export function macroToModuleNames(val: types.Macro): string[] {
@@ -795,7 +797,7 @@ export function macroToField(val: types.Macro): types.Field {
     // Doing some checks
 
     if (!nameStr)
-        throw new errors.BaseError(`Unable to get field: The 'name' param is not set: ` + audit(nameStr));
+        throw new BaseError(`Unable to get field: The 'name' param is not set: ` + audit(nameStr));
 
 
     // Getting the name
@@ -858,10 +860,10 @@ export function macroToFieldValueOption(val: types.Macro): types.FieldValueOptio
     // Doing some checks
 
     if (!name)
-        throw new errors.BaseError(`Unable to get field option: The 'name' param is not set: ` + audit(name));
+        throw new BaseError(`Unable to get field option: The 'name' param is not set: ` + audit(name));
 
     if (!fieldName)
-        throw new errors.BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + audit(name));
+        throw new BaseError(`Unable to get field option '${name}': The 'for' param is not set: ` + audit(name));
 
 
     return {
@@ -920,10 +922,10 @@ export class RegexHelper {
 
 export class FilterHelper {
     public static macro(val: string): boolean {
-        return filter(RegexHelper.macro, val);
+        return matches(RegexHelper.macro, val);
     }
 
     public static htmlH1Somewhere(val: string): boolean {
-        return filter(RegexHelper.htmlH1Somewhere, val);
+        return matches(RegexHelper.htmlH1Somewhere, val);
     }
 }

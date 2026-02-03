@@ -38,7 +38,7 @@ export function op(state: any): boolean {
     const or  = <T = any>(...a: T[]): T => a.reduce((r, x) => r || x);
 
 
-    // Matching an operation
+    // Applying the operation
 
     switch (arg2OrOp) {
         case 'equal':

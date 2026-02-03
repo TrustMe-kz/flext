@@ -1,7 +1,5 @@
-import { SafeString } from 'handlebars';
 import { Obj } from '@/types';
 import { isNumber, defineModule } from '@/lib';
-import { putWithColor } from '@/modules/put';
 import writtenNumber from 'written-number';
 import kkKz from './locales/kkKz.json';
 import localeNames from './localeNames.json';
@@ -22,7 +20,7 @@ export function op(state: any): number|string|boolean {
     const flext: Obj = state?.flext ?? {};
     const args: any[] = state?.args ?? [];
     const namedArgs: Obj = state?.namedArgs ?? {};
-    const [ number, op ] = args;
+    const [ op, number ] = args;
     const { lang, strict } = namedArgs;
 
 
@@ -38,7 +36,7 @@ export function op(state: any): number|string|boolean {
     const newLang = locale(lang) ?? locale(flext?.lang) ?? DEFAULT_LANG;
 
 
-    // Matching an operation
+    // Applying the operation
 
     switch (op) {
         case 'text':
@@ -46,50 +44,30 @@ export function op(state: any): number|string|boolean {
         case 'check':
             return strict ? typeof number === 'number' : isNumber(number);
         default:
-            return Number(number);
+            return Number(op);
     }
 }
 
-export function opWithColor(state: any): SafeString {
-    const namedArgs: Obj = state?.namedArgs ?? {};
-    const fallback = namedArgs?.fallback ?? '';
-    const result = op(state);
-
-    if (result === 0)
-        return putWithColor({ ...state, args: [ '0' ] });
-    else if (typeof result === 'number' && isNaN(result))
-        return putWithColor({ ...state, args: [ fallback ] });
-    else
-        return putWithColor({ ...state, args: [ result || fallback ] });
-}
-
-export function text(state: any): SafeString {
+export function text(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ number, fallback ] = args;
-    const namedArgs: Obj = state?.namedArgs ?? {};
+    const [ number ] = args;
 
-    return opWithColor({
-        ...state,
-
-        args: [ number, 'text' ],
-        namedArgs: { fallback, ...namedArgs },
-    });
+    return String(op({ ...state, args: [ 'text', number ] }));
 }
 
 export function check(state: any): boolean {
     const args: any[] = state?.args ?? [];
     const [ number ] = args;
 
-    return op({ ...state, args: [ number, 'check' ] }) as boolean;
+    return op({ ...state, args: [ 'check', number ] }) as boolean;
 }
 
 
 export default defineModule({
     helpers: {
-        op: opWithColor,
+        op: op,
         text: text,
         check: check,
-        noColor: op,
-        __default: opWithColor,
+        __default: op,
     },
 });

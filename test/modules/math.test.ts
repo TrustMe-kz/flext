@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getHtml, mockPut } from '@test-lib';
+import { getHtml } from '@test-lib';
 
 
 // Constants
@@ -21,8 +21,8 @@ describe('"math" module', () => {
       template: '{{ math:op "sqrt" 9 }}',
     }).trim();
 
-    expect(plusResult).toBe(mockPut('8'));
-    expect(sqrtResult).toBe(mockPut('3'));
+    expect(plusResult).toBe('8');
+    expect(sqrtResult).toBe('3');
   });
 
   it('plus adds two values', () => {
@@ -31,7 +31,7 @@ describe('"math" module', () => {
       template: '{{ math:plus 3 4 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('7'));
+    expect(html).toBe('7');
   });
 
   it('minus subtracts the second value from the first', () => {
@@ -40,7 +40,7 @@ describe('"math" module', () => {
       template: '{{ math:minus 10 3 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('7'));
+    expect(html).toBe('7');
   });
 
   it('multiply multiplies the provided values', () => {
@@ -49,7 +49,7 @@ describe('"math" module', () => {
       template: '{{ math:multiply 6 7 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('42'));
+    expect(html).toBe('42');
   });
 
   it('divide divides the first value by the second', () => {
@@ -58,7 +58,7 @@ describe('"math" module', () => {
       template: '{{ math:divide 22 7 }}',
     }).trim();
 
-    expect(html).toBe(mockPut(String(22 / 7)));
+    expect(html).toBe(String(22 / 7));
   });
 
   it('intDivide returns the integer remainder', () => {
@@ -67,7 +67,7 @@ describe('"math" module', () => {
       template: '{{ math:intDivide 7 2 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('1'));
+    expect(html).toBe('1');
   });
 
   it('power raises the first value to the power of the second', () => {
@@ -76,7 +76,7 @@ describe('"math" module', () => {
       template: '{{ math:power 2 5 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('32'));
+    expect(html).toBe('32');
   });
 
   it('round supports default rounding and explicit modes', () => {
@@ -90,8 +90,8 @@ describe('"math" module', () => {
       template: '{{ math:round 2.9 "floor" }}',
     }).trim();
 
-    expect(defaultRound).toBe(mockPut('3'));
-    expect(floorRound).toBe(mockPut('2'));
+    expect(defaultRound).toBe('3');
+    expect(floorRound).toBe('2');
   });
 
   it('round supports ceil and trunc helpers explicitly', () => {
@@ -105,8 +105,8 @@ describe('"math" module', () => {
       template: '{{ math:round "-2.9" "trunc" }}',
     }).trim();
 
-    expect(ceilRound).toBe(mockPut('2'));
-    expect(truncRound).toBe(mockPut('-2'));
+    expect(ceilRound).toBe('2');
+    expect(truncRound).toBe('-2');
   });
 
   it('sqrt calculates the square root', () => {
@@ -115,7 +115,7 @@ describe('"math" module', () => {
       template: '{{ math:sqrt 16 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('4'));
+    expect(html).toBe('4');
   });
 
   it('cbrt calculates the cubic root', () => {
@@ -124,7 +124,7 @@ describe('"math" module', () => {
       template: '{{ math:cbrt 27 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('3'));
+    expect(html).toBe('3');
   });
 
   it('abs returns the absolute value', () => {
@@ -133,13 +133,13 @@ describe('"math" module', () => {
       template: '{{ math:abs -42 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('42'));
+    expect(html).toBe('42');
   });
 
-  it('noColor returns raw numeric output', () => {
+  it('op returns raw numeric output', () => {
     const html = getHtml({
       modules: MODULE_NAME,
-      template: '{{ math:noColor 7 "minus" 2 }}',
+      template: '{{ math:op 7 "minus" 2 }}',
     }).trim();
 
     expect(html).toBe('5');
@@ -151,7 +151,7 @@ describe('"math" module', () => {
       template: '{{ math 3 "plus" 5 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('8'));
+    expect(html).toBe('8');
   });
 
   it('mul alias matches multiply behavior', () => {
@@ -160,7 +160,7 @@ describe('"math" module', () => {
       template: '{{ math:mul 4 3 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('12'));
+    expect(html).toBe('12');
   });
 
   it('div alias mirrors divide output', () => {
@@ -169,16 +169,7 @@ describe('"math" module', () => {
       template: '{{ math:div 9 4 }}',
     }).trim();
 
-    expect(html).toBe(mockPut(String(9 / 4)));
-  });
-
-  it('respects custom color overrides on colored helpers', () => {
-    const html = getHtml({
-      modules: MODULE_NAME,
-      template: '{{ math 2 "power" 3 color="text-green-600" }}',
-    }).trim();
-
-    expect(html).toBe(mockPut('8', 'text-green-600'));
+    expect(html).toBe(String(9 / 4));
   });
 
   it('round throws for unsupported rounding modes', () => {
@@ -188,13 +179,13 @@ describe('"math" module', () => {
     })).toThrow(/Unknown operation/i);
   });
 
-  it('allows using noColor subexpressions as numeric inputs', () => {
+  it('allows using op subexpressions as numeric inputs', () => {
     const html = getHtml({
       modules: MODULE_NAME,
-      template: '{{ math (math:noColor 10 "minus" 5) "multiply" 2 }}',
+      template: '{{ math (math:op 10 "minus" 5) "multiply" 2 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('10'));
+    expect(html).toBe('10');
   });
 
   it('delegates unknown operations to the native Math API', () => {
@@ -203,7 +194,7 @@ describe('"math" module', () => {
       template: '{{ math:op "max" 12 7 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('12'));
+    expect(html).toBe('12');
   });
 
   it('throws when requesting an unknown Math API fallback', () => {

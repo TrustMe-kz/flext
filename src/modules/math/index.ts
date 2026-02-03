@@ -1,25 +1,24 @@
-import { SafeString } from 'handlebars';
-import { Obj } from '@/types';
-import { audit, defineModule } from '@/lib';
-import { TemplateSyntaxError } from '@/errors';
-import { putWithColor } from '../put';
+import {audit, sum, defineModule, isNumber} from '@/lib';
+import {BaseError, TemplateSyntaxError} from '@/errors';
 
 
 // Types
 
 export type Arg = string|number|null|undefined;
 
+export type FlattenFuncArg = number | number[];
+
 
 // Functions
 
 export function op(state: any): number {
     const args: Arg[] = state?.args ?? [];
-    const [ a, op, b ] = args;
+    const [ a, op, b, ...rest ] = args;
 
 
     // Defining the functions
 
-    const calc = (...args1: Arg[]): number => {
+    const handle = (...args1: Arg[]): number => {
         const [ mathOp, ...mathArgs ] = args1;
         const handle = Math[mathOp] ?? null;
 
@@ -29,12 +28,28 @@ export function op(state: any): number {
             throw new TemplateSyntaxError('Math: Unknown operation: ' + audit(mathOp));
     }
 
+    const flatten = (...args: FlattenFuncArg[]): number[] => {
+        const result: number[] = [];
 
-    // Matching an operation
+        for (const arg of args) {
+            if (isNumber(arg))
+                result.push(arg as number);
+            else if (Array.isArray(arg) && arg.every(isNumber))
+                result.push(...arg);
+            else
+                throw new BaseError('Math: Unable to sum: The given arguments are not numbers: ' + audit(args));
+        }
+
+        return result;
+    };
+
+
+    // Applying the operation
 
     switch (op) {
         case 'plus':
-            return Number(a) + Number(b);
+        case 'sum':
+            return sum(...flatten(Number(a), Number(b), ...rest.map(Number)));
         case 'minus':
             return Number(a) - Number(b);
         case 'multiply':
@@ -46,83 +61,77 @@ export function op(state: any): number {
         case 'power':
             return Number(a) ** Number(b);
         default:
-            return calc(...args);
+            return handle(...args);
     }
 }
 
-export function opWithColor(state: any): SafeString {
-    const namedArgs: Obj = state?.namedArgs ?? {};
-    const fallback = namedArgs?.fallback ?? '';
-    const result = op(state);
+export function plus(state: any): number {
+    const args: Arg[] = state?.args ?? [];
+    const [ a, b, ...rest ] = args;
 
-    if (result === 0)
-        return putWithColor({ ...state, args: [ '0' ] });
-    if (typeof result === 'number' && isNaN(result))
-        return putWithColor({ ...state, args: [ fallback ] });
-    else
-        return putWithColor({ ...state, args: [ result ?? fallback ] });
+    return op({ ...state, args: [ a, 'plus', b, ...rest ] });
 }
 
-export function plus(state: any): SafeString {
+export function _sum(state: any): number {
+    const args: Arg[] = state?.args ?? [];
+    const [ a, b, ...rest ] = args;
+
+    return op({ ...state, args: [ a, 'sum', b, rest ] });
+}
+
+export function minus(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return opWithColor({ ...state, args: [ a, 'plus', b ] });
+    return op({ ...state, args: [ a, 'minus', b ] });
 }
 
-export function minus(state: any): SafeString {
+export function multiply(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return opWithColor({ ...state, args: [ a, 'minus', b ] });
+    return op({ ...state, args: [ a, 'multiply', b ] });
 }
 
-export function multiply(state: any): SafeString {
+export function divide(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return opWithColor({ ...state, args: [ a, 'multiply', b ] });
+    return op({ ...state, args: [ a, 'divide', b ] });
 }
 
-export function divide(state: any): SafeString {
+export function intDivide(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return opWithColor({ ...state, args: [ a, 'divide', b ] });
+    return op({ ...state, args: [ a, 'intDivide', b ] });
 }
 
-export function intDivide(state: any): SafeString {
+export function power(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return opWithColor({ ...state, args: [ a, 'intDivide', b ] });
+    return op({ ...state, args: [ a, 'power', b ] });
 }
 
-export function power(state: any): SafeString {
+export function round(state: any): number {
     const args: Arg[] = state?.args ?? [];
-    const [ a, b ] = args;
-
-    return opWithColor({ ...state, args: [ a, 'power', b ] });
-}
-
-export function round(state: any): SafeString {
-    const args: Arg[] = state?.args ?? [];
-    const [ a, op ] = args;
+    const [ a, _op ] = args;
 
 
     // Defining the function
 
-    const handle = (op: string, val: Arg): SafeString => opWithColor({ ...state, args: [ op, val ] });
+    const handle = (__op: string, val: Arg): number => op({ ...state, args: [ __op, val ] });
 
 
     // If the operation is not defined
 
-    if (!op) return handle('round', a);
+    if (!_op) return handle('round', a);
 
 
-    // Matching an operation
+    // Applying the operation
 
-    switch (op) {
+    switch (_op) {
         case 'floor':
             return handle('floor', a);
         case 'ceil':
@@ -130,47 +139,48 @@ export function round(state: any): SafeString {
         case 'trunc':
             return handle('trunc', a);
         default:
-            throw new TemplateSyntaxError('Math: Unknown operation: ' + audit(op));
+            throw new TemplateSyntaxError('Math: Unknown operation: ' + audit(_op));
     }
 }
 
-export function percent(state: any): SafeString {
+export function percent(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
     if (b === undefined || b === null) {
-        return opWithColor({ ...state, args: [ 'percent', a ] });
+        return op({ ...state, args: [ 'percent', a ] });
     } else {
-        return opWithColor({ ...state, args: [ a, 'divide', b, 'multiply', 100 ] });
+        return op({ ...state, args: [ a, 'divide', b, 'multiply', 100 ] });
     }
 }
 
-export function sqrt(state: any): SafeString {
+export function sqrt(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a ] = args;
 
-    return opWithColor({ ...state, args: [ 'sqrt', a ] });
+    return op({ ...state, args: [ 'sqrt', a ] });
 }
 
-export function cbrt(state: any): SafeString {
+export function cbrt(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a ] = args;
 
-    return opWithColor({ ...state, args: [ 'cbrt', a ] });
+    return op({ ...state, args: [ 'cbrt', a ] });
 }
 
-export function abs(state: any): SafeString {
+export function abs(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a ] = args;
 
-    return opWithColor({ ...state, args: [ 'abs', a ] });
+    return op({ ...state, args: [ 'abs', a ] });
 }
 
 
 export default defineModule({
     helpers: {
-        op: opWithColor,
+        op: op,
         plus: plus,
+        sum: _sum,
         minus: minus,
         mul: multiply,
         multiply: multiply,
@@ -183,7 +193,6 @@ export default defineModule({
         sqrt: sqrt,
         cbrt: cbrt,
         abs: abs,
-        noColor: op,
-        __default: opWithColor,
+        __default: op,
     },
 });

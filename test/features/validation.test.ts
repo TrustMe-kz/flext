@@ -3,7 +3,7 @@ import Flext, { PotentialLoopError } from '@flext';
 
 describe('Flext validation workflow', () => {
   const template = `
-    {{!-- @v "1.0.beta3" --}}
+    {{!-- @v "1.0.beta4" --}}
     {{!-- @use "put" --}}
     {{!-- @field "data.client.fullName" label="ФИО" required --}}
     {{!-- @field "data.client.email" label="Email" --}}
@@ -37,7 +37,7 @@ describe('Flext validation workflow', () => {
 
   it('treats zeroes and booleans as valid values for required fields', () => {
     const templateWithZeroes = `
-      {{!-- @v "1.0.beta3" --}}
+      {{!-- @v "1.0.beta4" --}}
       {{!-- @use "put" --}}
       {{!-- @field "data.metrics.count" required --}}
       {{!-- @field "data.flags.enabled" required --}}
@@ -56,7 +56,7 @@ describe('Flext validation workflow', () => {
 
   it('merges nested overrides while validating deep objects', () => {
     const template = `
-      {{!-- @v "1.0.beta3" --}}
+      {{!-- @v "1.0.beta4" --}}
       {{!-- @use "put" --}}
       {{!-- @field "data.org.name" label="Name" required --}}
       {{!-- @field "data.org.contacts.email" label="Email" required --}}
@@ -77,7 +77,7 @@ describe('Flext validation workflow', () => {
 
   it('throws PotentialLoopError when validation depth is insufficient', () => {
     const template = `
-      {{!-- @v "1.0.beta3" --}}
+      {{!-- @v "1.0.beta4" --}}
       {{!-- @field "data.company.address.city" label="City" required --}}
       {{ data.company.address.city }}
     `;
@@ -91,7 +91,7 @@ describe('Flext validation workflow', () => {
 
   it('validates numeric values and string lengths against @field min/max constraints', () => {
     const template = `
-      {{!-- @v "1.0.beta3" --}}
+      {{!-- @v "1.0.beta4" --}}
       {{!-- @field "data.metrics.score" type="number" min="10" max="20" --}}
       {{!-- @field "data.profile.username" minLength="4" maxLength="10" --}}
 

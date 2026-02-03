@@ -1,6 +1,7 @@
 import { SafeString } from 'handlebars';
 import { Obj } from '@/types';
-import { defineModule } from '@/lib';
+import { defineModule, isNumber, inarr, ensureDate } from '@/lib';
+import { format } from '../date';
 
 
 // Contents
@@ -13,8 +14,13 @@ export const DEFAULT_COLOR = 'text-blue-500';
 export function put(state: any): string {
     const args = state?.args ?? [];
     const [ val, fallback ] = args;
+    const date = ensureDate(val, false);
+    console.log( 'val', val, 'date', date);
 
-    return val ?? fallback ?? '';
+    if (date && !isNumber(val) && !inarr(val, true, false))
+        return format(date);
+    else
+        return val ?? fallback ?? '';
 }
 
 export function putWithColor(state: any): SafeString {

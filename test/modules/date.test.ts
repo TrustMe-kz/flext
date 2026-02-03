@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { DateTime } from 'luxon';
-import { getHtml, mockPut } from '@test-lib';
+import { getHtml } from '@test-lib';
 
 
 // Constants
@@ -26,7 +26,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('05'));
+        expect(html).toBe('05');
     });
 
     it('seconds returns zero-padded seconds', () => {
@@ -36,7 +36,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('45'));
+        expect(html).toBe('45');
     });
 
     it('minutes returns zero-padded minutes', () => {
@@ -46,7 +46,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('23'));
+        expect(html).toBe('23');
     });
 
     it('hours returns zero-padded hours', () => {
@@ -56,7 +56,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('14'));
+        expect(html).toBe('14');
     });
 
     it('day returns zero-padded day numbers', () => {
@@ -66,7 +66,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('05'));
+        expect(html).toBe('05');
     });
 
     it('month returns zero-padded month numbers', () => {
@@ -76,7 +76,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('03'));
+        expect(html).toBe('03');
     });
 
     it('monthText returns localized month names', () => {
@@ -86,7 +86,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut(TEMPLATE_DATA_DATE.setLocale('fr-FR').toLocaleString({ month: 'long' }).toLowerCase()));
+        expect(html).toBe(TEMPLATE_DATA_DATE.setLocale('fr-FR').toLocaleString({ month: 'long' }).toLowerCase());
     });
 
     it('year returns zero-padded years', () => {
@@ -96,19 +96,17 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('2024'));
+        expect(html).toBe('2024');
     });
 
     it('text respects locale settings', () => {
-        const expected = TEMPLATE_DATA_DATE.setLocale('en-US').toLocaleString();
-
         const html = getHtml({
             modules: MODULE_NAME,
             template: '{{ date:text data.createdAt lang="en-US" timeZone="UTC" }}',
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut(expected));
+        expect(html).toBe(TEMPLATE_DATA_DATE.setLocale('en-US').toLocaleString({ day: 'numeric', month: 'long', year: 'numeric' }));
     });
 
     it('unix returns milliseconds without color wrapper', () => {
@@ -131,10 +129,10 @@ describe('"date" module', () => {
         expect(html).toBe(TEMPLATE_DATA_DATE.toISOTime());
     });
 
-    it('noColor exposes raw values', () => {
+    it('op exposes raw values', () => {
         const html = getHtml({
             modules: MODULE_NAME,
-            template: '{{ date:noColor data.createdAt "month" padding=2 timeZone="UTC" }}',
+            template: '{{ date:op data.createdAt "month" padding=2 timeZone="UTC" }}',
             data: TEMPLATE_DATA,
         }).trim();
 
@@ -148,7 +146,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('05'));
+        expect(html).toBe('05');
     });
 
     it('monthText defaults to genitive form when nominative flag is absent', () => {
@@ -161,7 +159,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut(expected));
+        expect(html).toBe(expected);
     });
 
     it('honors Flext-level @timeZone when helper argument is omitted', () => {
@@ -171,17 +169,7 @@ describe('"date" module', () => {
             data: TEMPLATE_DATA,
         }).trim();
 
-        expect(html).toBe(mockPut('19'));
-    });
-
-    it('uses fallback text when the source date is missing', () => {
-        const html = getHtml({
-            modules: MODULE_NAME,
-            template: '{{ date data.missing "day" fallback="--" timeZone="UTC" }}',
-            data: { data: {} },
-        }).trim();
-
-        expect(html).toBe(mockPut('--'));
+        expect(html).toBe('19');
     });
 
     it('throws a descriptive error when padding is combined with unsupported ops', () => {

@@ -1,14 +1,7 @@
 import { DateTime } from 'luxon';
-import { SafeString } from 'handlebars';
 import { Obj } from '@/types';
 import { audit, ensureDate, defineModule, isset } from '@/lib';
 import { TemplateSyntaxError } from '@/errors';
-import { putWithColor } from '@/modules/put';
-
-
-// Constants
-
-export const DEFAULT_COLOR_OP = 'text';
 
 
 // Functions
@@ -79,7 +72,7 @@ export function op(state: any): DateTime | string | number | null {
     }
 
 
-    // Matching an operation
+    // Applying the operation
 
     switch (op) {
         case 'seconds':
@@ -97,8 +90,10 @@ export function op(state: any): DateTime | string | number | null {
             return monthText.toLowerCase();
         case 'year':
             return newDate.year;
-        case 'text':
+        case 'format':
             return newDate.toLocaleString();
+        case 'text':
+            return newDate.toLocaleString({ day: 'numeric', month: 'long', year: 'numeric' });
         case 'unix':
             return newDate.toMillis();
         case 'iso':
@@ -108,129 +103,120 @@ export function op(state: any): DateTime | string | number | null {
     }
 }
 
-export function opWithColor(state: any): SafeString {
-    const args: any[] = state?.args ?? [];
-    const [ date, _op ] = args;
-    const namedArgs: Obj = state?.namedArgs ?? {};
-    const fallback = namedArgs?.fallback ?? '';
-    const result = op({ ...state, args: [ date, _op ?? DEFAULT_COLOR_OP ] }) ?? fallback;
-
-    return putWithColor({ ...state, args: [ result ] });
-}
-
 export function now(state: any): DateTime {
     return op({ ...state, args: [ 'now' ] }) as DateTime;
 }
 
-export function seconds(state: any): SafeString {
+export function seconds(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ date, fallback ] = args;
+    const [ date ] = args;
     const namedArgs: Obj = state?.namedArgs ?? {};
     const padding = namedArgs?.padding ?? 2;
 
-    return opWithColor({
+    return op({
         ...state,
 
         args: [ date, 'seconds' ],
-        namedArgs: { ...namedArgs, padding, fallback },
+        namedArgs: { ...namedArgs, padding },
     });
 }
 
-export function minutes(state: any): SafeString {
+export function minutes(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ date, fallback ] = args;
+    const [ date ] = args;
     const namedArgs: Obj = state?.namedArgs ?? {};
     const padding = namedArgs?.padding ?? 2;
 
-    return opWithColor({
+    return op({
         ...state,
 
         args: [ date, 'minutes' ],
-        namedArgs: { ...namedArgs, padding, fallback },
+        namedArgs: { ...namedArgs, padding },
     });
 }
 
-export function hours(state: any): SafeString {
+export function hours(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ date, fallback ] = args;
+    const [ date ] = args;
     const namedArgs: Obj = state?.namedArgs ?? {};
     const padding = namedArgs?.padding ?? 2;
 
-    return opWithColor({
+    return op({
         ...state,
 
         args: [ date, 'hours' ],
-        namedArgs: { ...namedArgs, padding, fallback },
+        namedArgs: { ...namedArgs, padding },
     });
 }
 
-export function day(state: any): SafeString {
+export function day(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ date, fallback ] = args;
+    const [ date ] = args;
     const namedArgs: Obj = state?.namedArgs ?? {};
     const padding = namedArgs?.padding ?? 2;
 
-    return opWithColor({
+    return op({
         ...state,
 
         args: [ date, 'day' ],
-        namedArgs: { ...namedArgs, padding, fallback },
+        namedArgs: { ...namedArgs, padding },
     });
 }
 
-export function month(state: any): SafeString {
+export function month(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ date, fallback ] = args;
+    const [ date ] = args;
     const namedArgs: Obj = state?.namedArgs ?? {};
     const padding = namedArgs?.padding ?? 2;
 
-    return opWithColor({
+    return op({
         ...state,
 
         args: [ date, 'month' ],
-        namedArgs: { ...namedArgs, padding, fallback },
+        namedArgs: { ...namedArgs, padding },
     });
 }
 
-export function monthText(state: any): SafeString {
+export function monthText(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ date, fallback ] = args;
+    const [ date ] = args;
     const namedArgs: Obj = state?.namedArgs ?? {};
     const genitive = !namedArgs?.nominative;
 
-    return opWithColor({
+    return op({
         ...state,
 
         args: [ date, 'monthText' ],
-        namedArgs: { ...namedArgs, genitive, fallback },
+        namedArgs: { ...namedArgs, genitive },
     });
 }
 
-export function year(state: any): SafeString {
+export function year(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ date, fallback ] = args;
+    const [ date ] = args;
     const namedArgs: Obj = state?.namedArgs ?? {};
     const padding = namedArgs?.padding ?? 2;
 
-    return opWithColor({
+    return op({
         ...state,
 
         args: [ date, 'year' ],
-        namedArgs: { ...namedArgs, padding, fallback },
+        namedArgs: { ...namedArgs, padding },
     });
 }
 
-export function text(state: any): SafeString {
+export function format(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ date, fallback ] = args;
-    const namedArgs: Obj = state?.namedArgs ?? {};
+    const [ date ] = args;
 
-    return opWithColor({
-        ...state,
+    return op({ ...state, args: [ date, 'format' ] });
+}
 
-        args: [ date, 'text' ],
-        namedArgs: { fallback, ...namedArgs },
-    });
+export function text(state: any): string {
+    const args: any[] = state?.args ?? [];
+    const [ date ] = args;
+
+    return op({ ...state, args: [ date, 'text' ] });
 }
 
 export function unix(state: any): number {
@@ -250,7 +236,7 @@ export function iso(state: any): string {
 
 export default defineModule({
     helpers: {
-        op: opWithColor,
+        op: op,
         now: now,
         seconds: seconds,
         minutes: minutes,
@@ -259,10 +245,10 @@ export default defineModule({
         month: month,
         monthText: monthText,
         year: year,
+        format: format,
         text: text,
         unix: unix,
         iso: iso,
-        noColor: op,
-        __default: opWithColor,
+        __default: op,
     },
 });

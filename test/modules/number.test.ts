@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getHtml, mockPut } from '@test-lib';
+import { getHtml } from '@test-lib';
 
 
 // Constants
@@ -16,7 +16,7 @@ describe('"number" module', () => {
       template: '{{ number "007.5" }}',
     }).trim();
 
-    expect(html).toBe(mockPut('7.5'));
+    expect(html).toBe('7.5');
   });
 
   it('text renders a localized string when lang is provided explicitly', () => {
@@ -25,7 +25,7 @@ describe('"number" module', () => {
       template: '{{ number:text 42 lang="ru-RU" }}',
     }).trim();
 
-    expect(html).toBe(mockPut('сорок два'));
+    expect(html).toBe('сорок два');
   });
 
   it('text falls back to Flext @lang when helper-level lang is missing', () => {
@@ -34,7 +34,7 @@ describe('"number" module', () => {
       template: '{{!-- @lang "ru-RU" --}}{{ number:text 7 }}',
     }).trim();
 
-    expect(html).toBe(mockPut('семь'));
+    expect(html).toBe('семь');
   });
 
   it('check distinguishes strict checks from the soft mode', () => {
@@ -54,10 +54,10 @@ describe('"number" module', () => {
     expect(softResult).toBe('true');
   });
 
-  it('noColor returns the raw primitive without decorations', () => {
+  it('op returns the raw primitive without decorations', () => {
     const html = getHtml({
       modules: MODULE_NAME,
-      template: '{{ number:noColor "0042" }}',
+      template: '{{ number:op "0042" }}',
     }).trim();
 
     expect(html).toBe('42');
@@ -69,17 +69,7 @@ describe('"number" module', () => {
       template: '{{ number:text 15 lang="pt-BR" }}',
     }).trim();
 
-    expect(html).toBe(mockPut('quinze'));
-  });
-
-  it('uses fallback text when the value is missing', () => {
-    const html = getHtml({
-      modules: MODULE_NAME,
-      template: '{{ number data.amount fallback="--" }}',
-      data: { data: {} },
-    }).trim();
-
-    expect(html).toBe(mockPut('--'));
+    expect(html).toBe('quinze');
   });
 
   it('preserves zero-like values without triggering fallbacks', () => {
@@ -93,17 +83,7 @@ describe('"number" module', () => {
       template: '{{ number false fallback="**" }}',
     }).trim();
 
-    expect(zeroHtml).toBe(mockPut('0'));
-    expect(falseHtml).toBe(mockPut('0'));
-  });
-
-  it('applies fallbacks to the text helper as well', () => {
-    const html = getHtml({
-      modules: MODULE_NAME,
-      template: '{{ number:text data.amount fallback="n/a" }}',
-      data: { data: {} },
-    }).trim();
-
-    expect(html).toBe(mockPut('n/a'));
+    expect(zeroHtml).toBe('0');
+    expect(falseHtml).toBe('0');
   });
 });

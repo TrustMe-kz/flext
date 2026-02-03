@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getHtml, mockPut } from '@test-lib';
+import { getHtml } from '@test-lib';
 
 
 describe('standard template scenarios', () => {
-  const template = '{{#match data.status}}{{#match:case "ok"}}{{#if (cond:greater (math:noColor data.total "minus" data.completed) 0)}}Remaining: {{ math data.total "minus" data.completed }}{{else}}Completed at {{ date:noColor data.completedAt "iso" timeZone="UTC" }}{{/if}}{{/match:case}}{{#match:fallback}}Pending as of {{ date:noColor data.completedAt "iso" timeZone="UTC" }}{{/match:fallback}}{{/match}}';
+  const template = '{{#match data.status}}{{#match:case "ok"}}{{#if (cond:greater (math:op data.total "minus" data.completed) 0)}}Remaining: {{ math data.total "minus" data.completed }}{{else}}Completed at {{ date:op data.completedAt "iso" timeZone="UTC" }}{{/if}}{{/match:case}}{{#match:fallback}}Pending as of {{ date:op data.completedAt "iso" timeZone="UTC" }}{{/match:fallback}}{{/match}}';
   const data = {
     data: {
       status: 'ok',
@@ -20,7 +20,7 @@ describe('standard template scenarios', () => {
       data: data,
     }).trim();
 
-    expect(html).toBe(`Remaining: ${mockPut('7')}`);
+    expect(html).toBe(`Remaining: 7`);
   });
 
   it('falls back to pending branch when status does not match', () => {

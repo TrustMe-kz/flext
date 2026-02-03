@@ -11,8 +11,6 @@ import * as modules from './modules';
 
 export const DEFAULT_HELPER_NAME = '__default';
 
-export const DEFAULT_FIELD_TYPE: types.FieldType = 'string';
-
 export const DEFAULT_MODEL_DEPTH = 10;
 
 
