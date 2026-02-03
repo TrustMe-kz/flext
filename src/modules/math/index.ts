@@ -18,8 +18,8 @@ export function op(state: any): number {
 
     // Defining the functions
 
-    const handle = (...args1: Arg[]): number => {
-        const [ mathOp, ...mathArgs ] = args1;
+    const handle = (..._args: Arg[]): number => {
+        const [ mathOp, ...mathArgs ] = _args;
         const handle = Math[mathOp] ?? null;
 
         if (handle)
@@ -28,16 +28,16 @@ export function op(state: any): number {
             throw new TemplateSyntaxError('Math: Unknown operation: ' + audit(mathOp));
     }
 
-    const flatten = (...args: FlattenFuncArg[]): number[] => {
+    const flatten = (..._args: FlattenFuncArg[] | any[]): number[] => {
         const result: number[] = [];
 
-        for (const arg of args) {
+        for (const arg of _args) {
             if (isNumber(arg))
-                result.push(arg as number);
+                result.push(arg);
             else if (Array.isArray(arg) && arg.every(isNumber))
                 result.push(...arg);
             else
-                throw new BaseError('Math: Unable to sum: The given arguments are not numbers: ' + audit(args));
+                throw new BaseError('Math: Unable to sum: The given arguments are not numbers: ' + audit(_args));
         }
 
         return result;
@@ -49,17 +49,17 @@ export function op(state: any): number {
     switch (op) {
         case 'plus':
         case 'sum':
-            return sum(...flatten(Number(a), Number(b), ...rest.map(Number)));
+            return sum(...flatten(a, b || 0, ...rest));
         case 'minus':
-            return Number(a) - Number(b);
+            return Number(a) - Number(b || 0);
         case 'multiply':
-            return Number(a) * Number(b);
+            return Number(a) * Number(b || 1);
         case 'divide':
-            return Number(a) / Number(b);
+            return Number(a) / Number(b || 1);
         case 'intDivide':
-            return Number(a) % Number(b);
+            return Number(a) % Number(b || 1);
         case 'power':
-            return Number(a) ** Number(b);
+            return Number(a) ** Number(b || 1);
         default:
             return handle(...args);
     }
@@ -76,7 +76,7 @@ export function _sum(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b, ...rest ] = args;
 
-    return op({ ...state, args: [ a, 'sum', b, rest ] });
+    return op({ ...state, args: [ a, 'sum', b, ...rest ] });
 }
 
 export function minus(state: any): number {
