@@ -15,7 +15,6 @@ export function put(state: any): string {
     const args = state?.args ?? [];
     const [ val, fallback ] = args;
     const date = ensureDate(val, false);
-    console.log( 'val', val, 'date', date);
 
     if (date && !isNumber(val) && !inarr(val, true, false))
         return format(date);

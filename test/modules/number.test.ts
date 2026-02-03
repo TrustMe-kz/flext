@@ -10,7 +10,7 @@ export const MODULE_NAME = 'number';
 // Tests
 
 describe('"number" module', () => {
-  it('default helper converts inputs with Number() and decorates the result', () => {
+  it('default helper converts inputs with Number()', () => {
     const html = getHtml({
       modules: MODULE_NAME,
       template: '{{ number "007.5" }}',
@@ -52,6 +52,14 @@ describe('"number" module', () => {
 
     expect(strictResult).toBe('false');
     expect(softResult).toBe('true');
+
+    const strictNumber = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number:check data.value strict=true }}',
+      data: { data: { value: 12 } },
+    }).trim();
+
+    expect(strictNumber).toBe('true');
   });
 
   it('op returns the raw primitive without decorations', () => {
@@ -85,5 +93,24 @@ describe('"number" module', () => {
 
     expect(zeroHtml).toBe('0');
     expect(falseHtml).toBe('0');
+  });
+
+  it('supports custom locale maps like kk-KZ', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number:text 21 lang="kk-KZ" }}',
+    }).trim();
+
+    expect(html).toBe('жиырма бір');
+  });
+
+  it('surfaces NaN for missing inputs so templates handle fallbacks explicitly', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number data.amount fallback="n/a" }}',
+      data: { data: {} },
+    }).trim();
+
+    expect(html).toBe('NaN');
   });
 });

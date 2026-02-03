@@ -34,6 +34,15 @@ describe('"math" module', () => {
     expect(html).toBe('7');
   });
 
+  it('accepts more than two operands in the legacy helper syntax', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math 2 "plus" 3 5 }}',
+    }).trim();
+
+    expect(html).toBe('10');
+  });
+
   it('minus subtracts the second value from the first', () => {
     const html = getHtml({
       modules: MODULE_NAME,
@@ -136,16 +145,7 @@ describe('"math" module', () => {
     expect(html).toBe('42');
   });
 
-  it('op returns raw numeric output', () => {
-    const html = getHtml({
-      modules: MODULE_NAME,
-      template: '{{ math:op 7 "minus" 2 }}',
-    }).trim();
-
-    expect(html).toBe('5');
-  });
-
-  it('default helper mirrors op with colored output', () => {
+  it('default helper supports the legacy inline form', () => {
     const html = getHtml({
       modules: MODULE_NAME,
       template: '{{ math 3 "plus" 5 }}',

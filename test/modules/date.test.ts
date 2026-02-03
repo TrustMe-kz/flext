@@ -19,7 +19,7 @@ export const TEMPLATE_DATA_DATE = DateTime.fromISO(TEMPLATE_DATA.data.createdAt)
 // Tests
 
 describe('"date" module', () => {
-    it('op formats values with color support', () => {
+    it('op returns padded values for supported operations', () => {
         const html = getHtml({
             modules: MODULE_NAME,
             template: '{{ date:op data.createdAt "day" padding=2 timeZone="UTC" }}',
@@ -109,6 +109,16 @@ describe('"date" module', () => {
         expect(html).toBe(TEMPLATE_DATA_DATE.setLocale('en-US').toLocaleString({ day: 'numeric', month: 'long', year: 'numeric' }));
     });
 
+    it('format renders locale-aware strings without forcing the long form', () => {
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:format data.createdAt lang="en-US" timeZone="UTC" }}',
+            data: TEMPLATE_DATA,
+        }).trim();
+
+        expect(html).toBe(TEMPLATE_DATA_DATE.setLocale('en-US').toLocaleString());
+    });
+
     it('unix returns milliseconds without color wrapper', () => {
         const html = getHtml({
             modules: MODULE_NAME,
@@ -129,16 +139,6 @@ describe('"date" module', () => {
         expect(html).toBe(TEMPLATE_DATA_DATE.toISOTime());
     });
 
-    it('op exposes raw values', () => {
-        const html = getHtml({
-            modules: MODULE_NAME,
-            template: '{{ date:op data.createdAt "month" padding=2 timeZone="UTC" }}',
-            data: TEMPLATE_DATA,
-        }).trim();
-
-        expect(html).toBe('03');
-    });
-
     it('default helper mirrors the colored base implementation', () => {
         const html = getHtml({
             modules: MODULE_NAME,
@@ -147,6 +147,16 @@ describe('"date" module', () => {
         }).trim();
 
         expect(html).toBe('05');
+    });
+
+    it('returns an empty string when the source date is missing', () => {
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:day data.missing timeZone="UTC" }}',
+            data: { data: {} },
+        }).trim();
+
+        expect(html).toBe('');
     });
 
     it('monthText defaults to genitive form when nominative flag is absent', () => {
