@@ -6,3 +6,4 @@ export { default as math } from './math';
 export { default as media } from './media';
 export { default as number } from './number';
 export { default as put } from './put';
+export { default as string } from './string';
