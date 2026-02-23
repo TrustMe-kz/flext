@@ -3,6 +3,7 @@
   "version": "1.10.2",
   "description": "A Powerful Templating Engine",
   "keywords": ["templates", "templating engine", "modular templates", "handlebars"],
+  "repository": "https://github.com/TrustMe-kz/flext.git",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,7 +24,7 @@
     "test:app": "npm run build && cd test/app && npm i && npm run test-app",
     "test-only": "vitest run",
     "test": "npm run npm run build-only && npm run test-only",
-    "prepare": "npm run build"
+    "prepublish": "npm run build"
   },
   "files": [
     "dist/",
