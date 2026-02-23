@@ -11,7 +11,7 @@ esbuild.build({
     platform: 'node',
     format: 'cjs',
     bundle: true,
-    sourcemap: false,
+    sourcemap: true,
     minify: true,
 }).catch(() => process.exit(1));
 
@@ -22,6 +22,6 @@ esbuild.build({
     platform: 'node',
     format: 'esm',
     bundle: true,
-    sourcemap: false,
+    sourcemap: true,
     minify: true,
 }).catch(() => process.exit(1));

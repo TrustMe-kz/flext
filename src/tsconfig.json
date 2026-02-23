@@ -1,10 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    "baseUrl": "..",
     "paths": {
-      "@flext/*": [ "dist/*" ],
-      "@flext": [ "dist/index.js" ],
-      "@test-lib": [ "test-lib.ts" ],
+      "@/*": [ "src/*" ]
     },
     "target": "ES2020",
     "useDefineForClassFields": true,
@@ -18,7 +16,7 @@
     "noImplicitAny": false,
 
     /* Bundler mode */
-    "outDir": "dist",
+    "outDir": "../dist",
     "moduleResolution": "node",
     "isolatedModules": false,
     "moduleDetection": "force",
@@ -33,5 +31,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": [ "test/**/*.d.ts", "vitest.config.ts" ]
+  "include": [ "**/*.ts", "**/*.d.ts" ]
 }
