@@ -1,14 +1,14 @@
 # Contributing — Flext
 
-[< README.md](README.md)
+[< README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md)
 
-![trustme24_flext_cover.jpg](docs/trustme24_flext_logo_cover.jpg)
+![trustme24_flext_cover.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_logo_cover.jpg)
 
 Thank you for contributing to **Flext**.
 
 This file explains the practical side of contribution: what kinds of changes are welcome, how to prepare a pull request, and what maintainers expect before review.
 
-If you are new to the project, read [README.md](README.md) and [ARCHITECTURE.md](ARCHITECTURE.md) first. This file assumes you already understand what Flext is and how the codebase is organized.
+If you are new to the project, read [README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md) and [ARCHITECTURE.md](https://github.com/TrustMe-kz/flext/blob/main/ARCHITECTURE.md) first. This file assumes you already understand what Flext is and how the codebase is organized.
 
 ---
 

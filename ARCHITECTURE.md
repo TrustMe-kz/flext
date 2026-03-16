@@ -1,8 +1,8 @@
 # Architecture — Flext
 
-[< README.md](README.md)
+[< README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md)
 
-![trustme24_flext_cover.jpg](docs/trustme24_flext_logo_cover.jpg)
+![trustme24_flext_cover.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_logo_cover.jpg)
 
 This document explains how **Flext** is built internally.
 
@@ -69,7 +69,7 @@ The repository is split into a few clear areas.
 
 #### If you are new to the codebase, the usual reading order is:
 
-1. **Readme:** [Go to README.md](README.md)
+1. **Readme:** [Go to README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md)
 2. **Package:** [Go to package.json](package.json)
 3. **Types:** [Go to types.ts](src/types.ts)
 4. **Main Code:** [Go to index.ts](src/index.ts)
@@ -522,13 +522,12 @@ Bad changes usually look like this: one PR changes regexes, parser flow, helper 
 
 If you want to understand **Flext** quickly, use this order:
 
-1. Read [README.md](README.md)
-2. Inspect [index.ts](src/index.ts)
-3. Read [SimpleFlext](src/index.ts)
-4. Read [Flext](src/index.ts)
-5. Inspect parser helpers and collectors
-6. Inspect built-in modules
-7. Read tests for actual behavior
+1. Read [README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md)
+2. Read [SimpleFlext](src/index.ts)
+3. Read [Flext](src/index.ts)
+4. Inspect parser helpers and collectors
+5. Inspect built-in modules
+6. Read tests for actual behavior
 
 > 💡 **This order mirrors** the architecture: public contract first, internal mechanics second.
 
