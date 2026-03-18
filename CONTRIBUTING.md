@@ -145,7 +145,7 @@ Before opening a pull request, make sure that:
 * Docs/examples were updated if behavior changed
 * The PR description explains the reason for the change
 
-> 🎉 Thanks for helping improve Flext.
+🎉 **Thanks for helping improve Flext.**
 
 ---
 
