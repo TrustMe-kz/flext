@@ -24,7 +24,7 @@ export function op(state: any): DateTime | string | number | null {
     let newDate: DateTime = DateTime.local();
 
     if (date !== 'now')
-        newDate = DateTime.fromJSDate(ensureDate(date));
+        newDate = DateTime.fromJSDate(ensureDate(date, true));
 
     if (timeZone || flext?.timeZone)
         newDate = newDate.setZone(timeZone ?? flext?.timeZone);

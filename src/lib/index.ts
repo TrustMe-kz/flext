@@ -628,7 +628,7 @@ export function ensureDate<T extends boolean = true>(val: Date | string | number
     const dbDate = <R extends boolean = true>(_val: string, _doWarn: R = true as R): R extends true ? Date : Date | null => {
         const [ year, month, day ] = _val?.split('-')?.map(Number) ?? [];
 
-        if (year && month && day)
+        if (isset(year) && isset(month) && isset(day))
             return DateTime.fromObject({ year, month, day }).toJSDate();
         else if (_doWarn)
             throw new BaseError('Flext: Unable to get date: The date is invalid: ' + audit(_val));
