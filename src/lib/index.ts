@@ -629,7 +629,7 @@ export function ensureDate<T extends boolean = true>(val: Date | string | number
         const [ year, month, day ] = _val?.split('-')?.map(Number) ?? [];
 
         if (year && month && day)
-            return DateTime.fromtypes.Object({ year, month, day }).toJSDate();
+            return DateTime.fromObject({ year, month, day }).toJSDate();
         else if (_doWarn)
             throw new BaseError('Flext: Unable to get date: The date is invalid: ' + audit(_val));
         else
