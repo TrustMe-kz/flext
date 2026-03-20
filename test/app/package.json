@@ -2,7 +2,7 @@
   "name": "app",
   "private": true,
   "version": "1.0.0",
-  "description": "A Powerful Templating Engine",
+  "description": "A technology for building reliable document templates",
   "scripts": {
     "start": "vite",
     "test-app": "npm run start"
