@@ -853,7 +853,7 @@ export function macroToFieldValueOption(val: types.Macro): types.FieldValueOptio
     const fieldName = get('for') ?? null;
     const label = get('label') ?? null;
     const descr = get('descr') ?? null;
-    const value = ensureFieldValue(get('value'));
+    const value = ensureFieldValue(get('value') ?? name);
     const isDisabled = !!get('disabled');
 
 
