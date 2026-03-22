@@ -1,0 +1,133 @@
+:host,
+:host *,
+:host::before,
+:host::after,
+:host *::before,
+:host *::after,
+:host::backdrop,
+:host *::backdrop {
+
+    /* Opacity */
+
+    --un-bg-opacity: 100%;
+    --un-text-opacity: 100%;
+    --un-border-opacity: 100%;
+    --un-outline-opacity: 100%;
+    --un-ring-opacity: 100%;
+    --un-divide-opacity: 100%;
+    --un-placeholder-opacity: 100%;
+
+
+    /* Gradients */
+
+    --un-gradient-position: initial;
+    --un-gradient-from: #0000;
+    --un-gradient-via: #0000;
+    --un-gradient-to: #0000;
+    --un-gradient-stops: initial;
+    --un-gradient-via-stops: initial;
+    --un-gradient-from-position: 0%;
+    --un-gradient-via-position: 50%;
+    --un-gradient-to-position: 100%;
+    --un-from-opacity: 100%;
+    --un-via-opacity: 100%;
+    --un-to-opacity: 100%;
+
+
+    /* Ring */
+
+    --un-ring-color: initial;
+    --un-ring-shadow: 0 0 #0000;
+    --un-ring-inset: initial;
+    --un-ring-offset-width: 0px;
+    --un-ring-offset-color: #fff;
+    --un-ring-offset-shadow: 0 0 #0000;
+    --un-inset-ring-color: initial;
+    --un-inset-ring-shadow: 0 0 #0000;
+
+
+    /* Shadow */
+
+    --un-shadow: 0 0 #0000;
+    --un-shadow-color: initial;
+    --un-inset-shadow: 0 0 #0000;
+    --un-inset-shadow-color: initial;=
+
+
+    /* Border, Outline */
+
+    --un-border-style: solid;
+    --un-outline-style: solid;
+
+
+    /* Font, Letter Spacing */
+
+    --un-font-weight: initial;
+    --un-tracking: initial;
+
+
+    /* Transforms */
+
+    --un-translate-x: 0;
+    --un-translate-y: 0;
+    --un-translate-z: 0;
+    --un-rotate-x: rotateX(0);
+    --un-rotate-y: rotateY(0);
+    --un-rotate-z: rotateZ(0);
+    --un-skew-x: skewX(0);
+    --un-skew-y: skewY(0);
+    --un-scale-x: 1;
+    --un-scale-y: 1;
+    --un-scale-z: 1;
+
+
+    /* Filters */
+
+    --un-blur: initial;
+    --un-brightness: initial;
+    --un-contrast: initial;
+    --un-grayscale: initial;
+    --un-hue-rotate: initial;
+    --un-invert: initial;
+    --un-opacity: initial;
+    --un-saturate: initial;
+    --un-sepia: initial;
+    --un-drop-shadow: initial;
+
+
+    /* Backdrop */
+
+    --un-backdrop-blur: initial;
+    --un-backdrop-brightness: initial;
+    --un-backdrop-contrast: initial;
+    --un-backdrop-grayscale: initial;
+    --un-backdrop-hue-rotate: initial;
+    --un-backdrop-invert: initial;
+    --un-backdrop-opacity: initial;
+    --un-backdrop-saturate: initial;
+    --un-backdrop-sepia: initial;
+    --un-backdrop-drop-shadow: initial;
+
+
+    /* Transitions */
+
+    --un-duration: initial;
+    --un-ease: initial;
+
+
+    /* Other */
+
+    --un-content: '';
+    --un-divide-y-reverse: 0;
+    --un-divide-x-reverse: 0;
+    --un-space-x-reverse: 0;
+    --un-space-y-reverse: 0;
+    --un-default-border-color: #e5e7eb;
+}
+
+:host::before,
+:host::after,
+:host *::before,
+:host *::after {
+    --un-content: '';
+}
