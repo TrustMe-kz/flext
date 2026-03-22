@@ -7,6 +7,9 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "flext": "./bin/flext.mjs"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -15,6 +18,7 @@
     }
   },
   "scripts": {
+    "sync-dialects": "bin/sync-dialects.mjs",
     "start:test-app": "cd test/app && npm run test-app",
     "build:types": "tsc -p src/tsconfig.json && tsc-alias -p src/tsconfig.json",
     "build-dialects": "bin/build-dialects.mjs",
@@ -23,6 +27,7 @@
     "test:app": "npm run build && cd test/app && npm i && npm run test-app",
     "test-only": "vitest run",
     "test": "npm run build-only && npm run test-only",
+    "postinstall": "npm run sync-dialects",
     "prepublish": "npm run build"
   },
   "files": [
