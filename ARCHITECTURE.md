@@ -2,7 +2,7 @@
 
 [< README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md)
 
-![trustme24_flext_cover.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/28b598f32cf51d83edfb30d5ac39e241fba24f8a/.docs/trustme24_flext_logo_cover.jpg)
+![trustme24_flext_cover.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_logo_cover.jpg)
 
 This document explains how **Flext** is built internally.
 
