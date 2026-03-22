@@ -4,7 +4,7 @@
 [![Static Badge](https://img.shields.io/badge/NPM-Download%20%285480%29-blue)](https://www.npmjs.com/package/@trustme24/flext)
 [![Static Badge](https://img.shields.io/badge/CodeSandbox-Preview%20%2853%29-black)](https://codesandbox.io/p/devbox/trustme24-flext-f5x2hy)
 
-![trustme24_flext_cover.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_logo_cover.jpg)
+![trustme24_flext_cover.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/28b598f32cf51d83edfb30d5ac39e241fba24f8a/.docs/trustme24_flext_logo_cover.jpg)
 
 **Flext** is a technology for building reliable document templates.
 
@@ -41,7 +41,7 @@ Document templating often looks simple at first. Over time it tends to accumulat
 
 Typical issues include: undocumented fields, incompatible template versions, duplicated rendering logic across services, fragile helper usage, and weak validation before rendering.
 
-![trustme24_flext_abstract_painting.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_abstract_painting.jpg)
+![trustme24_flext_abstract_painting.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/28b598f32cf51d83edfb30d5ac39e241fba24f8a/.docs/trustme24_flext_abstract_painting.jpg)
 
 ### A few common scenarios illustrate the problem:
 
@@ -124,7 +124,7 @@ console.log(flext.model);  // {"name":"data","$":[{"name":"someField"}]}
 
 ## Use Cases
 
-![trustme24_flext_use_cases.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_use_cases.jpg)
+![trustme24_flext_use_cases.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/28b598f32cf51d83edfb30d5ac39e241fba24f8a/.docs/trustme24_flext_use_cases.jpg)
 
 **Flext** is intended for structured document generation. Common examples include contracts, invoices, reports, certificates, and internal document workflows. It is particularly useful when templates must be versioned, validated, reused across services, or rendered in multiple environments.
 
@@ -219,7 +219,7 @@ npm run test
 
 Future development focuses on improving reliability and adoption. Planned areas include stronger template validation, better parser and AST tooling, clearer compatibility rules, improved module authoring experience, richer documentation, ecosystem integrations, editor support, and a template corpus for regression testing.
 
-![trustme24_flext_abstract_painting.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_abstract_painting.jpg)
+![trustme24_flext_abstract_painting.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/28b598f32cf51d83edfb30d5ac39e241fba24f8a/.docs/trustme24_flext_abstract_painting.jpg)
 
 - **Contributions** are welcome. Useful areas include documentation, example templates, modules, parser improvements, performance optimizations, and test coverage. Changes that affect the template syntax or core semantics should first be discussed in issues so architectural decisions remain consistent.
 
