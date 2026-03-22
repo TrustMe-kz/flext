@@ -13,7 +13,7 @@ esbuild.build({
     bundle: true,
     sourcemap: true,
     minify: true,
-    external: [ 'flext-core' ],
+    external: [ '@flext/core' ],
 }).catch(() => process.exit(1));
 
 esbuild.build({
@@ -25,5 +25,5 @@ esbuild.build({
     bundle: true,
     sourcemap: true,
     minify: true,
-    external: [ 'flext-core' ],
+    external: [ '@flext/core' ],
 }).catch(() => process.exit(1));

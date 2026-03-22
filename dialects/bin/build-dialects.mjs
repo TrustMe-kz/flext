@@ -34,7 +34,7 @@ const build = async () => {
             format: 'cjs',
             bundle: true,
             minify: true,
-            external: [ 'flext-core' ],
+            external: [ '@flext/core' ],
         }),
 
         esbuild.build({
@@ -46,7 +46,7 @@ const build = async () => {
             bundle: true,
             packages: 'external',
             minify: true,
-            external: [ 'flext-core' ],
+            external: [ '@flext/core' ],
         }),
     ]);
 

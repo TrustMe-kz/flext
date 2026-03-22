@@ -1,4 +1,4 @@
-import { Dialect } from 'flext-core';
+import { Dialect } from '@flext/core';
 
 export class LatestDialect extends Dialect {
     public name = 'latest';

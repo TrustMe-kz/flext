@@ -1,7 +1,7 @@
-import { types as coreTypes, lib, errors, Obj, Macro, Field, FieldType, FieldValue, FieldValueOption, DataModel, DataModelNode, MetadataModelNode, CollectorFilterHandler, ParseTemplateHandler, GetTemplateTitleHandler, GetTemplateMacroHandler, BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError, TemplateDataValidationError, Processor, SimpleProcessor, Dialect } from 'flext-core';
-import * as core from 'flext-core';
+import { types as coreTypes, lib, errors, Obj, Macro, Field, FieldType, FieldValue, FieldValueOption, DataModel, DataModelNode, MetadataModelNode, CollectorFilterHandler, ParseTemplateHandler, GetTemplateTitleHandler, GetTemplateMacroHandler, BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError, TemplateDataValidationError, Processor, SimpleProcessor, Dialect } from '@flext/core';
+import * as core from '@flext/core';
 import * as types from '@/types';
-import dialects from 'flext-dialects';
+import dialects from '@flext/dialects';
 
 
 // Variables
