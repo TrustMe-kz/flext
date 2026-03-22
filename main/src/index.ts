@@ -1,7 +1,7 @@
 import { types as coreTypes, lib, errors, Obj, Macro, Field, FieldType, FieldValue, FieldValueOption, DataModel, DataModelNode, MetadataModelNode, CollectorFilterHandler, ParseTemplateHandler, GetTemplateTitleHandler, GetTemplateMacroHandler, BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError, TemplateDataValidationError, Processor, SimpleProcessor, Dialect } from '@flext/core';
-import * as core from '@flext/core';
 import * as types from '@/types';
-import dialects from '@flext/dialects';
+import * as core from '@flext/core';
+import * as dialects from '@/dialects';
 
 
 // Variables
@@ -69,6 +69,7 @@ export class Flext extends Processor implements types.FlextInterface {
 }
 
 export {
+    core,
     Obj,
     Macro,
     Field,
@@ -92,7 +93,8 @@ export {
     Processor,
     SimpleProcessor,
     Dialect,
-    core,
+
+    dialects,
 };
 
 export default Flext;
