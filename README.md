@@ -74,7 +74,7 @@ This approach helps systems understand what a template requires before rendering
 import Flext from '@trustme24/flext';
 
 const template = `
-  {{!-- @v "1.0.beta4" --}}
+  {{!-- @dialect "1.0" --}}
   {{!-- @use "put" --}}
   <p>{{ put name 'Unknown user...' }}</p>
 `;
@@ -100,7 +100,7 @@ Metadata directives can describe template Version, language, title, rendering pa
 import Flext from '@trustme24/flext';
 
 const template = `
-  {{!-- @v "1.0.beta4" --}}
+  {{!-- @dialect "1.0" --}}
   {{!-- @use "put" --}}
   {{!-- @group "data" --}}
   {{!-- @field "data.someField" type="string" label="Message" required --}}
@@ -141,7 +141,7 @@ Templates should stay declarative and focused on layout. Business logic is usual
 ### Example:
 
 ```handlebars
-{{!-- @v "1.0.beta4" --}}
+{{!-- @dialect "1.0" --}}
 {{!-- @use "put" "date" --}}
 {{!-- @group "data" --}
 {{!-- @field "data.city" type="string" label="City" required --}}

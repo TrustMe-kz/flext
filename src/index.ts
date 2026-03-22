@@ -1,12 +1,72 @@
-import { Obj, Macro, Field, FieldType, FieldValue, FieldValueOption, DataModel, DataModelNode, MetadataModelNode, CollectorFilterHandler, GetTemplateAstHandler, GetTemplateTitleHandler, GetTemplateMacroHandler } from '@/types';
-import { BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError, TemplateDataValidationError } from '@/errors';
-import { Flext, SimpleFlext } from './engine';
+import { types as coreTypes, lib, errors, Obj, Macro, Field, FieldType, FieldValue, FieldValueOption, DataModel, DataModelNode, MetadataModelNode, CollectorFilterHandler, ParseTemplateHandler, GetTemplateTitleHandler, GetTemplateMacroHandler, BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError, TemplateDataValidationError, Processor, SimpleProcessor, Dialect } from 'flext-core';
+import * as core from 'flext-core';
 import * as types from '@/types';
-import * as lib from '@/lib';
-import * as errors from '@/errors';
-import * as modules from './modules';
+import dialects from 'flext-dialects';
 
-export default Flext;
+
+// Variables
+
+export const latestDialect = new dialects.Latest();
+
+
+export class Flext extends Processor implements types.FlextInterface {
+    setTemplate(val: coreTypes.Template): this {
+        const ast = lib.hbsToAst(val);
+        const macros = lib.astToMacros(ast);
+
+
+        // Getting the macro
+
+        const macro = macros?.find(m => m?.name === 'dialect') ?? null;
+
+        if (!macro) {
+            this.setDialect(latestDialect);
+            return super.setTemplate(val);
+        }
+
+
+        // Getting the macro param
+
+        const [ param ] = macro?.params ?? [];
+
+        if (!param)
+            throw new errors.BaseError(`Flext: Unable to set the template: Bad '@dialect' macro: ` + lib.audit(macro));
+
+
+        // Getting the dialect
+
+        const dialectName = param?.value ?? null;
+
+        if (!dialectName)
+            throw new errors.BaseError(`Flext: Unable to set the template: Bad '@dialect' macro: ` + lib.audit(macro));
+
+
+        // Setting the dialect
+
+        for (const key in dialects) {
+            if (!lib.has(dialects, key as any)) continue;
+
+
+            // Getting the bundled dialect
+
+            const Dialect = dialects[key];
+            const dialect = new Dialect();
+
+            if (dialectName !== dialect?.name) continue;
+
+
+            // Setting the bundled dialect
+
+            this.setDialect(dialect);
+
+
+            break;
+        }
+
+
+        return super.setTemplate(val);
+    }
+}
 
 export {
     Obj,
@@ -19,10 +79,9 @@ export {
     DataModelNode,
     MetadataModelNode,
     CollectorFilterHandler,
-    GetTemplateAstHandler,
+    ParseTemplateHandler,
     GetTemplateTitleHandler,
     GetTemplateMacroHandler,
-
     BaseThrowable,
     BaseWarning,
     BaseError,
@@ -30,12 +89,10 @@ export {
     TemplateError,
     TemplateSyntaxError,
     TemplateDataValidationError,
-
-    Flext,
-    SimpleFlext,
-
-    types,
-    lib,
-    errors,
-    modules,
+    Processor,
+    SimpleProcessor,
+    Dialect,
+    core,
 };
+
+export default Flext;

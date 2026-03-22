@@ -12,14 +12,12 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    },
-    "./index.css": "./dist/index.css"
+    }
   },
   "scripts": {
     "start:test-app": "cd test/app && npm run test-app",
     "build:types": "tsc -p src/tsconfig.json && tsc-alias -p src/tsconfig.json",
-    "build:css": "tailwindcss -i ./src/index.css -o ./dist/index.css --minify",
-    "build-only": "bin/build.mjs && npm run build:types && npm run build:css",
+    "build-only": "bin/build.mjs && npm run build:types",
     "build": "npm run build-only && vitest run",
     "test:app": "npm run build && cd test/app && npm i && npm run test-app",
     "test-only": "vitest run",
@@ -38,17 +36,17 @@
     "@babel/preset-env": "^7.29.2",
     "@babel/preset-typescript": "^7.28.5",
     "@handlebars/parser": "^2.2.2",
-    "@tailwindcss/cli": "^4.2.2",
     "@types/node": "^25.5.0",
     "esbuild": "^0.27.4",
     "esbuild-plugin-import-glob": "^0.1.1",
-    "tailwindcss": "^4.2.2",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
     "vitest": "^4.1.0"
   },
   "dependencies": {
     "@unocss/preset-wind4": "^66.6.7",
+    "flext-core": "^1.0.0",
+    "flext-dialects": "^1.0.0",
     "handlebars": "^4.7.8",
     "luxon": "^3.7.2",
     "striptags": "^3.2.0",

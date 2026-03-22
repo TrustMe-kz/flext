@@ -4,7 +4,7 @@ import Flext from '@flext';
 describe('Flext features', () => {
   it('collects metadata from template directives', () => {
     const template = `
-      {{!-- @v "1.19.beta1" --}}
+      {{!-- @dialect "1.0" --}}
       {{!-- @lang "ru-KZ" --}}
       {{!-- @title "Договор об обучении" --}}
       {{!-- @timeZone "Asia/Almaty" --}}
@@ -19,7 +19,6 @@ describe('Flext features', () => {
     const data = { data: { user: { name: 'Кайрат', age: 21 } } };
     const flext = new Flext().setTemplate(template).setData(data);
 
-    expect(flext.version).toBe('1.19.beta1');
     expect(flext.lang).toBe('ru-KZ');
     expect(flext.title).toBe('Договор об обучении');
     expect(flext.timeZone).toBe('Asia/Almaty');
@@ -68,7 +67,7 @@ describe('Flext features', () => {
 
   it('derives title from the first <h1> when no @title directive is provided', () => {
     const template = `
-      {{!-- @v "1.0.beta4" --}}
+      {{!-- @dialect "1.0" --}}
       <main>
         <h1>
           Flext Main Title 2024
@@ -86,7 +85,7 @@ describe('Flext features', () => {
 
   it('captures explicit field order and absolute ordering sequence', () => {
     const template = `
-      {{!-- @v "1.0.beta4" --}}
+      {{!-- @dialect "1.0" --}}
       {{!-- @field "data.a" order="2" label="A" --}}
       {{!-- @field "data.b" order="1" label="B" --}}
       {{!-- @field "data.c" order="1" label="C" --}}
@@ -110,14 +109,14 @@ describe('Flext features', () => {
 
   it('reinitializes directive metadata and modules when setTemplate is reused', () => {
     const firstTemplate = `
-      {{!-- @v "1.0.beta4" --}}
+      {{!-- @dialect "1.0" --}}
       {{!-- @use "put" --}}
       {{!-- @field "data.value" label="Value" --}}
       <p>{{ put data.value "--" }}</p>
     `;
 
     const secondTemplate = `
-      {{!-- @v "2.0.beta1" --}}
+      {{!-- @dialect "1.0" --}}
       {{!-- @use "math" --}}
       {{!-- @field "data.total" type="number" label="Total" --}}
       <p>{{ math data.total "plus" 1 }}</p>
@@ -128,7 +127,6 @@ describe('Flext features', () => {
 
     flext.setTemplate(secondTemplate).setData({ data: { total: 4 } });
 
-    expect(flext.version).toBe('2.0.beta1');
     expect(flext.fields.map(f => f.name)).toEqual([ 'data.total' ]);
     expect(flext.helpers.put).toBeUndefined();
     expect(flext.html.trim()).toContain('5');

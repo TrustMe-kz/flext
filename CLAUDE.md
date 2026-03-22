@@ -330,7 +330,7 @@ Recommended minimal example:
 import Flext from '@trustme24/flext';
 
 const template = `
-  {{!-- @v "1.0.beta4" --}}
+  {{!-- @dialect "1.0" --}}
   {{!-- @use "put" --}}
   <p>Hello, {{ put user.name "Guest" }}!</p>
 `;
