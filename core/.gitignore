@@ -30,7 +30,11 @@ remote-schema-introspect/
 *.sln
 
 # Custom
+/node_modules/
 /.vscode/
+package-lock.json
+bun.lock
+bun.lockb
 .prettierrc.json
 .prettierignore
 .thumbs.db

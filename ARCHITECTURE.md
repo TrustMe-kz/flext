@@ -176,7 +176,7 @@ This method is important because it resets runtime state and rebuilds the object
 ### Example:
 
 ```hbs
-{{!-- @v "1.0.beta4" --}}
+{{!-- @dialect "1.0" --}}
 {{!-- @use "put" --}}
 {{!-- @field "data.city" type="string" label="City" required --}}
 ```
