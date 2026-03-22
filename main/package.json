@@ -45,8 +45,8 @@
   },
   "dependencies": {
     "@unocss/preset-wind4": "^66.6.7",
-    "flext-core": "^1.0.0",
-    "flext-dialects": "^1.0.0",
+    "@flext/core": "^1.0.0",
+    "@flext/dialects": "^1.0.0",
     "handlebars": "^4.7.8",
     "luxon": "^3.7.2",
     "striptags": "^3.2.0",
