@@ -10,7 +10,7 @@ Instructions for AI agents working with the repository.
 * Stack: `TypeScript`, `Handlebars`, `UnoCSS`
 * Core entities:
     * `SimpleFlext` — base class: AST, data, helpers, HTML/CSS rendering
-    * `Flext` — extended class: directive parsing (`@v`, `@use`, `@lineHeight`, `@field`), modules, metadata model
+    * `Flext` — extended class: directive parsing (`@syntax`, `@use`, `@lineHeight`, `@field`), modules, metadata model
     * Modules: `put`, `math`, `cond`, `match`
     * Utilities/types: parser helpers, collectors, `getDataModel`, `MetadataModelNode`, `Macro`, `MacroParam`, etc
 * Structure overview:
@@ -38,7 +38,7 @@ Instructions for AI agents working with the repository.
 3. **Maintain public API stability:**
    * Preserve signatures of `Flext`, `SimpleFlext`, modules and exported helpers unless a breaking change is explicitly required and approved
 4. **DSL is the source of truth:**
-   * Do not change the semantics or syntax of directives (`@v`, `@use`, `@field`, etc.) without updating parsing logic, tests, docs, and examples
+   * Do not change the semantics or syntax of directives (`@syntax`, `@use`, `@field`, etc.) without updating parsing logic, tests, docs, and examples
 5. **Tests and build:**
    * Run `npm run build` (or at least `build-only` + `test-only`) before committing
 6. **Documentation:**
@@ -97,7 +97,7 @@ Format: Handlebars comments:
 
 Main directives:
 
-* `@v` — template version
+* `@syntax` — template version
 * `@use` — enabled modules
 * `@lineHeight` — document line height
 * `@field` — data model description (type, label, required, etc.).
@@ -330,7 +330,7 @@ Recommended minimal example:
 import Flext from '@trustme24/flext';
 
 const template = `
-  {{!-- @v "1.0.beta4" --}}
+  {{!-- @syntax "1.0" --}}
   {{!-- @use "put" --}}
   <p>Hello, {{ put user.name "Guest" }}!</p>
 `;
@@ -345,7 +345,7 @@ console.log(flext.model);
 
 ## 6) Prohibitions & caution
 
-* ❌ Don’t change directive formats (`@v`, `@use`, `@lineHeight`, `@field`) without updating regexes, logic, docs, tests
+* ❌ Don’t change directive formats (`@syntax`, `@use`, `@lineHeight`, `@field`) without updating regexes, logic, docs, tests
 * ❌ Don’t change the semantics of built-in modules (`put`, `math`, `cond`, `match`)
 * ❌ Don’t introduce framework-specific logic (Vue/React/etc.) into the core library
 * ❌ Don’t add heavy dependencies without justification

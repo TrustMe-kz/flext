@@ -1,0 +1,19 @@
+{
+  "dialects": [
+    {
+      "name": "latest",
+      "esm": "latest.js",
+      "cjs": "latest.cjs"
+    },
+    {
+      "name": "legacy-1-0-beta3",
+      "esm": "legacy-1-0-beta3.js",
+      "cjs": "legacy-1-0-beta3.cjs"
+    },
+    {
+      "name": "legacy-1-0-beta4",
+      "esm": "legacy-1-0-beta4.js",
+      "cjs": "legacy-1-0-beta4.cjs"
+    }
+  ]
+}
