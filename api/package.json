@@ -23,11 +23,10 @@
     "build:types": "tsc -p src/tsconfig.json && tsc-alias -p src/tsconfig.json",
     "build-dialects": "bin/build-dialects.mjs",
     "build-only": "bin/build.mjs && npm run build:types",
-    "build": "npm run build-only && npm run build-dialects && vitest run",
+    "build": "npm run build-only && vitest run",
     "test:app": "npm run build && cd test/app && npm i && npm run test-app",
     "test-only": "vitest run",
     "test": "npm run build-only && npm run test-only",
-    "postinstall": "npm run sync-dialects",
     "prepublish": "npm run build"
   },
   "files": [
@@ -46,13 +45,13 @@
     "esbuild": "^0.27.4",
     "esbuild-plugin-import-glob": "^0.1.1",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
   },
   "dependencies": {
-    "@flext/core": "^1.0.0",
+    "@flext/core": "^1.0.2",
     "@unocss/preset-wind4": "^66.6.7",
-    "handlebars": "^4.7.8",
+    "handlebars": "^4.7.9",
     "luxon": "^3.7.2",
     "striptags": "^3.2.0",
     "unocss": "^66.6.7",

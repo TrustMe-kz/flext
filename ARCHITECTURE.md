@@ -93,7 +93,7 @@ This layer should stay framework-agnostic and as pure as possible.
 
 This layer extracts FlextDoc directives from Handlebars comments and converts them into runtime metadata.
 
-Examples: `@v`, `@use`, `@lineHeight`, `@field`, `@lang`, `@title`, `@timeZone`.
+Examples: `@syntax`, `@use`, `@lineHeight`, `@field`, `@lang`, `@title`, `@timeZone`.
 
 This layer is sensitive because small changes in syntax or regex behavior can affect many templates.
 
@@ -176,7 +176,7 @@ This method is important because it resets runtime state and rebuilds the object
 ### Example:
 
 ```hbs
-{{!-- @dialect "1.0" --}}
+{{!-- @syntax "1.0" --}}
 {{!-- @use "put" --}}
 {{!-- @field "data.city" type="string" label="City" required --}}
 ```
@@ -185,7 +185,7 @@ This format is simple and portable. Templates stay text-based and compatible wit
 
 #### Main directives include:
 
-* `@v` for template version
+* `@syntax` for template version
 * `@use` for connected modules
 * `@lineHeight` for rendering options
 * `@field` for data model metadata

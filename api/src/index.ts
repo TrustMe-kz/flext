@@ -17,7 +17,7 @@ export class Flext extends Processor implements types.FlextInterface {
 
         // Getting the macro
 
-        const macro = macros?.find(m => m?.name === 'dialect') ?? null;
+        const macro = macros?.find(m => m?.name === 'syntax') ?? null;
 
         if (!macro) {
             this.setDialect(latestDialect);
@@ -30,7 +30,7 @@ export class Flext extends Processor implements types.FlextInterface {
         const [ param ] = macro?.params ?? [];
 
         if (!param)
-            throw new errors.BaseError(`Flext: Unable to set the template: Bad '@dialect' macro: ` + lib.audit(macro));
+            throw new errors.BaseError(`Flext: Unable to set the template: Bad '@syntax' macro: ` + lib.audit(macro));
 
 
         // Getting the dialect
@@ -38,7 +38,7 @@ export class Flext extends Processor implements types.FlextInterface {
         const dialectName = param?.value ?? null;
 
         if (!dialectName)
-            throw new errors.BaseError(`Flext: Unable to set the template: Bad '@dialect' macro: ` + lib.audit(macro));
+            throw new errors.BaseError(`Flext: Unable to set the template: Bad '@syntax' macro: ` + lib.audit(macro));
 
 
         // Setting the dialect

@@ -4,7 +4,7 @@ import Flext from '@flext';
 describe('Flext features', () => {
   it('collects metadata from template directives', () => {
     const template = `
-      {{!-- @dialect "1.0" --}}
+      {{!-- @syntax "1.0" --}}
       {{!-- @lang "ru-KZ" --}}
       {{!-- @title "Договор об обучении" --}}
       {{!-- @timeZone "Asia/Almaty" --}}
@@ -67,7 +67,7 @@ describe('Flext features', () => {
 
   it('derives title from the first <h1> when no @title directive is provided', () => {
     const template = `
-      {{!-- @dialect "1.0" --}}
+      {{!-- @syntax "1.0" --}}
       <main>
         <h1>
           Flext Main Title 2024
@@ -85,7 +85,7 @@ describe('Flext features', () => {
 
   it('captures explicit field order and absolute ordering sequence', () => {
     const template = `
-      {{!-- @dialect "1.0" --}}
+      {{!-- @syntax "1.0" --}}
       {{!-- @field "data.a" order="2" label="A" --}}
       {{!-- @field "data.b" order="1" label="B" --}}
       {{!-- @field "data.c" order="1" label="C" --}}
@@ -109,14 +109,14 @@ describe('Flext features', () => {
 
   it('reinitializes directive metadata and modules when setTemplate is reused', () => {
     const firstTemplate = `
-      {{!-- @dialect "1.0" --}}
+      {{!-- @syntax "1.0" --}}
       {{!-- @use "put" --}}
       {{!-- @field "data.value" label="Value" --}}
       <p>{{ put data.value "--" }}</p>
     `;
 
     const secondTemplate = `
-      {{!-- @dialect "1.0" --}}
+      {{!-- @syntax "1.0" --}}
       {{!-- @use "math" --}}
       {{!-- @field "data.total" type="number" label="Total" --}}
       <p>{{ math data.total "plus" 1 }}</p>

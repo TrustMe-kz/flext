@@ -4,7 +4,6 @@ import * as types from '@/types';
 import * as lib from '@/lib';
 import * as errors from '@/errors';
 import * as modules from '@/modules';
-import {ProcessorInterface} from "@/types";
 
 
 // Constants
@@ -26,6 +25,7 @@ export type MacrosData = {
     timeZone?: string|null,
     title?: string|null,
     moduleNames?: string[] | null,
+    margins?: string|null,
     lineHeight?: string|null,
     fields?: types.Field[] | null,
 };
@@ -138,10 +138,11 @@ export class SimpleProcessor implements types.SimpleProcessorInterface {
     }
 }
 
-export class Processor extends SimpleProcessor implements ProcessorInterface {
+export class Processor extends SimpleProcessor implements types.ProcessorInterface {
     declare public lang: string;
     declare public title: string;
     declare public timeZone: string;
+    declare public margins: string;
     declare public lineHeight: number;
     declare public dialect: types.DialectInterface;
     declare public assets: types.Obj<Blob>;
@@ -175,6 +176,8 @@ export class Processor extends SimpleProcessor implements ProcessorInterface {
 
         super.setTemplate(val);
 
+        this.addAsset('__template', new Blob([ val ], { type: 'text/plain' }));
+
 
         // Defining the variables
 
@@ -185,7 +188,7 @@ export class Processor extends SimpleProcessor implements ProcessorInterface {
 
         // Getting the data
 
-        const { lang, timeZone, title, moduleNames, lineHeight, fields } = macrosToData(macros);
+        const { lang, timeZone, title, moduleNames, margins, lineHeight, fields } = macrosToData(macros);
 
 
         // Setting the data
@@ -198,6 +201,9 @@ export class Processor extends SimpleProcessor implements ProcessorInterface {
 
         if (title || titleStr)
             this.setTitle(title ?? lib.ensureTitle(titleStr));
+
+        if (margins)
+            this.setMargins(margins);
 
         if (lineHeight)
             this.setLineHeight(Number(lineHeight));
@@ -234,6 +240,11 @@ export class Processor extends SimpleProcessor implements ProcessorInterface {
         return this;
     }
 
+    public setMargins(val: string): this {
+        this.margins = val;
+        return this;
+    }
+
     public setLineHeight(val: number): this {
         this.lineHeight = val;
         return this;
@@ -245,7 +256,10 @@ export class Processor extends SimpleProcessor implements ProcessorInterface {
     }
 
     public addAsset(name: string, val: Blob): this {
+        if (!this.assets) this.assets = {};
+
         this.assets[name] = val;
+
         return this;
     }
 
@@ -390,6 +404,7 @@ export function macrosToData(macros: types.Macro[]): MacrosData {
     const title = get('title');
     const timeZone = get('timeZone');
     const modulesMacros = getAll('use');
+    const margins = get('margins');
     const lineHeight = get('lineHeight');
     const optionMacros = getAll('option');
     const fieldMacros = getAll('group', 'field');
@@ -418,7 +433,7 @@ export function macrosToData(macros: types.Macro[]): MacrosData {
     const moduleNames = modulesMacros.map(lib.macroToModuleNames).flat();
 
 
-    return { lang, timeZone, title, moduleNames, lineHeight, fields };
+    return { lang, timeZone, title, moduleNames, margins, lineHeight, fields };
 }
 
 export function defaultPreprocess(val: types.Template): types.Template {

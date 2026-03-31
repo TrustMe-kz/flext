@@ -6,7 +6,7 @@ import { BaseError, BaseWarning } from '@/errors';
 
 // Constants
 
-export const DIALECT_MACRO = 'dialect';
+export const DIALECT_MACRO = 'syntax';
 
 
 // Classes
@@ -30,7 +30,7 @@ export class Dialect implements DialectInterface {
 
         if (!macro) {
             if (doWarn)
-                throw new BaseWarning(`Flext: Unable to test the template: '@dialect' macro is not set`);
+                throw new BaseWarning(`Flext: Unable to test the template: '@syntax' macro is not set`);
             else
                 return false;
         }
@@ -42,7 +42,7 @@ export class Dialect implements DialectInterface {
 
         if (!param) {
             if (doWarn)
-                throw new BaseWarning(`Flext: Unable to test the template: Bad '@dialect' macro`);
+                throw new BaseWarning(`Flext: Unable to test the template: Bad '@syntax' macro`);
             else
                 return false;
         }
