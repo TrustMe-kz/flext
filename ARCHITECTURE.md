@@ -17,11 +17,14 @@ Its purpose is simple: If you open the repository and want to make a change, thi
 
 ## 1. Flext at the Architecture Level
 
-**Flext** is a core library for structured document templates.
+**Flext** is organized as a monorepo with two runtime packages:
 
-It builds on top of Handlebars, but it does more than plain template rendering. A Flext template can contain markup, metadata, connected modules, and information about the data model. That is why Flext should be understood as a template core for document pipelines, not only as a rendering utility.
+* `@flext/core` — the processing engine: parsing, metadata extraction, model building, validation, HTML/CSS rendering, modules, and base dialect primitives
+* `@trustme24/flext` — the product-facing API package built on top of Core: the `Flext` class, bundled dialect selection, and distribution-oriented tooling such as the CLI
 
-At a high level, Flext is responsible for four things: parsing templates, extracting metadata, building a data model, and rendering HTML/CSS.
+Most behavior changes belong to `core/`. `api/` stays focused on compatibility, dialect selection, and package-level distribution behavior.
+
+At a high level, Flext parses templates, extracts metadata, builds a data model, validates input, and renders HTML/CSS.
 
 Flext does **not** try to be a UI framework, a visual editor, or a complete document platform.
 
@@ -60,22 +63,43 @@ This flow matters because most changes belong to one specific stage. If you unde
 
 ## 3. Repository Structure
 
-The repository is split into a few clear areas.
+The repository has two package roots.
 
-* `src/` contains the source code of the library.
-* `dist/` contains generated build artifacts published to consumers.
-* `test/` contains unit tests and behavior checks.
-* `bin/` contains build scripts.
+* `core/` contains the `@flext/core` package
+* `api/` contains the `@trustme24/flext` package
+* Each package has its own `src/`, `test/`, `bin/`, `dist/`, `package.json`, and TypeScript config
+
+### 3.1 `core/`
+
+`core/` is the source of truth for processing behavior:
+
+* AST parsing and collectors
+* Directive extraction and metadata normalization
+* Data model generation and validation
+* HTML/CSS rendering
+* Built-in modules
+* The base `Dialect`, `SimpleProcessor`, and `Processor` abstractions
+
+### 3.2 `api/`
+
+`api/` is the source of truth for the public Flext package:
+
+* The `Flext` class built on top of `Processor`
+* Bundled dialect classes such as `Latest` and legacy variants
+* Dialect selection based on `@syntax`
+* CLI and dialect distribution scripts
 
 #### If you are new to the codebase, the usual reading order is:
 
 1. **Readme:** [Go to README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md)
-2. **Package:** [Go to package.json](package.json)
-3. **Types:** [Go to types.ts](src/types.ts)
-4. **Main Code:** [Go to index.ts](src/index.ts)
-5. **Tests:** [Go to tests](test)
+2. **Core Package:** [Go to core/package.json](core/package.json)
+3. **Core Types:** [Go to core/src/types.ts](core/src/types.ts)
+4. **Core Runtime:** [Go to core/src/engine.ts](core/src/engine.ts)
+5. **API Package:** [Go to api/package.json](api/package.json)
+6. **API Wrapper:** [Go to api/src/index.ts](api/src/index.ts)
+7. **Tests:** inspect `core/test/` first, then `api/test/`
 
-> ⚠️ **Source of truth** is always `src/`. Do not edit `dist/` manually.
+> ⚠️ **Source of truth** is always package-local `src/`. Do not edit package `dist/` directories manually.
 
 ---
 
@@ -93,13 +117,13 @@ This layer should stay framework-agnostic and as pure as possible.
 
 This layer extracts FlextDoc directives from Handlebars comments and converts them into runtime metadata.
 
-Examples: `@syntax`, `@use`, `@lineHeight`, `@field`, `@lang`, `@title`, `@timeZone`.
+Examples: `@syntax`, `@use`, `@lineHeight`, `@field`, `@group`, `@option`, `@lang`, `@title`, `@timeZone`, `@margins`.
 
 This layer is sensitive because small changes in syntax or regex behavior can affect many templates.
 
 ### 4.3 Module Layer
 
-This layer provides reusable runtime helpers. Built-in modules such as `put`, `math`, `cond`, and `match` are registered here.
+This layer provides reusable runtime helpers. Built-in modules such as `put`, `math`, `cond`, `match`, `date`, `number`, `media`, `string`, and `array` are registered here.
 
 This is the main extension mechanism of Flext.
 
@@ -119,53 +143,62 @@ It should stay focused on output generation, not on UI framework concerns.
 
 ## 5. Core Classes
 
-Two classes define most of the runtime behavior: `SimpleFlext` and `Flext`.
+The runtime is layered through three main classes across two packages: `SimpleProcessor`, `Processor`, and `Flext`.
 
-### 5.1 `SimpleFlext`
+### 5.1 `SimpleProcessor` in `@flext/core`
 
-`SimpleFlext` is the low-level runtime base.
+`SimpleProcessor` is the low-level runtime base.
 
-It stores `ast`, `data`, and `helpers`. It can parse a template, render HTML, and generate CSS. It does not deeply manage FlextDoc metadata.
+It stores `ast`, `data`, and `helpers`. It can preprocess a template, parse it, render HTML, and generate CSS. It does not deeply manage FlextDoc metadata or dialect selection.
 
-Use this class as the mental model for the basic runtime cycle: template in, AST stored, HTML/CSS out.
+Use this class as the basic runtime model: template in, AST stored, HTML/CSS out.
 
-### 5.2 `Flext`
+### 5.2 `Processor` in `@flext/core`
 
-`Flext` extends `SimpleFlext` with metadata-aware behavior.
+`Processor` extends `SimpleProcessor` with metadata-aware processing behavior.
 
-It adds properties such as `version`, `lang`, `title`, `lineHeight`, and `fields`. It parses directives during `Flext.setTemplate`, registers modules, builds a metadata model, and performs validation.
+It adds properties such as `lang`, `title`, `timeZone`, `margins`, `lineHeight`, `fields`, `assets`, and `dialect`. It parses directives during `Processor.setTemplate`, registers modules, builds a metadata model, and performs validation.
 
-This class is the main integration point for features connected to template metadata.
+This class is the main integration point for processing behavior.
 
-### 5.3 Why two classes exist?
+### 5.3 `Flext` in `@trustme24/flext`
 
-The split is intentional.
+`Flext` extends `Processor` and provides the public API package.
 
-`SimpleFlext` keeps the basic runtime small and reusable. `Flext` adds the document-specific behavior on top. This avoids mixing low-level rendering mechanics with higher-level FlextDoc behavior.
+Its main extra responsibility is dialect selection. It reads the `@syntax` macro, chooses one of the bundled dialect classes from `api/src/dialects/`, and then passes the rest of processing to `Processor`.
 
-Do not merge these responsibilities casually. The split keeps the architecture readable.
+### 5.4 Why this split exists
+
+* `SimpleProcessor` keeps low-level rendering mechanics small and reusable
+* `Processor` owns processing semantics and metadata lifecycle
+* `Flext` keeps product-level compatibility and bundled dialect behavior out of Core
+
+Do not merge these responsibilities casually. This keeps Core reusable and the public package thin.
 
 ---
 
-## 6. `Flext.setTemplate` is the main integration point
+## 6. `setTemplate` is the main integration point
 
-If a feature is driven by template contents, `Flext.setTemplate` is usually the first place to inspect.
+If a feature is driven by template contents, inspect `Processor.setTemplate` first and `Flext.setTemplate` second.
 
-This method is important because it resets runtime state and rebuilds the object from the template again. In `Flext`, it is also where FlextDoc directives are applied.
+* `Processor.setTemplate` is the lifecycle center for processing state in Core
+* `Flext.setTemplate` is the API-layer hook that selects a bundled dialect before delegating to Core
 
 #### Typical sequence:
 
-1. Clear previous runtime state
-2. Parse template into AST
-3. Collect directives from AST
-4. Apply metadata such as version, fields, and rendering parameters
-5. Register connected modules
+1. `Flext.setTemplate` inspects `@syntax`
+2. `Flext` chooses a bundled dialect or falls back to `latest`
+3. `Processor.setTemplate` clears previous runtime state
+4. Core parses the template into AST
+5. Core collects directives from AST
+6. Core applies metadata such as fields and rendering parameters
+7. Core registers connected modules
 
-> 💡 **This makes** `Flext.setTemplate` the lifecycle center of the library.
+`Processor.setTemplate` is the processing lifecycle center. `Flext.setTemplate` is the public API entry point for dialect-aware templates.
 
-**Architectural pattern:** template-driven behavior should enter the system through `Flext.setTemplate`, not through unrelated side paths.
+**Architectural pattern:** template-driven processing behavior should enter through `Processor.setTemplate`; API-level dialect selection should stay in `Flext.setTemplate`.
 
-**Do not do this:** add template-dependent behavior that bypasses `Flext.setTemplate` and leaves object state inconsistent.
+**Do not do this:** add bundled-dialect logic into Core or add processing state mutations that bypass `Processor.setTemplate`.
 
 ---
 
@@ -181,7 +214,7 @@ This method is important because it resets runtime state and rebuilds the object
 {{!-- @field "data.city" type="string" label="City" required --}}
 ```
 
-This format is simple and portable. Templates stay text-based and compatible with the surrounding Handlebars world.
+This format keeps templates text-based and compatible with Handlebars.
 
 #### Main directives include:
 
@@ -189,7 +222,8 @@ This format is simple and portable. Templates stay text-based and compatible wit
 * `@use` for connected modules
 * `@lineHeight` for rendering options
 * `@field` for data model metadata
-* `@lang`, `@title`, `@timeZone` for template-level configuration
+* `@group` and `@option` for metadata structure and value options
+* `@lang`, `@title`, `@timeZone`, `@margins` for template-level configuration
 
 ### 7.1 How directive parsing works
 
@@ -222,7 +256,7 @@ A few helpers power directive parsing.
 * `RegexHelper` stores the main regex definitions.
 * `FilterHelper` provides reusable matching filters.
 
-This part of the code should stay focused and explicit. Avoid clever shortcuts. Regex-heavy parsing becomes hard to debug very quickly.
+This part of the code should stay focused and explicit. Avoid clever shortcuts. Regex-heavy parsing becomes hard to debug quickly.
 
 **Architectural pattern:** one helper, one parsing responsibility.
 
@@ -236,7 +270,7 @@ This part of the code should stay focused and explicit. Avoid clever shortcuts. 
 
 Examples include collectors for comments and collectors for data paths. This gives the project a cleaner inspection model: each collector answers one question about the AST.
 
-This is good for testing and future extension. It is easier to reason about “comment collection” and “path collection” separately than to debug one universal walker.
+This is easier to test and extend. It is easier to reason about “comment collection” and “path collection” separately than to debug one universal walker.
 
 **Architectural pattern:** small, purpose-specific visitors are preferred over one large generic pass.
 
@@ -248,7 +282,7 @@ One of the key ideas in **Flext** is that templates implicitly describe data.
 
 If a template refers to `data.user.name`, that path is part of the template contract. Flext collects these paths and turns them into a nested model. Then it enriches the result with metadata from `@field` directives.
 
-This model is useful for validation, form generation, debugging, and UI wrappers.
+This model is useful for validation, form generation, debugging, and wrappers.
 
 ### 10.1 Main Steps
 
@@ -278,7 +312,7 @@ Validation sits on the boundary between template structure and runtime data.
 
 Flext can validate input against the generated metadata model. It uses field metadata such as `required` and `type`, together with the structure inferred from the template.
 
-This is why validation is not only a UI concern. The template itself already knows something about the expected data shape, and Flext exposes that knowledge.
+Validation is not only a UI concern. The template already knows part of the expected data shape, and Flext exposes that knowledge.
 
 If you change validation logic, also inspect the model layer. Validation usually depends on model semantics.
 
@@ -306,19 +340,24 @@ export default {
 
 ### 12.1 Built-in modules
 
-The main built-ins are:
+Core ships more than the original minimal set. The built-ins include:
 
 * `put` for fallback-aware output
 * `math` for arithmetic operations
 * `cond` for boolean and comparison helpers
 * `match` for block-based switch/case-style logic
+* `date` for locale- and timezone-aware date formatting
+* `number` for number checks and text conversion
+* `media` for asset URL resolution
+* `string` for JSON parsing and string checks
+* `array` for array checks and destructuring helpers
 
 ### 12.2 Registration flow
 
 * `useModule` loads built-in modules by name
 * `addModule` registers a custom module
 
-This layer is also tied to template semantics, because helper names affect both rendering and data model behavior.
+This layer is tied to template semantics, because helper names affect both rendering and data model behavior.
 
 **Architectural pattern:** modules are preferred over hardcoding one-off helper logic into the core.
 
@@ -332,9 +371,9 @@ Rendering is intentionally simple.
 
 HTML rendering compiles the template and applies merged data and helpers. CSS generation renders HTML first and then passes the result through UnoCSS.
 
-This design is important because CSS is a derivative product of rendered content. The primary source remains the template and its rendered HTML.
+CSS is derived from rendered content. The primary source remains the template and its rendered HTML.
 
-Flext keeps rendering framework-agnostic on purpose. That allows the same core to be used in browser previews, server-side pipelines, and PDF services.
+Flext keeps rendering framework-agnostic. This allows the same core to be used in browser previews, server-side pipelines, and PDF services.
 
 **Do not do this:** add Vue-, React-, or UI-specific logic into the core rendering path.
 
@@ -342,20 +381,14 @@ Flext keeps rendering framework-agnostic on purpose. That allows the same core t
 
 ## 14. Public API as an Contract
 
-**The public API** is not only a convenience layer. It is an architectural contract.
+**The public API** is an architectural contract.
 
 #### Important public entry points include:
 
-* `Flext.setTemplate`
-* `setData`
-* `setHelpers`
-* `addHelper`
-* `useModule`
-* `addModule`
-* `getHtml` and `html`
-* `getCss`
-* `getDataModel` and `model`
-* `getIsValid` and `isValid`
+* In Core: `SimpleProcessor`, `Processor`, `Dialect`, `types`, `lib`, `errors`, `modules`
+* In API: `Flext`, bundled `dialects`, and the re-exported Core surface
+* Runtime methods such as `setTemplate`, `setData`, `setHelpers`, `addHelper`, `useModule`, `addModule`, `getHtml`, `getCss`, `getDataModel`, `getValidationErrors`, and `getIsValid`
+* Runtime properties such as `html`, `model`, `validationErrors`, `errors`, `isValid`, `assets`, and `dialect`
 
 These APIs should stay predictable. If internal refactoring changes behavior, it must preserve the external contract unless a breaking change is explicitly planned.
 
@@ -367,11 +400,15 @@ Examples in docs are part of this contract too.
 
 ## 15. Build & Distribution
 
-**Flext** is authored in TypeScript and built into ESM and CommonJS bundles. Types are generated separately, and CSS is built through the UnoCSS/Tailwind pipeline.
+Both packages are authored in TypeScript and built into ESM and CommonJS bundles. Types are generated per package.
 
-The published package surface is reflected in `dist/`.
+Distribution now happens at package level:
 
-This has one simple consequence for contributors: if you change runtime behavior, you should verify that the generated artifacts still match the intended source behavior.
+* `core/dist/` reflects the published surface of `@flext/core`
+* `api/dist/` reflects the published surface of `@trustme24/flext`
+* `api/` also contains dialect build and sync scripts for external dialect distribution
+
+If you change runtime behavior, verify the generated artifacts and tests in the affected package, and in both packages when the API layer depends on the changed behavior.
 
 ---
 
@@ -418,7 +455,7 @@ Stability-sensitive areas include directive syntax, built-in module semantics, p
 
 Other areas are safer to evolve, such as documentation, tests, example templates, and small internal extractions that preserve behavior.
 
-> 💡 **A useful rule is simple:** If the change affects template interpretation, treat it as high-impact.
+> 💡 **A useful rule:** If the change affects template interpretation, treat it as high-impact.
 
 ---
 
@@ -440,31 +477,35 @@ Changes here require tighter review and stronger tests.
 
 ## 20. Common Extension Scenarios
 
-This section answers the practical question: where should I change code?
+This section answers a practical question: where should I change code?
 
 ### 20.1. Add a new module
 
-**Main places:** Module source, registration path, tests, docs, examples.
+**Main places:** `core/src/modules/`, Core tests, package docs, examples.
 
-### 20.2. Add a new directive
+### 20.2. Add or change a directive
 
-**Main places:** Regex/parsing helpers, directive application in `Flext.setTemplate`, tests, docs, examples.
+**Main places:** Core regex/parsing helpers, Core metadata application in `Processor.setTemplate`, tests, docs, examples.
 
 ### 20.3. Change how the data model works
 
-**Main places:** Path collection, path-to-model conversion, metadata merge logic, validation tests.
+**Main places:** Core path collection, path-to-model conversion, metadata merge logic, validation tests.
 
 ### 20.4. Improve validation
 
-**Main places:** Model-aware validation logic, field metadata handling, tests for required/type behavior.
+**Main places:** Core model-aware validation logic, field metadata handling, tests for required/type behavior.
 
 ### 20.5. Optimize rendering
 
-**Main places:** Compile/render helpers, HTML generation path, CSS generation behavior, output tests.
+**Main places:** Core compile/render helpers, HTML generation path, CSS generation behavior, output tests.
 
-### 20.6. Add framework integration
+### 20.6. Add or change a bundled dialect
 
-> ⚠️ Usually **Not** in the core library. Prefer wrappers or separate packages.
+**Main places:** `api/src/dialects/`, `api/src/index.ts`, API tests, dialect build/sync scripts if distribution behavior changes.
+
+### 20.7. Add framework integration
+
+> ⚠️ **Usually Not** in either runtime package. Prefer wrappers or separate packages.
 
 ---
 
@@ -523,13 +564,14 @@ Bad changes usually look like this: one PR changes regexes, parser flow, helper 
 If you want to understand **Flext** quickly, use this order:
 
 1. Read [README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md)
-2. Read [SimpleFlext](src/index.ts)
-3. Read [Flext](src/index.ts)
-4. Inspect parser helpers and collectors
-5. Inspect built-in modules
-6. Read tests for actual behavior
+2. Read [core/src/types.ts](core/src/types.ts)
+3. Read [core/src/engine.ts](core/src/engine.ts)
+4. Read [core/src/index.ts](core/src/index.ts)
+5. Read [api/src/index.ts](api/src/index.ts)
+6. Inspect Core parser helpers, collectors, and modules
+7. Read `core/test/` for processing behavior and `api/test/` for public API behavior
 
-> 💡 **This order mirrors** the architecture: public contract first, internal mechanics second.
+This order mirrors the architecture: public contract first, internal mechanics second.
 
 ---
 
