@@ -28,7 +28,7 @@ mkdirSync(outDir, { recursive: true });
 async function build() {
     await Promise.all([
         esbuild.build({
-            entryPoints: entryPoints,
+            entryPoints: entries,
             plugins: [ babelPlugin() ],
             outdir: outDir,
             outbase: srcDir,
@@ -41,7 +41,7 @@ async function build() {
         }),
 
         esbuild.build({
-            entryPoints: entryPoints,
+            entryPoints: entries,
             outdir: outDir,
             outbase: srcDir,
             platform: 'node',
