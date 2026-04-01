@@ -6,25 +6,30 @@ Instructions for AI agents working with the repository.
 
 ## 0) Quick facts about this repository
 
-* Purpose: a templating engine built on top of Handlebars with the **FlextDoc DSL** (directives, modules, data model, CSS)
+* Purpose: a monorepo for Flext runtime packages built on top of Handlebars with the **FlextDoc DSL** (directives, modules, data model, HTML/CSS rendering)
 * Stack: `TypeScript`, `Handlebars`, `UnoCSS`
 * Core entities:
-    * `SimpleFlext` — base class: AST, data, helpers, HTML/CSS rendering
-    * `Flext` — extended class: directive parsing (`@syntax`, `@use`, `@lineHeight`, `@field`), modules, metadata model
-    * Modules: `put`, `math`, `cond`, `match`
-    * Utilities/types: parser helpers, collectors, `getDataModel`, `MetadataModelNode`, `Macro`, `MacroParam`, etc
+    * `SimpleProcessor` in `@flext/core` — base runtime: AST, data, helpers, HTML/CSS rendering
+    * `Processor` in `@flext/core` — metadata-aware runtime: directives, modules, validation, metadata model
+    * `Flext` in `@trustme24/flext` — public API wrapper over `Processor` with bundled dialect selection via `@syntax`
+    * Built-in modules in Core: `put`, `math`, `cond`, `match`, `date`, `number`, `media`, `string`, `array`
+    * Utilities/types: parser helpers, collectors, `MetadataModelNode`, `Macro`, `MacroParam`, `Dialect`, etc
 * Structure overview:
-    * `src/` — main source code (`Flext`, parser, helpers, modules)
-    * `dist/` — compiled output (`index.js`, `index.cjs`, `index.d.ts`, `index.css`)
-    * `test/` — unit tests (Vitest)
+    * `core/` — `@flext/core`: source of truth for parser, metadata, model, validation, rendering, modules, base dialect primitives
+    * `api/` — `@trustme24/flext`: public `Flext` class, bundled dialects, CLI, package-level distribution behavior
+    * Each package has its own `src/`, `dist/`, `test/`, `bin/`, `package.json`, and TypeScript config
 * Build:
-    * ESBuild (CJS + ESM) via `bin/build.mjs`, types via `tsc`+`tsc-alias`, CSS via UnoCSS/Tailwind
+    * Each package builds CJS + ESM via `bin/build.mjs`
+    * Types are emitted via `tsc` + `tsc-alias`
+    * CSS generation uses UnoCSS at runtime
 * Scripts:
-    * `npm run build` — full build + tests
-    * `npm run test` / `npm run test-only` — Vitest
-    * `npm run build-only` — build without tests
+    * Run commands inside the affected package: `core/`, `api/`, or both
+    * `npm run build` — build package + run tests
+    * `npm run build-only` — build package without tests
+    * `npm run test` / `npm run test-only` — test package
+    * `api/` also has `npm run test:app` for the demo app / integration preview
 
-> Agents: before making changes, read `README.md`, `package.json`, public docs, and the generated `dist/index.d.ts`.
+> Agents: before making changes, read `README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, then inspect the affected package `package.json` and package-local `src/`. Read generated `dist/index.d.ts` only if the package has already been built.
 
 ---
 
@@ -33,10 +38,10 @@ Instructions for AI agents working with the repository.
 1. **Understand the task:**
    * Create a concise plan (3–7 steps) and follow it
 2. **Minimal diff:**
-   * Modify only the files and sections required for the task.  
+   * Modify only the files and sections required for the task.
    ❌ No mass refactoring or formatting changes across unrelated code.
 3. **Maintain public API stability:**
-   * Preserve signatures of `Flext`, `SimpleFlext`, modules and exported helpers unless a breaking change is explicitly required and approved
+   * Preserve signatures of `Processor`, `SimpleProcessor`, `Flext`, modules and exported helpers unless a breaking change is explicitly required and approved
 4. **DSL is the source of truth:**
    * Do not change the semantics or syntax of directives (`@syntax`, `@use`, `@field`, etc.) without updating parsing logic, tests, docs, and examples
 5. **Tests and build:**
@@ -64,27 +69,34 @@ Requirements:
 * No framework dependencies (Vue/React/etc.)
 * Regex changes **must** be covered with regression tests
 
-### 2.2. Classes `SimpleFlext` and `Flext`
+### 2.2. Classes `SimpleProcessor`, `Processor`, and `Flext`
 
-**SimpleFlext:**
+**`SimpleProcessor` in `core/`:**
 
 * Stores `ast`, `data`, `helpers`
 * `setTemplate` resets everything and parses the template
 * `getHtml` renders back through Handlebars
 * `getCss` renders HTML + feeds it through UnoCSS
 
-**Flext:**
+**`Processor` in `core/`:**
 
 * Adds:
-    * Metadata properties (`version`, `lang`, `title`, `lineHeight`, `fields`, etc.)
+    * Metadata properties (`lang`, `title`, `timeZone`, `margins`, `lineHeight`, `fields`, `assets`, `dialect`, etc.)
     * Directive parsing inside `setTemplate`
     * Module system (`useModule`, `addModule`)
     * Data model generation (`getDataModel`)
     * Validation (`getIsValid`)
 
+**`Flext` in `api/`:**
+
+* Extends `Processor`
+* Reads `@syntax` before `Processor.setTemplate`
+* Selects a bundled dialect from `api/src/dialects/`
+
 Requirements:
 
-* **`setTemplate` is the main integration point.** New features tied to templates must be integrated there
+* **`Processor.setTemplate` is the main integration point.** New processing features tied to templates must be integrated there
+* **`Flext.setTemplate` is the API-layer integration point** for dialect-aware behavior
 * Do not weaken or remove safety guards (`PotentialLoopError`, depth checks).
 
 ### 2.3. FlextDoc directives
@@ -100,7 +112,9 @@ Main directives:
 * `@syntax` — template version
 * `@use` — enabled modules
 * `@lineHeight` — document line height
-* `@field` — data model description (type, label, required, etc.).
+* `@field` — data model description (type, label, required, etc.)
+* `@group`, `@option` — metadata grouping and field value options
+* `@lang`, `@title`, `@timeZone`, `@margins` — template-level metadata
 
 Requirements:
 
@@ -110,7 +124,7 @@ Requirements:
     * Have parsing tests
     * Integrate into `setTemplate`
 
-### 2.4. Modules (`put`, `math`, `cond`, `match`)
+### 2.4. Modules (`put`, `math`, `cond`, `match`, `date`, `number`, `media`, `string`, `array`)
 
 Modules export helpers via:
 
@@ -135,7 +149,9 @@ Semantics (short):
 * `put` — value with fallback, optional colored wrapper
 * `math` — arithmetic (`plus`, `minus`, `round`, `percent`, ...)
 * `cond` — boolean helpers (`equal`, `and`, `greater`, ...)
-* `match` — block-based switch/case-style logic.
+* `match` — block-based switch/case-style logic
+* `date`, `number` — formatting helpers
+* `media`, `string`, `array` — media and utility helpers
 
 Requirements:
 
@@ -297,7 +313,7 @@ export function getMacroParam(val: string): MacroParam | null {
 ## 4) Data model & validation
 
 * Data model is built from AST paths (`getPaths` --> `pathToDataModel` --> `DataModel.addPath`)
-* `Flext.getDataModel`:
+* `Processor.getDataModel`:
     * Ignores nodes that match helper names
     * Merges metadata from `@field` directives
     * Produces a nested `MetadataModelNode[]`
@@ -345,8 +361,8 @@ console.log(flext.model);
 
 ## 6) Prohibitions & caution
 
-* ❌ Don’t change directive formats (`@syntax`, `@use`, `@lineHeight`, `@field`) without updating regexes, logic, docs, tests
-* ❌ Don’t change the semantics of built-in modules (`put`, `math`, `cond`, `match`)
+* ❌ Don’t change directive formats (`@syntax`, `@use`, `@lineHeight`, `@field`, `@group`, `@option`, etc.) without updating regexes, logic, docs, tests
+* ❌ Don’t change the semantics of built-in modules (`put`, `math`, `cond`, `match`, `date`, `number`, `media`, `string`, `array`)
 * ❌ Don’t introduce framework-specific logic (Vue/React/etc.) into the core library
 * ❌ Don’t add heavy dependencies without justification
 * ❌ Don’t remove warnings/errors (`BaseWarning`, `BaseError`, `PotentialLoopError`) — they are part of the safety layer
@@ -360,4 +376,4 @@ console.log(flext.model);
 * [ ] Parser/directive/module changes are covered with tests
 * [ ] Code style follows the established pattern (checks --> data --> helpers --> main flow)
 * [ ] Documentation/examples updated if behavior changed
-* [ ] `npm run build` and `npm run test` pass without errors
+* [ ] `npm run build` and `npm run test` pass in every affected package
