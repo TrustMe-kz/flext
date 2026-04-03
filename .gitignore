@@ -35,3 +35,4 @@ remote-schema-introspect/
 .prettierignore
 .thumbs.db
 .DS_Store
+.codex
