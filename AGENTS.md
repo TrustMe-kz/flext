@@ -11,23 +11,23 @@ Instructions for AI agents working with the repository.
 * Core entities:
     * `SimpleProcessor` in `@flext/core` — base runtime: AST, data, helpers, HTML/CSS rendering
     * `Processor` in `@flext/core` — metadata-aware runtime: directives, modules, validation, metadata model
-    * `Flext` in `@trustme24/flext` — public API wrapper over `Processor` with bundled dialect selection via `@syntax`
+    * `Flext` in `@trustme24/flext` — public package wrapper over `Processor` with bundled dialect selection via `@syntax`
     * Built-in modules in Core: `put`, `math`, `cond`, `match`, `date`, `number`, `media`, `string`, `array`
     * Utilities/types: parser helpers, collectors, `MetadataModelNode`, `Macro`, `MacroParam`, `Dialect`, etc
 * Structure overview:
     * `core/` — `@flext/core`: source of truth for parser, metadata, model, validation, rendering, modules, base dialect primitives
-    * `api/` — `@trustme24/flext`: public `Flext` class, bundled dialects, CLI, package-level distribution behavior
+    * `main/` — `@trustme24/flext`: public `Flext` class, bundled dialects, CLI, package-level distribution behavior
     * Each package has its own `src/`, `dist/`, `test/`, `bin/`, `package.json`, and TypeScript config
 * Build:
     * Each package builds CJS + ESM via `bin/build.mjs`
     * Types are emitted via `tsc` + `tsc-alias`
     * CSS generation uses UnoCSS at runtime
 * Scripts:
-    * Run commands inside the affected package: `core/`, `api/`, or both
+    * Run commands inside the affected package: `core/`, `main/`, or both
     * `npm run build` — build package + run tests
     * `npm run build-only` — build package without tests
     * `npm run test` / `npm run test-only` — test package
-    * `api/` also has `npm run test:app` for the demo app / integration preview
+    * `main/` also has `npm run test:app` for the demo app / integration preview
 
 > Agents: before making changes, read `README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, then inspect the affected package `package.json` and package-local `src/`. Read generated `dist/index.d.ts` only if the package has already been built.
 
@@ -87,16 +87,16 @@ Requirements:
     * Data model generation (`getDataModel`)
     * Validation (`getIsValid`)
 
-**`Flext` in `api/`:**
+**`Flext` in `main/`:**
 
 * Extends `Processor`
 * Reads `@syntax` before `Processor.setTemplate`
-* Selects a bundled dialect from `api/src/dialects/`
+* Selects a bundled dialect from `main/src/dialects/`
 
 Requirements:
 
 * **`Processor.setTemplate` is the main integration point.** New processing features tied to templates must be integrated there
-* **`Flext.setTemplate` is the API-layer integration point** for dialect-aware behavior
+* **`Flext.setTemplate` is the public package integration point** for dialect-aware behavior
 * Do not weaken or remove safety guards (`PotentialLoopError`, depth checks).
 
 ### 2.3. FlextDoc directives

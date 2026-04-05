@@ -111,7 +111,7 @@ const template = `
 `;
 
 const flext = new Flext(template, {
-  data: { helloWorld: 'Hello World!' },
+   data: { helloWorld: 'Hello World!' },
 });
 
 console.log(flext.html);   // <p class="...">Hello World!</p>
@@ -148,7 +148,7 @@ Templates should stay declarative and focused on layout. Business logic is usual
 {{!-- @field "data.date" type="date"   label="Date" required --}}
 
 <p>
-  {{ put data.city "City" }}, {{ put (date:text data.date "No date...") }}
+   {{ put data.city "City" }}, {{ put (date:text data.date "No date...") }}
 </p>
 ```
 

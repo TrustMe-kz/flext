@@ -9,25 +9,25 @@ Instructions for AI agents working with the repository.
 * Purpose: a monorepo for Flext runtime packages built on top of Handlebars with the **FlextDoc DSL** (directives, modules, data model, HTML/CSS rendering)
 * Stack: `TypeScript`, `Handlebars`, `UnoCSS`
 * Core entities:
-    * `SimpleProcessor` in `@flext/core` — base runtime: AST, data, helpers, HTML/CSS rendering
-    * `Processor` in `@flext/core` — metadata-aware runtime: directives, modules, validation, metadata model
-    * `Flext` in `@trustme24/flext` — public API wrapper over `Processor` with bundled dialect selection via `@syntax`
-    * Built-in modules in Core: `put`, `math`, `cond`, `match`, `date`, `number`, `media`, `string`, `array`
-    * Utilities/types: parser helpers, collectors, `MetadataModelNode`, `Macro`, `MacroParam`, `Dialect`, etc
+  * `SimpleProcessor` in `@flext/core` — base runtime: AST, data, helpers, HTML/CSS rendering
+  * `Processor` in `@flext/core` — metadata-aware runtime: directives, modules, validation, metadata model
+  * `Flext` in `@trustme24/flext` — public package wrapper over `Processor` with bundled dialect selection via `@syntax`
+  * Built-in modules in Core: `put`, `math`, `cond`, `match`, `date`, `number`, `media`, `string`, `array`
+  * Utilities/types: parser helpers, collectors, `MetadataModelNode`, `Macro`, `MacroParam`, `Dialect`, etc
 * Structure overview:
-    * `core/` — `@flext/core`: source of truth for parser, metadata, model, validation, rendering, modules, base dialect primitives
-    * `api/` — `@trustme24/flext`: public `Flext` class, bundled dialects, CLI, package-level distribution behavior
-    * Each package has its own `src/`, `dist/`, `test/`, `bin/`, `package.json`, and TypeScript config
+  * `core/` — `@flext/core`: source of truth for parser, metadata, model, validation, rendering, modules, base dialect primitives
+  * `main/` — `@trustme24/flext`: public `Flext` class, bundled dialects, CLI, package-level distribution behavior
+  * Each package has its own `src/`, `dist/`, `test/`, `bin/`, `package.json`, and TypeScript config
 * Build:
-    * Each package builds CJS + ESM via `bin/build.mjs`
-    * Types are emitted via `tsc` + `tsc-alias`
-    * CSS generation uses UnoCSS at runtime
+  * Each package builds CJS + ESM via `bin/build.mjs`
+  * Types are emitted via `tsc` + `tsc-alias`
+  * CSS generation uses UnoCSS at runtime
 * Scripts:
-    * Run commands inside the affected package: `core/`, `api/`, or both
-    * `npm run build` — build package + run tests
-    * `npm run build-only` — build package without tests
-    * `npm run test` / `npm run test-only` — test package
-    * `api/` also has `npm run test:app` for the demo app / integration preview
+  * Run commands inside the affected package: `core/`, `main/`, or both
+  * `npm run build` — build package + run tests
+  * `npm run build-only` — build package without tests
+  * `npm run test` / `npm run test-only` — test package
+  * `main/` also has `npm run test:app` for the demo app / integration preview
 
 > Agents: before making changes, read `README.md`, `ARCHITECTURE.md`, `CONTRIBUTING.md`, then inspect the affected package `package.json` and package-local `src/`. Read generated `dist/index.d.ts` only if the package has already been built.
 
@@ -36,18 +36,18 @@ Instructions for AI agents working with the repository.
 ## 1) Agent protocol
 
 1. **Understand the task:**
-    * Create a concise plan (3–7 steps) and follow it
+  * Create a concise plan (3–7 steps) and follow it
 2. **Minimal diff:**
-    * Modify only the files and sections required for the task.  
-      ❌ No mass refactoring or formatting changes across unrelated code.
+  * Modify only the files and sections required for the task.  
+    ❌ No mass refactoring or formatting changes across unrelated code.
 3. **Maintain public API stability:**
-    * Preserve signatures of `Processor`, `SimpleProcessor`, `Flext`, modules and exported helpers unless a breaking change is explicitly required and approved
+  * Preserve signatures of `Processor`, `SimpleProcessor`, `Flext`, modules and exported helpers unless a breaking change is explicitly required and approved
 4. **DSL is the source of truth:**
-    * Do not change the semantics or syntax of directives (`@syntax`, `@use`, `@field`, etc.) without updating parsing logic, tests, docs, and examples
+  * Do not change the semantics or syntax of directives (`@syntax`, `@use`, `@field`, etc.) without updating parsing logic, tests, docs, and examples
 5. **Tests and build:**
-    * Run `npm run build` (or at least `build-only` + `test-only`) before committing
+  * Run `npm run build` (or at least `build-only` + `test-only`) before committing
 6. **Documentation:**
-    * When functionality changes, update related comments, docs, and examples
+  * When functionality changes, update related comments, docs, and examples
 
 ---
 
@@ -81,22 +81,22 @@ Requirements:
 **`Processor` in `core/`:**
 
 * Adds:
-    * Metadata properties (`lang`, `title`, `timeZone`, `margins`, `lineHeight`, `fields`, `assets`, `dialect`, etc.)
-    * Directive parsing inside `setTemplate`
-    * Module system (`useModule`, `addModule`)
-    * Data model generation (`getDataModel`)
-    * Validation (`getIsValid`)
+  * Metadata properties (`lang`, `title`, `timeZone`, `margins`, `lineHeight`, `fields`, `assets`, `dialect`, etc.)
+  * Directive parsing inside `setTemplate`
+  * Module system (`useModule`, `addModule`)
+  * Data model generation (`getDataModel`)
+  * Validation (`getIsValid`)
 
-**`Flext` in `api/`:**
+**`Flext` in `main/`:**
 
 * Extends `Processor`
 * Reads `@syntax` before `Processor.setTemplate`
-* Selects a bundled dialect from `api/src/dialects/`
+* Selects a bundled dialect from `main/src/dialects/`
 
 Requirements:
 
 * **`Processor.setTemplate` is the main integration point.** New processing features tied to templates must be integrated there
-* **`Flext.setTemplate` is the API-layer integration point** for dialect-aware behavior
+* **`Flext.setTemplate` is the public package integration point** for dialect-aware behavior
 * Do not weaken or remove safety guards (`PotentialLoopError`, depth checks).
 
 ### 2.3. FlextDoc directives
@@ -120,9 +120,9 @@ Requirements:
 
 * Do not change parameter format without updating all regexes, logic, docs, and tests
 * New directives must:
-    * Be documented clearly
-    * Have parsing tests
-    * Integrate into `setTemplate`
+  * Be documented clearly
+  * Have parsing tests
+  * Integrate into `setTemplate`
 
 ### 2.4. Modules (`put`, `math`, `cond`, `match`, `date`, `number`, `media`, `string`, `array`)
 
@@ -157,8 +157,8 @@ Requirements:
 
 * Do not alter the intuitive behavior of existing helpers
 * When adding new helpers/modules:
-    * Update module list & documentation
-    * Add usage examples
+  * Update module list & documentation
+  * Add usage examples
 
 ---
 
@@ -197,29 +197,29 @@ Example:
 ```ts
 export function ensureTitle(val: string|number|null): string {
 
-    // Doing some checks
+  // Doing some checks
 
-    if (val == null) return '';
-
-
-    // Getting the data
-
-    let title = stripHtml(String(val)).trim();
+  if (val == null) return '';
 
 
-    // Defining the functions
+  // Getting the data
 
-    const filter = (search: RegExp, val: string = ''): void => { title = title.replace(search, val); };
-
-
-    // Getting the title
-
-    filter('\n', ' ');
-    filter(/\s{2,}/g, ' ');
-    filter(/[^\p{L}\d\s]/gu);
+  let title = stripHtml(String(val)).trim();
 
 
-    return title.trim();
+  // Defining the functions
+
+  const filter = (search: RegExp, val: string = ''): void => { title = title.replace(search, val); };
+
+
+  // Getting the title
+
+  filter('\n', ' ');
+  filter(/\s{2,}/g, ' ');
+  filter(/[^\p{L}\d\s]/gu);
+
+
+  return title.trim();
 }
 ```
 
@@ -232,31 +232,31 @@ export function ensureTitle(val: string|number|null): string {
 ```ts
 export function getDataModel(ast: AST.Program): DataModel {
 
-    // Doing some checks
+  // Doing some checks
 
-    if (!ast) throw new BaseError('Data Model: Unable to get data model: Missing AST');
-
-
-    // Getting the data
-
-    const [ first, ...paths ] = getPaths(ast);
+  if (!ast) throw new BaseError('Data Model: Unable to get data model: Missing AST');
 
 
-    // Defining the functions
+  // Getting the data
 
-    const applyPaths = (model: DataModel, list: string[]) => {
-        for (const p of list) model.addPath(p);
-    };
+  const [ first, ...paths ] = getPaths(ast);
 
 
-    // Getting the model
+  // Defining the functions
 
-    const model = pathToDataModel(first);
+  const applyPaths = (model: DataModel, list: string[]) => {
+    for (const p of list) model.addPath(p);
+  };
 
-    applyPathsToModel(paths, model);
+
+  // Getting the model
+
+  const model = pathToDataModel(first);
+
+  applyPathsToModel(paths, model);
 
 
-    return model;
+  return model;
 }
 ```
 
@@ -280,31 +280,31 @@ Example:
 // TODO: kr: The order of checks is important for proper macro parsing
 export function getMacroParam(val: string): MacroParam | null {
 
-    // Defining the functions
+  // Defining the functions
 
-    const match = (regex: RegExp) => val.match(regex) ?? null;
-
-
-    // Getting the data
-
-    const p = match(RegexHelper.macroParam);
-    const named = match(RegexHelper.macroNamedParam);
-    const simple = match(RegexHelper.macroSimpleParam);
+  const match = (regex: RegExp) => val.match(regex) ?? null;
 
 
-    // Getting the macro param
+  // Getting the data
 
-    if (p)
-        return { name: p.groups!.value!, value: p.groups!.value! };
+  const p = match(RegexHelper.macroParam);
+  const named = match(RegexHelper.macroNamedParam);
+  const simple = match(RegexHelper.macroSimpleParam);
 
-    else if (named)
-        return { name: named.groups!.name!, value: named.groups!.value! };
 
-    else if (simple)
-        return { name: simple.groups!.name!, value: null };
+  // Getting the macro param
 
-    else
-        return null;
+  if (p)
+    return { name: p.groups!.value!, value: p.groups!.value! };
+
+  else if (named)
+    return { name: named.groups!.name!, value: named.groups!.value! };
+
+  else if (simple)
+    return { name: simple.groups!.name!, value: null };
+
+  else
+    return null;
 }
 ```
 
@@ -314,9 +314,9 @@ export function getMacroParam(val: string): MacroParam | null {
 
 * Data model is built from AST paths (`getPaths` --> `pathToDataModel` --> `DataModel.addPath`)
 * `Processor.getDataModel`:
-    * Ignores nodes that match helper names
-    * Merges metadata from `@field` directives
-    * Produces a nested `MetadataModelNode[]`
+  * Ignores nodes that match helper names
+  * Merges metadata from `@field` directives
+  * Produces a nested `MetadataModelNode[]`
 * Depth limits (`DEFAULT_MODEL_DEPTH`) and loop protection (`PotentialLoopError`) must stay intact
 
 When modifying model-related code:

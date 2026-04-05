@@ -20,9 +20,9 @@ Its purpose is simple: If you open the repository and want to make a change, thi
 **Flext** is organized as a monorepo with two runtime packages:
 
 * `@flext/core` — the processing engine: parsing, metadata extraction, model building, validation, HTML/CSS rendering, modules, and base dialect primitives
-* `@trustme24/flext` — the product-facing API package built on top of Core: the `Flext` class, bundled dialect selection, and distribution-oriented tooling such as the CLI
+* `@trustme24/flext` — the product-facing main package built on top of Core: the `Flext` class, bundled dialect selection, and distribution-oriented tooling such as the CLI
 
-Most behavior changes belong to `core/`. `api/` stays focused on compatibility, dialect selection, and package-level distribution behavior.
+Most behavior changes belong to `core/`. `main/` stays focused on compatibility, dialect selection, and package-level distribution behavior.
 
 At a high level, Flext parses templates, extracts metadata, builds a data model, validates input, and renders HTML/CSS.
 
@@ -66,7 +66,7 @@ This flow matters because most changes belong to one specific stage. If you unde
 The repository has two package roots.
 
 * `core/` contains the `@flext/core` package
-* `api/` contains the `@trustme24/flext` package
+* `main/` contains the `@trustme24/flext` package
 * Each package has its own `src/`, `test/`, `bin/`, `dist/`, `package.json`, and TypeScript config
 
 ### 3.1 `core/`
@@ -80,9 +80,9 @@ The repository has two package roots.
 * Built-in modules
 * The base `Dialect`, `SimpleProcessor`, and `Processor` abstractions
 
-### 3.2 `api/`
+### 3.2 `main/`
 
-`api/` is the source of truth for the public Flext package:
+`main/` is the source of truth for the public Flext package:
 
 * The `Flext` class built on top of `Processor`
 * Bundled dialect classes such as `Latest` and legacy variants
@@ -95,9 +95,9 @@ The repository has two package roots.
 2. **Core Package:** [Go to core/package.json](core/package.json)
 3. **Core Types:** [Go to core/src/types.ts](core/src/types.ts)
 4. **Core Runtime:** [Go to core/src/engine.ts](core/src/engine.ts)
-5. **API Package:** [Go to api/package.json](api/package.json)
-6. **API Wrapper:** [Go to api/src/index.ts](api/src/index.ts)
-7. **Tests:** inspect `core/test/` first, then `api/test/`
+5. **Main Package:** [Go to main/package.json](main/package.json)
+6. **Flext Wrapper:** [Go to main/src/index.ts](main/src/index.ts)
+7. **Tests:** inspect `core/test/` first, then `main/test/`
 
 > ⚠️ **Source of truth** is always package-local `src/`. Do not edit package `dist/` directories manually.
 
@@ -163,9 +163,9 @@ This class is the main integration point for processing behavior.
 
 ### 5.3 `Flext` in `@trustme24/flext`
 
-`Flext` extends `Processor` and provides the public API package.
+`Flext` extends `Processor` and provides the public Flext package.
 
-Its main extra responsibility is dialect selection. It reads the `@syntax` macro, chooses one of the bundled dialect classes from `api/src/dialects/`, and then passes the rest of processing to `Processor`.
+Its main extra responsibility is dialect selection. It reads the `@syntax` macro, chooses one of the bundled dialect classes from `main/src/dialects/`, and then passes the rest of processing to `Processor`.
 
 ### 5.4 Why this split exists
 
@@ -182,7 +182,7 @@ Do not merge these responsibilities casually. This keeps Core reusable and the p
 If a feature is driven by template contents, inspect `Processor.setTemplate` first and `Flext.setTemplate` second.
 
 * `Processor.setTemplate` is the lifecycle center for processing state in Core
-* `Flext.setTemplate` is the API-layer hook that selects a bundled dialect before delegating to Core
+* `Flext.setTemplate` is the main package hook that selects a bundled dialect before delegating to Core
 
 #### Typical sequence:
 
@@ -196,7 +196,7 @@ If a feature is driven by template contents, inspect `Processor.setTemplate` fir
 
 `Processor.setTemplate` is the processing lifecycle center. `Flext.setTemplate` is the public API entry point for dialect-aware templates.
 
-**Architectural pattern:** template-driven processing behavior should enter through `Processor.setTemplate`; API-level dialect selection should stay in `Flext.setTemplate`.
+**Architectural pattern:** template-driven processing behavior should enter through `Processor.setTemplate`; dialect selection in the main package should stay in `Flext.setTemplate`.
 
 **Do not do this:** add bundled-dialect logic into Core or add processing state mutations that bypass `Processor.setTemplate`.
 
@@ -386,7 +386,7 @@ Flext keeps rendering framework-agnostic. This allows the same core to be used i
 #### Important public entry points include:
 
 * In Core: `SimpleProcessor`, `Processor`, `Dialect`, `types`, `lib`, `errors`, `modules`
-* In API: `Flext`, bundled `dialects`, and the re-exported Core surface
+* In main package: `Flext`, bundled `dialects`, and the re-exported Core surface
 * Runtime methods such as `setTemplate`, `setData`, `setHelpers`, `addHelper`, `useModule`, `addModule`, `getHtml`, `getCss`, `getDataModel`, `getValidationErrors`, and `getIsValid`
 * Runtime properties such as `html`, `model`, `validationErrors`, `errors`, `isValid`, `assets`, and `dialect`
 
@@ -405,10 +405,10 @@ Both packages are authored in TypeScript and built into ESM and CommonJS bundles
 Distribution now happens at package level:
 
 * `core/dist/` reflects the published surface of `@flext/core`
-* `api/dist/` reflects the published surface of `@trustme24/flext`
-* `api/` also contains dialect build and sync scripts for external dialect distribution
+* `main/dist/` reflects the published surface of `@trustme24/flext`
+* `main/` also contains dialect build and sync scripts for external dialect distribution
 
-If you change runtime behavior, verify the generated artifacts and tests in the affected package, and in both packages when the API layer depends on the changed behavior.
+If you change runtime behavior, verify the generated artifacts and tests in the affected package, and in both packages when the main package depends on the changed behavior.
 
 ---
 
@@ -501,7 +501,7 @@ This section answers a practical question: where should I change code?
 
 ### 20.6. Add or change a bundled dialect
 
-**Main places:** `api/src/dialects/`, `api/src/index.ts`, API tests, dialect build/sync scripts if distribution behavior changes.
+**Main places:** `main/src/dialects/`, `main/src/index.ts`, main package tests, dialect build/sync scripts if distribution behavior changes.
 
 ### 20.7. Add framework integration
 
@@ -567,9 +567,9 @@ If you want to understand **Flext** quickly, use this order:
 2. Read [core/src/types.ts](core/src/types.ts)
 3. Read [core/src/engine.ts](core/src/engine.ts)
 4. Read [core/src/index.ts](core/src/index.ts)
-5. Read [api/src/index.ts](api/src/index.ts)
+5. Read [main/src/index.ts](main/src/index.ts)
 6. Inspect Core parser helpers, collectors, and modules
-7. Read `core/test/` for processing behavior and `api/test/` for public API behavior
+7. Read `core/test/` for processing behavior and `main/test/` for public API behavior
 
 This order mirrors the architecture: public contract first, internal mechanics second.
 

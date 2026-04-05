@@ -10,7 +10,7 @@ This file explains the practical side of contribution: what kinds of changes are
 
 If you are new to the project, read [README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md) and [ARCHITECTURE.md](https://github.com/TrustMe-kz/flext/blob/main/ARCHITECTURE.md) first. This file assumes you already understand what Flext is and how the codebase is organized.
 
-> 💡 **Important:** this repository contains two packages: `core/` for `@flext/core` and `api/` for `@trustme24/flext`. Run commands inside the affected package.
+> 💡 **Important:** this repository contains two packages: `core/` for `@flext/core` and `main/` for `@trustme24/flext`. Run commands inside the affected package.
 
 ---
 
@@ -74,21 +74,21 @@ npm run build
 npm run test
 ```
 
-### 5.2 If the change belongs to the public API package
+### 5.2 If the change belongs to the main package
 
-Use `api/` when the change affects the `Flext` wrapper, bundled dialects, API compatibility behavior, CLI commands, or dialect distribution scripts.
+Use `main/` when the change affects the `Flext` wrapper, bundled dialects, compatibility behavior of the main package, CLI commands, or dialect distribution scripts.
 
 ```shell
-cd api
+cd main
 npm install
 npm run build
 npm run test
 ```
 
-If you need to **inspect behavior interactively** for the API package, you can also run:
+If you need to **inspect behavior interactively** for the main package, you can also run:
 
 ```shell
-cd api
+cd main
 npm run test:app
 ```
 
@@ -102,7 +102,7 @@ The normal workflow is simple:
 
 1. Fork the repository
 2. Create a branch for your change
-3. Choose the smallest relevant package boundary: `core/`, `api/`, or both if the API package must adapt to a Core change
+3. Choose the smallest relevant package boundary: `core/`, `main/`, or both if the main package must adapt to a Core change
 4. Implement the change in the smallest relevant area
 5. Add or update tests
 6. Run tests and build in every affected package
@@ -117,10 +117,10 @@ A good pull request explains three things clearly: what problem it solves, which
 Use this rule of thumb before editing code:
 
 * Choose `core/` for parser behavior, directives, model generation, validation, rendering, modules, shared runtime types, and base dialect primitives
-* Choose `api/` for the public `Flext` wrapper, bundled dialect classes, `@syntax`-driven dialect selection, CLI commands, and dialect build/sync tooling
-* Choose both packages only when a Core change must be surfaced or adapted in the API package
+* Choose `main/` for the public `Flext` wrapper, bundled dialect classes, `@syntax`-driven dialect selection, CLI commands, and dialect build/sync tooling
+* Choose both packages only when a Core change must be surfaced or adapted in the main package
 
-Do not put distribution behavior into Core. Do not put processing semantics into API unless it is dialect- or package-specific.
+Do not put distribution behavior into Core. Do not put processing semantics into the main package unless it is dialect- or package-specific.
 
 ---
 
@@ -148,10 +148,10 @@ npm run build
 npm run test
 ```
 
-### API change
+### Main package change
 
 ```shell
-cd api
+cd main
 npm run build
 npm run test
 ```
@@ -160,7 +160,7 @@ npm run test
 
 ```shell
 cd core && npm run build && npm run test
-cd api && npm run build && npm run test
+cd main && npm run build && npm run test
 ```
 
 > ⚠️ Do not remove or weaken tests just to make a change pass. If a fragile area is affected, add regression coverage.
@@ -191,7 +191,7 @@ Before opening a pull request, make sure that:
 
 * The change solves one clear problem
 * The diff is limited to relevant files
-* The correct package boundary was chosen (`core/`, `api/`, or both)
+* The correct package boundary was chosen (`core/`, `main/`, or both)
 * Tests were added or updated if needed
 * `npm run test` passes in every affected package
 * `npm run build` passes in every affected package
