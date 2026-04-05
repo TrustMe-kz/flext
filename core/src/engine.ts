@@ -226,22 +226,22 @@ export class Processor extends SimpleProcessor implements types.ProcessorInterfa
     }
 
     public setLang(val: string): this {
-        this.lang = val;
+        this.lang = val?.trim() || '';
         return this;
     }
 
     public setTitle(val: string): this {
-        this.title = val;
+        this.title = val?.trim() || '';
         return this;
     }
 
     public setTimeZone(val: string): this {
-        this.timeZone = val;
+        this.timeZone = val?.trim() || '';
         return this;
     }
 
     public setMargins(val: string): this {
-        this.margins = val;
+        this.margins = val?.trim() || '';
         return this;
     }
 
@@ -390,11 +390,11 @@ export function macrosToData(macros: types.Macro[]): MacrosData {
 
     const getAll = (..._val: string[]): types.Macro[] | null => macros?.filter(m => lib.inarr(m?.name, ..._val)) ?? null;
 
-    const get = (_val: string): string | null => {
+    const get = (_val: string): string|null => {
         const [ macro ] = getAll(_val);
         const [ param ] = macro?.params ?? [];
 
-        return param?.value ?? null;
+        return param?.value?.trim() ?? null;
     };
 
 

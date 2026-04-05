@@ -4,6 +4,13 @@ import * as core from '@flext/core';
 import * as dialects from '@/dialects';
 
 
+// Constants
+
+export const DIALECT_MACRO = 'syntax';
+
+export const LEGACY_DIALECT_MACRO = 'v';
+
+
 // Variables
 
 export const latestDialect = new dialects.Latest();
@@ -17,7 +24,7 @@ export class Flext extends Processor implements types.FlextInterface {
 
         // Getting the macro
 
-        const macro = macros?.find(m => m?.name === 'syntax') ?? null;
+        const macro = macros?.find(m => lib.inarr(m?.name, DIALECT_MACRO, LEGACY_DIALECT_MACRO)) ?? null;
 
         if (!macro) {
             this.setDialect(latestDialect);

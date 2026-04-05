@@ -10,6 +10,8 @@ This file explains the practical side of contribution: what kinds of changes are
 
 If you are new to the project, read [README.md](https://github.com/TrustMe-kz/flext/blob/main/README.md) and [ARCHITECTURE.md](https://github.com/TrustMe-kz/flext/blob/main/ARCHITECTURE.md) first. This file assumes you already understand what Flext is and how the codebase is organized.
 
+> 💡 **Important:** this repository contains two packages: `core/` for `@flext/core` and `api/` for `@trustme24/flext`. Run commands inside the affected package.
+
 ---
 
 ## 1. What contributions are welcome
@@ -59,21 +61,38 @@ Prefer the smallest useful change. In Flext, small diffs are much easier to revi
 
 ## 5. Development Setup
 
-Clone the repository, install dependencies, and run the project locally.
+Clone the repository and work inside the affected package directory.
+
+### 5.1 If the change belongs to Core
+
+Use `core/` when the change affects parsing, metadata extraction, modules, model generation, validation, rendering, or shared runtime types/helpers.
 
 ```shell
+cd core
 npm install
 npm run build
 npm run test
 ```
 
-If you need to **inspect behavior interactively**, you can also run:
+### 5.2 If the change belongs to the public API package
+
+Use `api/` when the change affects the `Flext` wrapper, bundled dialects, API compatibility behavior, CLI commands, or dialect distribution scripts.
 
 ```shell
+cd api
+npm install
+npm run build
+npm run test
+```
+
+If you need to **inspect behavior interactively** for the API package, you can also run:
+
+```shell
+cd api
 npm run test:app
 ```
 
-> ⚠️ **Do not edit** `dist/` manually. Source of truth is `src/`.
+> ⚠️ **Do not edit** package `dist/` directories manually. Source of truth is package-local `src/`.
 
 ---
 
@@ -83,16 +102,29 @@ The normal workflow is simple:
 
 1. Fork the repository
 2. Create a branch for your change
-3. Implement the change in the smallest relevant area
-4. Add or update tests
-5. Run tests and build
-6. Open a pull request with a clear description
+3. Choose the smallest relevant package boundary: `core/`, `api/`, or both if the API package must adapt to a Core change
+4. Implement the change in the smallest relevant area
+5. Add or update tests
+6. Run tests and build in every affected package
+7. Open a pull request with a clear description
 
-A good pull request explains three things clearly: what problem it solves, what changed, and whether any user-visible behavior changed.
+A good pull request explains three things clearly: what problem it solves, which package was changed, and whether any user-visible behavior changed.
 
 ---
 
-## 7. Pull Request Expectations
+## 7. Choosing the Right Package
+
+Use this rule of thumb before editing code:
+
+* Choose `core/` for parser behavior, directives, model generation, validation, rendering, modules, shared runtime types, and base dialect primitives
+* Choose `api/` for the public `Flext` wrapper, bundled dialect classes, `@syntax`-driven dialect selection, CLI commands, and dialect build/sync tooling
+* Choose both packages only when a Core change must be surfaced or adapted in the API package
+
+Do not put distribution behavior into Core. Do not put processing semantics into API unless it is dialect- or package-specific.
+
+---
+
+## 8. Pull Request Expectations
 
 Each pull request should solve one clear problem. Keep the diff small, avoid unrelated refactoring, and match the existing code style.
 
@@ -102,30 +134,50 @@ Before opening a PR, review your own diff and remove accidental formatting chang
 
 ---
 
-## 8. Tests & Verification
+## 9. Tests & Verification
 
 Behavior changes should be covered by tests. This is especially important for parser logic, directive handling, model generation, validation, and built-in modules.
 
-Always run the full checks before submitting:
+Run the full checks in every affected package before submitting.
+
+### Core change
 
 ```shell
+cd core
 npm run build
 npm run test
+```
+
+### API change
+
+```shell
+cd api
+npm run build
+npm run test
+```
+
+### Change touching both packages
+
+```shell
+cd core && npm run build && npm run test
+cd api && npm run build && npm run test
 ```
 
 > ⚠️ Do not remove or weaken tests just to make a change pass. If a fragile area is affected, add regression coverage.
 
 ---
 
-## 9. Modules, Templates, & Docs
+## 10. Modules, Templates, & Docs
 
-When possible, prefer extending Flext through modules instead of expanding core behavior. New modules should have clear behavior, examples, and tests.
+When possible, prefer extending Flext through modules instead of expanding core behavior. New modules usually belong in `core/` and should have clear behavior, examples, and tests.
 
 Template-related contributions should keep templates declarative and predictable. Documentation contributions are welcome, especially when they improve clarity, examples, or explain real usage patterns better.
 
+If you change package responsibilities, public API boundaries, dialect behavior, or developer workflow, update both [ARCHITECTURE.md](https://github.com/TrustMe-kz/flext/blob/main/ARCHITECTURE.md) and this file together.
+
 ---
 
-## 10. Review & Communication
+## 11. Review & Communication
 
 Maintainers review pull requests when time allows. Some PRs may need revisions before merge. Not every contribution will be accepted, especially if it conflicts with the long-term direction or stability of the project.
 
@@ -133,15 +185,16 @@ Keep communication technical, clear, and respectful. If a change is discussed in
 
 ---
 
-## 11. Practical Checklist
+## 12. Practical Checklist
 
 Before opening a pull request, make sure that:
 
 * The change solves one clear problem
 * The diff is limited to relevant files
+* The correct package boundary was chosen (`core/`, `api/`, or both)
 * Tests were added or updated if needed
-* `npm run test` passes
-* `npm run build` passes
+* `npm run test` passes in every affected package
+* `npm run build` passes in every affected package
 * Docs/examples were updated if behavior changed
 * The PR description explains the reason for the change
 

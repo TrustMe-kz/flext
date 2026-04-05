@@ -103,19 +103,19 @@ const template = `
   {{!-- @syntax "1.0" --}}
   {{!-- @use "put" --}}
   {{!-- @group "data" --}}
-  {{!-- @field "data.someField" type="string" label="Message" required --}}
+  {{!-- @field "data.helloWorld" type="string" label="Hello World" required --}}
 
-  <p class="text-center text-red-500">
-    {{ put data.someField 'No hello world...' }}
+  <p class="text-center">
+    {{ put data.helloWorld 'No hello world...' }}
   </p>
 `;
 
 const flext = new Flext(template, {
-  data: { someField: 'Hello World!' },
+  data: { helloWorld: 'Hello World!' },
 });
 
 console.log(flext.html);   // <p class="...">Hello World!</p>
-console.log(flext.model);  // {"name":"data","$":[{"name":"someField"}]}
+console.log(flext.model);  // {"name":"data","$":[{"name":"helloWorld"}]}
 ```
 
 > 💡 **In this example** the template carries additional information: Version, Field definition, and Module usage. This allows runtime tools to build a Data Model, validate input, and render HTML predictably.
@@ -128,7 +128,7 @@ console.log(flext.model);  // {"name":"data","$":[{"name":"someField"}]}
 
 **Flext** is intended for structured document generation. Common examples include contracts, invoices, reports, certificates, and internal document workflows. It is particularly useful when templates must be versioned, validated, reused across services, or rendered in multiple environments.
 
-Flext can be used on its own, but it is also designed to serve as a core library inside larger systems. Related tools include [vue-flext](https://www.npmjs.com/package/vue-flext) for Vue integration, [flext2pdf](https://www.npmjs.com/package/flext2pdf) for HTML‑to‑PDF rendering, and some **Flext Convert Service** for running document rendering as a microservice.
+Flext can be used on its own, but it is also designed to serve as a core library inside larger systems. Related tools include [Vue Flext](https://www.npmjs.com/package/vue-flext) for Vue integration, [flext2pdf](https://www.npmjs.com/package/flext2pdf) for HTML‑to‑PDF rendering, [Flext File](https://www.npmjs.com/package/flext-file) for portable document packaging and transfer, and some **Flext Service** for running document rendering as a microservice.
 
 Together these components allow Flext to power full document pipelines while remaining a lightweight core library.
 
@@ -192,7 +192,7 @@ Directives / Modules
 PDF / Preview / Data Model / Export
 ```
 
-At runtime Flext parses the template, extracts Metadata, registers Modules, builds a Data Model, and generates preview. The output can then be passed to other tools to display, store, or generating PDF.
+At runtime Flext parses the template, extracts Metadata, registers Modules, builds a Data Model, and generates preview. The output can then be passed to other tools to display, store, or generating PDF. Flext-based documents can also be packaged as `.flext` artifacts with [Flext File](https://www.npmjs.com/package/flext-file) for portable storage or transfer between systems.
 
 - [Repo: More information about the repo can be found in ARCHITECTURE.md](https://github.com/TrustMe-kz/flext/blob/main/ARCHITECTURE.md)
 - [Documentation: More information about the API is available at TrustMe Wiki](https://trustmekz.atlassian.net/wiki/external/MTUwYzM5NjUzNDE4NDViMGJlMTliOWEzNzM1Y2RiZWE)
