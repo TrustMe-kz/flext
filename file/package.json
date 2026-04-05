@@ -1,0 +1,54 @@
+{
+  "name": "flext-file",
+  "version": "1.0.2",
+  "description": "A technology for building reliable document templates",
+  "keywords": ["templates", "templating engine", "documents", "document engine", "flext"],
+  "repository": "https://github.com/TrustMe-kz/flext.git",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./index.css": "./dist/index.css"
+  },
+  "scripts": {
+    "start:test-app": "cd test/app && npm run test-app",
+    "build:types": "tsc -p src/tsconfig.json && tsc-alias -p src/tsconfig.json",
+    "build-only": "bin/build.mjs && npm run build:types",
+    "build": "npm run build-only",
+    "test:app": "npm run build && cd test/app && npm i && npm run test-app",
+    "test-only": "vitest run",
+    "test": "npm run npm run build-only && npm run test-only",
+    "prepublish": "npm run build"
+  },
+  "files": [
+    "dist/",
+    "src/"
+  ],
+  "author": "Kenny Romanov",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/cli": "^7.28.6",
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.2",
+    "@babel/preset-typescript": "^7.28.5",
+    "@types/node": "^25.5.0",
+    "esbuild": "^0.27.4",
+    "esbuild-plugin-import-glob": "^0.1.1",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
+  },
+  "peerDependencies": {
+    "@trustme24/flext": "^2.0.1"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "jszip-sync": "^3.2.1-sync",
+    "written-number": "^0.11.1"
+  }
+}
