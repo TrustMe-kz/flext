@@ -3,7 +3,7 @@
 [![Static Badge](https://img.shields.io/badge/GitHub-Star%20%281%29-yellow?logo=github)](https://github.com/TrustMe-kz/flext-file)
 [![Static Badge](https://img.shields.io/badge/NPM-Download%20%281%29-blue)](https://www.npmjs.com/package/flext-file)
 
-![trustme24_flext_cover.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext-file/36a410a58e7de6832be74ca3d60006b135c60290/.docs/trustme24_flext_logo_cover.jpg)
+![trustme24_flext_cover.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_logo_cover.jpg)
 
 **Flext File** is a portable file format and runtime adapter for moving Flext documents between systems.
 
@@ -33,7 +33,7 @@ Document generation often depends on more than one file. A template may referenc
 
 Typical issues include: templates and assets being transferred separately, missing resource files, weak contracts between systems, and difficulty reproducing the same document outside the original environment.
 
-![trustme24_flext_abstract_painting.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext-file/36a410a58e7de6832be74ca3d60006b135c60290/.docs/trustme24_flext_abstract_painting.jpg)
+![trustme24_flext_abstract_painting.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_abstract_painting.jpg)
 
 ### A few common scenarios illustrate the problem:
 
@@ -109,7 +109,7 @@ The internal structure is intentionally simple. A container includes a manifest,
 
 ## Use Cases
 
-![trustme24_flext_use_cases.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext-file/36a410a58e7de6832be74ca3d60006b135c60290/.docs/trustme24_flext_use_cases.jpg)
+![trustme24_flext_use_cases.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_use_cases.jpg)
 
 **Flext File** is intended for structured document transport and reproduction. A common example is browser preview of a prepared `.flext` document uploaded by a user. It is also useful when a document must be transferred between services as one binary artifact, stored for later reopening, or distributed without exposing the original source project structure.
 
@@ -203,7 +203,7 @@ npm run test:app
 
 Future development focuses on improving reliability and adoption. Planned areas include stronger format validation, clearer compatibility rules, better serialization and deserialization guarantees, richer documentation, ecosystem integrations, and more complete examples for browser and service-based workflows.
 
-![trustme24_flext_abstract_painting.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext-file/36a410a58e7de6832be74ca3d60006b135c60290/.docs/trustme24_flext_abstract_painting.jpg)
+![trustme24_flext_abstract_painting.jpg](https://raw.githubusercontent.com/TrustMe-kz/flext/ae3284e6156dd8b18e1998084943636e50cd64a2/docs/trustme24_flext_abstract_painting.jpg)
 
 * **Contributions** are welcome. Useful areas include documentation, example integrations, validation improvements, compatibility testing, and test coverage. Changes that affect the file format or manifest semantics should first be discussed in issues so format decisions remain coherent.
 
