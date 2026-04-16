@@ -1,6 +1,6 @@
 {
   "name": "@flext/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A technology for building reliable document templates",
   "keywords": ["templates", "templating engine", "documents", "core", "handlebars"],
   "repository": "https://github.com/TrustMe-kz/flext.git",
@@ -34,19 +34,20 @@
     "@babel/preset-env": "^7.29.2",
     "@babel/preset-typescript": "^7.28.5",
     "@handlebars/parser": "^2.2.2",
-    "@types/node": "^25.5.0",
-    "esbuild": "^0.27.4",
+    "@types/node": "^25.6.0",
+    "esbuild": "^0.28.0",
     "esbuild-plugin-import-glob": "^0.1.1",
     "tsc-alias": "^1.8.16",
     "typescript": "^6.0.2",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.4"
   },
   "dependencies": {
-    "@unocss/preset-wind4": "^66.6.7",
+    "@unocss/preset-wind4": "^66.6.8",
     "handlebars": "^4.7.9",
     "luxon": "^3.7.2",
+    "qrcode-generator": "^2.0.4",
     "striptags": "^3.2.0",
-    "unocss": "^66.6.7",
+    "unocss": "^66.6.8",
     "written-number": "^0.11.1"
   }
 }
