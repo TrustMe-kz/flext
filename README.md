@@ -22,13 +22,7 @@ A Flext template can contain Markup, Metadata, Modules, and rendering hints in a
 ## Installation
 
 ```shell
-npm i @trustme24/flext tailwindcss
-```
-
-Add the **CSS** import:
-
-```css
-@import "@trustme24/flext/index.css";
+npm i @trustme24/flext
 ```
 
 🎉 **That's It!**
