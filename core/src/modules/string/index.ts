@@ -13,7 +13,7 @@ export function op(state: any): Obj | any[] | string | boolean {
 
     // Defining the functions
 
-    const contains = (...refs: string[]): boolean => {
+    const _contains = (...refs: string[]): boolean => {
         for (const valRef of refs) {
             if (strict && str?.indexOf(valRef) >= 0)
                 return true;
@@ -57,7 +57,7 @@ export function op(state: any): Obj | any[] | string | boolean {
         case 'slice':
             return isset(end) ? str.slice(start, end) : str.slice(start);
         case 'contains':
-            return contains(arg, ...rest);
+            return _contains(arg, ...rest);
         case 'starts':
             return starts(arg, ...rest);
         case 'ends':
