@@ -88,6 +88,40 @@ describe('"math" module', () => {
     expect(html).toBe('32');
   });
 
+  it('pow alias mirrors power behavior', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:pow 3 4 }}',
+    }).trim();
+
+    expect(html).toBe('81');
+  });
+
+  it('sum accepts arrays and multiple numeric operands', () => {
+    const arrayHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:sum data.values }}',
+      data: { data: { values: [ 2, 3, 5 ] } },
+    }).trim();
+
+    const mixedHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:sum data.values 10 }}',
+      data: { data: { values: [ 2, 3, 5 ] } },
+    }).trim();
+
+    expect(arrayHtml).toBe('10');
+    expect(mixedHtml).toBe('20');
+  });
+
+  it('plus rejects non-number values inside array operands', () => {
+    expect(() => getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:plus data.values }}',
+      data: { data: { values: [ 2, 'x' ] } },
+    })).toThrow(/given arguments are not numbers/i);
+  });
+
   it('round supports default rounding and explicit modes', () => {
     const defaultRound = getHtml({
       modules: MODULE_NAME,
@@ -202,5 +236,12 @@ describe('"math" module', () => {
       modules: MODULE_NAME,
       template: '{{ math:op "percent" 100 }}',
     })).toThrow(/Unknown operation/i);
+  });
+
+  it('does not expose percent as a registered helper', () => {
+    expect(() => getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:percent 25 100 }}',
+    })).toThrow(/Missing helper/i);
   });
 });

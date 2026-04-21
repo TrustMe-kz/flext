@@ -124,4 +124,29 @@ describe('Flext validation workflow', () => {
     expect(errors[1].message).toContain('shorter than the range');
     expect(errors[1].fieldName).toBe('data.profile.username');
   });
+
+  it('reports max and maxLength validation failures', () => {
+    const template = `
+      {{!-- @syntax "standard" --}}
+      {{!-- @field "data.metrics.score" type="number" min="10" max="20" --}}
+      {{!-- @field "data.profile.username" minLength="4" maxLength="10" --}}
+
+      {{ data.metrics.score }}
+      {{ data.profile.username }}
+    `;
+
+    const flext = new Flext(template);
+    const errors = flext.getValidationErrors({
+      data: {
+        metrics: { score: 25 },
+        profile: { username: 'VeryLongUsername' },
+      },
+    });
+
+    expect(errors).toHaveLength(2);
+    expect(errors[0].message).toContain('greater than the range');
+    expect(errors[0].fieldName).toBe('data.metrics.score');
+    expect(errors[1].message).toContain('longer than the range');
+    expect(errors[1].fieldName).toBe('data.profile.username');
+  });
 });

@@ -1,5 +1,5 @@
 import { Obj } from '@/types';
-import { defineModule, isset } from '@/lib';
+import { defineModule, isset, isObject } from '@/lib';
 
 
 // Functions
@@ -56,7 +56,9 @@ export function op(state: any): any[] | boolean | null {
         for (const valRef of refs) {
             if (strict && arr?.indexOf(valRef) < 0)
                 return false;
-            else if (arr?.some(i => JSON.stringify(i) !== JSON.stringify(valRef)))
+            else if (isObject(valRef) && !arr?.some(i => isObject(i) && JSON.stringify(i) === JSON.stringify(valRef)))
+                return false;
+            else if (!arr?.some(i => i == valRef))
                 return false;
         }
 

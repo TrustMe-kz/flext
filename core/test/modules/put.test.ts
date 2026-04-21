@@ -74,4 +74,41 @@ describe('"put" module', () => {
     expect(falseValue).toBe(mockPut('false'));
     expect(emptyValue).toBe(mockPut(''));
   });
+
+  it('renders objects and arrays as formatted JSON', () => {
+    const objectValue = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put:noColor data.user }}',
+      data: { data: { user: { name: 'Anna', age: 30 } } },
+    }).trim();
+
+    const arrayValue = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put:noColor data.items }}',
+      data: { data: { items: [ 'a', 'b' ] } },
+    }).trim();
+
+    expect(objectValue).toBe('{\n  &quot;name&quot;: &quot;Anna&quot;,\n  &quot;age&quot;: 30\n}');
+    expect(arrayValue).toBe('[\n  &quot;a&quot;,\n  &quot;b&quot;\n]');
+  });
+
+  it('wraps formatted object JSON with the default color helper', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put data.user }}',
+      data: { data: { user: { name: 'Anna' } } },
+    }).trim();
+
+    expect(html).toBe('<span class="text-blue-500">{\n  "name": "Anna"\n}</span>');
+  });
+
+  it('formats valid date values through the date formatter path', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put:noColor data.createdAt }}',
+      data: { data: { createdAt: '2024-03-05T14:23:45Z' } },
+    }).trim();
+
+    expect(html).toContain('3/5/2024');
+  });
 });

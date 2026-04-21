@@ -8,6 +8,7 @@ describe('Flext features', () => {
       {{!-- @lang "ru-KZ" --}}
       {{!-- @title "Договор об обучении" --}}
       {{!-- @timeZone "Asia/Almaty" --}}
+      {{!-- @margins "20mm 15mm" --}}
       {{!-- @lineHeight "1.6" --}}
       {{!-- @field "data.user.age" type="number" label="Возраст" required --}}
       {{!-- @field "data.user.name" label="Имя" --}}
@@ -22,6 +23,7 @@ describe('Flext features', () => {
     expect(flext.lang).toBe('ru-KZ');
     expect(flext.title).toBe('Договор об обучении');
     expect(flext.timeZone).toBe('Asia/Almaty');
+    expect(flext.margins).toBe('20mm 15mm');
     expect(flext.lineHeight).toBe(1.6);
     expect(flext.fields).toEqual([
       {
@@ -105,6 +107,42 @@ describe('Flext features', () => {
       { name: 'data.c', order: 1, absoluteOrder: 2 },
       { name: 'data.d', order: null, absoluteOrder: 3 },
     ]);
+  });
+
+  it('reads extended @field metadata parameters', () => {
+    const template = `
+      {{!-- @syntax "standard" --}}
+      {{!-- @field "data.profile.name" label="Name" descr="Legal name" hint="Use passport spelling" value="Anna" minLength="2" maxLength="40" --}}
+      {{ data.profile.name }}
+    `;
+
+    const flext = new Flext(template);
+    const [ field ] = flext.fields;
+
+    expect(field).toMatchObject({
+      type: 'string',
+      name: 'data.profile.name',
+      label: 'Name',
+      descr: 'Legal name',
+      hint: 'Use passport spelling',
+      value: 'Anna',
+      minLength: '2',
+      maxLength: '40',
+    });
+  });
+
+  it('allows processor setters to override directive metadata', () => {
+    const flext = new Flext(`
+      {{!-- @syntax "standard" --}}
+      {{!-- @margins "10mm" --}}
+      {{!-- @lineHeight "1.2" --}}
+      {{ data.value }}
+    `);
+
+    flext.setMargins('12mm 8mm').setLineHeight(1.45);
+
+    expect(flext.margins).toBe('12mm 8mm');
+    expect(flext.lineHeight).toBe(1.45);
   });
 
   it('reinitializes directive metadata and modules when setTemplate is reused', () => {

@@ -188,6 +188,51 @@ describe('Flext data model and field options', () => {
     ]);
   });
 
+  it('retains extended option metadata and disabled state', () => {
+    const template = `
+      {{!-- @field "data.contract.type" label="Type" --}}
+      {{!-- @option "online" for="data.contract.type" type="string" label="Online" descr="Remote flow" value="online" --}}
+      {{!-- @option "offline" for="data.contract.type" type="string" label="Offline" descr="Disabled flow" value="offline" disabled --}}
+      {{ data.contract.type }}
+    `;
+
+    const flext = new Flext(template);
+    const field = flext.fields.find(field => field.name === 'data.contract.type');
+    const [ dataNode ] = flext.model;
+    const contractNode = dataNode.$?.find(node => node.name === 'contract');
+    const typeNode = contractNode?.$?.find(node => node.name === 'type');
+
+    expect(field?.options).toEqual([
+      {
+        type: 'string',
+        name: 'online',
+        fieldName: 'data.contract.type',
+        label: 'Online',
+        descr: 'Remote flow',
+        value: 'online',
+        isDisabled: false,
+      },
+      {
+        type: 'string',
+        name: 'offline',
+        fieldName: 'data.contract.type',
+        label: 'Offline',
+        descr: 'Disabled flow',
+        value: 'offline',
+        isDisabled: true,
+      },
+    ]);
+    expect(typeNode?.options).toEqual(field?.options);
+  });
+
+  it('throws when @option does not include a for parameter', () => {
+    expect(() => new Flext(`
+      {{!-- @field "data.contract.type" label="Type" --}}
+      {{!-- @option "online" label="Online" --}}
+      {{ data.contract.type }}
+    `)).toThrow(/for' param is not set/i);
+  });
+
   it('retains numeric and textual range constraints defined via @field directives', () => {
     const template = `
       {{!-- @field "data.stats.score" type="number" min="10" max="100" --}}
