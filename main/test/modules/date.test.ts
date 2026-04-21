@@ -29,6 +29,16 @@ describe('"date" module', () => {
         expect(html).toBe('05');
     });
 
+    it('op returns raw numeric values when padding is omitted', () => {
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:op data.createdAt "day" timeZone="UTC" }}',
+            data: TEMPLATE_DATA,
+        }).trim();
+
+        expect(html).toBe('5');
+    });
+
     it('seconds returns zero-padded seconds', () => {
         const html = getHtml({
             modules: MODULE_NAME,
@@ -93,6 +103,26 @@ describe('"date" module', () => {
         const html = getHtml({
             modules: MODULE_NAME,
             template: '{{ date:year data.createdAt timeZone="UTC" }}',
+            data: TEMPLATE_DATA,
+        }).trim();
+
+        expect(html).toBe('2024');
+    });
+
+    it('supports custom padding for time and day parts', () => {
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:day data.createdAt padding=3 timeZone="UTC" }}',
+            data: TEMPLATE_DATA,
+        }).trim();
+
+        expect(html).toBe('005');
+    });
+
+    it('keeps year padding fixed at four digits', () => {
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:year data.createdAt padding=2 timeZone="UTC" }}',
             data: TEMPLATE_DATA,
         }).trim();
 
@@ -180,6 +210,33 @@ describe('"date" module', () => {
         }).trim();
 
         expect(html).toBe('19');
+    });
+
+    it('honors Flext-level @lang when helper argument is omitted', () => {
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{!-- @lang "fr-FR" --}}{{ date:monthText data.createdAt nominative=true timeZone="UTC" }}',
+            data: TEMPLATE_DATA,
+        }).trim();
+
+        expect(html).toBe(TEMPLATE_DATA_DATE.setLocale('fr-FR').toLocaleString({ month: 'long' }).toLowerCase());
+    });
+
+    it('supports the now operation through the default helper', () => {
+        const currentYear = String(new Date().getFullYear());
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date "now" "year" }}',
+        }).trim();
+
+        expect(html).toBe(currentYear);
+    });
+
+    it('throws when the input date is invalid', () => {
+        expect(() => getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:day "not-a-date" }}',
+        })).toThrow(/date is invalid/i);
     });
 
     it('throws a descriptive error when padding is combined with unsupported ops', () => {

@@ -3,7 +3,7 @@ import Flext, { PotentialLoopError } from '@flext';
 
 describe('Flext validation workflow', () => {
   const template = `
-    {{!-- @syntax "1.0" --}}
+    {{!-- @syntax "standard" --}}
     {{!-- @use "put" --}}
     {{!-- @field "data.client.fullName" label="ФИО" required --}}
     {{!-- @field "data.client.email" label="Email" --}}
@@ -37,7 +37,7 @@ describe('Flext validation workflow', () => {
 
   it('treats zeroes and booleans as valid values for required fields', () => {
     const templateWithZeroes = `
-      {{!-- @syntax "1.0" --}}
+      {{!-- @syntax "standard" --}}
       {{!-- @use "put" --}}
       {{!-- @field "data.metrics.count" required --}}
       {{!-- @field "data.flags.enabled" required --}}
@@ -56,7 +56,7 @@ describe('Flext validation workflow', () => {
 
   it('merges nested overrides while validating deep objects', () => {
     const template = `
-      {{!-- @syntax "1.0" --}}
+      {{!-- @syntax "standard" --}}
       {{!-- @use "put" --}}
       {{!-- @field "data.org.name" label="Name" required --}}
       {{!-- @field "data.org.contacts.email" label="Email" required --}}
@@ -77,7 +77,7 @@ describe('Flext validation workflow', () => {
 
   it('throws PotentialLoopError when validation depth is insufficient', () => {
     const template = `
-      {{!-- @syntax "1.0" --}}
+      {{!-- @syntax "standard" --}}
       {{!-- @field "data.company.address.city" label="City" required --}}
       {{ data.company.address.city }}
     `;
@@ -91,7 +91,7 @@ describe('Flext validation workflow', () => {
 
   it('validates numeric values and string lengths against @field min/max constraints', () => {
     const template = `
-      {{!-- @syntax "1.0" --}}
+      {{!-- @syntax "standard" --}}
       {{!-- @field "data.metrics.score" type="number" min="10" max="20" --}}
       {{!-- @field "data.profile.username" minLength="4" maxLength="10" --}}
 
@@ -122,6 +122,31 @@ describe('Flext validation workflow', () => {
     expect(errors[0].message).toContain('less than the range');
     expect(errors[0].fieldName).toBe('data.metrics.score');
     expect(errors[1].message).toContain('shorter than the range');
+    expect(errors[1].fieldName).toBe('data.profile.username');
+  });
+
+  it('reports max and maxLength validation failures', () => {
+    const template = `
+      {{!-- @syntax "standard" --}}
+      {{!-- @field "data.metrics.score" type="number" min="10" max="20" --}}
+      {{!-- @field "data.profile.username" minLength="4" maxLength="10" --}}
+
+      {{ data.metrics.score }}
+      {{ data.profile.username }}
+    `;
+
+    const flext = new Flext(template);
+    const errors = flext.getValidationErrors({
+      data: {
+        metrics: { score: 25 },
+        profile: { username: 'VeryLongUsername' },
+      },
+    });
+
+    expect(errors).toHaveLength(2);
+    expect(errors[0].message).toContain('greater than the range');
+    expect(errors[0].fieldName).toBe('data.metrics.score');
+    expect(errors[1].message).toContain('longer than the range');
     expect(errors[1].fieldName).toBe('data.profile.username');
   });
 });

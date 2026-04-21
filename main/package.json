@@ -1,6 +1,6 @@
 {
   "name": "@trustme24/flext",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "A technology for building reliable document templates",
   "keywords": ["templates", "templating engine", "documents", "document engine", "handlebars"],
   "repository": "https://github.com/TrustMe-kz/flext.git",
@@ -46,10 +46,10 @@
     "esbuild-plugin-import-glob": "^0.1.1",
     "tsc-alias": "^1.8.16",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.5"
   },
   "dependencies": {
-    "@flext/core": "^1.0.5",
+    "@flext/core": "^1.0.6",
     "@unocss/preset-wind4": "^66.6.8",
     "handlebars": "^4.7.9",
     "luxon": "^3.7.2",

@@ -137,12 +137,82 @@ describe('"cond" module', () => {
     expect(html).toBe('Equal');
   });
 
-  it('rejects soft comparisons for unsupported operations', () => {
-    expect(() => getHtml({
+  it('eq and notEq aliases mirror the long helper names', () => {
+    const eqHtml = getHtml({
       modules: MODULE_NAME,
-      template: '{{ cond:op data.score "greater" 50 soft=true }}',
+      template: '{{#if (cond:eq data.status "ready")}}Ready{{else}}Wait{{/if}}',
+      data: { data: { status: 'ready' } },
+    }).trim();
+
+    const notEqHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:notEq data.status "done")}}Open{{else}}Closed{{/if}}',
+      data: { data: { status: 'ready' } },
+    }).trim();
+
+    expect(eqHtml).toBe('Ready');
+    expect(notEqHtml).toBe('Open');
+  });
+
+  it('notEqual accepts multiple reference values', () => {
+    const validHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:notEqual data.status "done" "archived")}}Open{{else}}Closed{{/if}}',
+      data: { data: { status: 'ready' } },
+    }).trim();
+
+    const invalidHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:notEqual data.status "done" "archived")}}Open{{else}}Closed{{/if}}',
+      data: { data: { status: 'archived' } },
+    }).trim();
+
+    expect(validHtml).toBe('Open');
+    expect(invalidHtml).toBe('Closed');
+  });
+
+  it('soft comparisons support object equality', () => {
+    const strictHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:equal data.actual data.expected)}}Equal{{else}}Different{{/if}}',
+      data: {
+        data: {
+          actual: { id: 1, label: 'A' },
+          expected: { id: 1, label: 'A' },
+        },
+      },
+    }).trim();
+
+    const softHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:equal data.actual data.expected soft=true)}}Equal{{else}}Different{{/if}}',
+      data: {
+        data: {
+          actual: { id: 1, label: 'A' },
+          expected: { id: 1, label: 'A' },
+        },
+      },
+    }).trim();
+
+    expect(strictHtml).toBe('Different');
+    expect(softHtml).toBe('Equal');
+  });
+
+  it('soft mode still allows numeric greater and less operations', () => {
+    const greaterHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:op data.score "greater" 50 soft=true)}}High{{else}}Low{{/if}}',
       data: { data: { score: 60 } },
-    })).toThrow(/Condition: Unknown operation/i);
+    }).trim();
+
+    const lessHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:op data.score "less" 50 soft=true)}}Low{{else}}High{{/if}}',
+      data: { data: { score: 40 } },
+    }).trim();
+
+    expect(greaterHtml).toBe('High');
+    expect(lessHtml).toBe('Low');
   });
 
   it('throws when an unsupported operation name is provided', () => {
