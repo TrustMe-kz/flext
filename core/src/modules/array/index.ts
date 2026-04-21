@@ -8,7 +8,7 @@ export function op(state: any): any[] | boolean | null {
     const args: any[] = state?.args ?? [];
     const namedArgs: Obj = state?.namedArgs ?? {};
     const [ op, arr, arg, ...rest ] = args;
-    const { strict = false, all = false, start, end } = namedArgs;
+    const { strict, all, start, end } = namedArgs;
 
 
     // Defining he functions

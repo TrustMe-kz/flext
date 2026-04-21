@@ -6,14 +6,14 @@ import qrcode from 'qrcode-generator';
 
 export function url(state: any): string {
     const args: any[] = state?.args ?? [];
-    const [ data ] = args;
+    const [ val ] = args;
 
 
     // Getting the QR
 
     const qr = qrcode(0, 'M');
 
-    qr.addData(data);
+    qr.addData(val || '');
     qr.make();
 
 

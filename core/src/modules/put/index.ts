@@ -1,6 +1,6 @@
 import { SafeString } from 'handlebars';
 import { Obj } from '@/types';
-import { defineModule, isNumber, inarr, ensureDate } from '@/lib';
+import {defineModule, isNumber, inarr, ensureDate, isObject} from '@/lib';
 import { format } from '../date';
 
 
@@ -32,6 +32,15 @@ export function put(state: any): string {
         self: self,
         getContent: getContent,
     });
+
+
+    // If the value is a valid object
+
+    if (isObject(val)) return JSON.stringify(
+        val,
+        null,
+        2,
+    );
 
 
     return val ?? fallback ?? '';

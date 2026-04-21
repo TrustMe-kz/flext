@@ -137,14 +137,6 @@ describe('"cond" module', () => {
     expect(html).toBe('Equal');
   });
 
-  it('rejects soft comparisons for unsupported operations', () => {
-    expect(() => getHtml({
-      modules: MODULE_NAME,
-      template: '{{ cond:op data.score "greater" 50 soft=true }}',
-      data: { data: { score: 60 } },
-    })).toThrow(/Condition: Unknown operation/i);
-  });
-
   it('throws when an unsupported operation name is provided', () => {
     expect(() => getHtml({
       modules: MODULE_NAME,

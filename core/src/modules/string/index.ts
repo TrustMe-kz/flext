@@ -8,16 +8,16 @@ export function op(state: any): Obj | any[] | string | boolean {
     const args: any[] = state?.args ?? [];
     const namedArgs: Obj = state?.namedArgs ?? {};
     const [ op, str, arg, ...rest ] = args;
-    const { strict = true, start, end } = namedArgs;
+    const { soft, start, end } = namedArgs;
 
 
     // Defining the functions
 
     const _contains = (...refs: string[]): boolean => {
         for (const valRef of refs) {
-            if (strict && str?.indexOf(valRef) >= 0)
+            if (soft && str?.toLowerCase()?.indexOf(valRef?.toLowerCase()) >= 0)
                 return true;
-            else if (str?.toLowerCase()?.indexOf(valRef?.toLowerCase()) >= 0)
+            else if (str?.indexOf(valRef) >= 0)
                 return true;
         }
 
@@ -26,9 +26,9 @@ export function op(state: any): Obj | any[] | string | boolean {
 
     const starts = (...refs: string[]): boolean => {
         for (const valRef of refs) {
-            if (strict && str?.startsWith(valRef))
+            if (soft && str?.toLowerCase()?.startsWith(valRef?.toLowerCase()))
                 return true;
-            else if (str?.toLowerCase()?.startsWith(valRef?.toLowerCase()))
+            else if (str?.startsWith(valRef))
                 return true;
         }
 
@@ -37,9 +37,9 @@ export function op(state: any): Obj | any[] | string | boolean {
 
     const ends = (...refs: string[]): boolean => {
         for (const valRef of refs) {
-            if (strict && str?.endsWith(valRef))
+            if (soft && str?.toLowerCase()?.endsWith(valRef?.toLowerCase()))
                 return true;
-            else if (str?.toLowerCase()?.endsWith(valRef?.toLowerCase()))
+            else if (str?.endsWith(valRef))
                 return true;
         }
 
