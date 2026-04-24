@@ -225,6 +225,53 @@ describe('Flext data model and field options', () => {
     expect(typeNode?.options).toEqual(field?.options);
   });
 
+  it('parses extended @group metadata the same way as @field metadata', () => {
+    const template = `
+      {{!-- @group "data.profile" label="Profile" descr="Main profile" hint="Used in onboarding" min="1" max="5" minLength="2" maxLength="12" order="0" value="{}" required --}}
+      {{ data.profile.name }}
+    `;
+
+    const [ groupField ] = new Flext(template).fields;
+
+    expect(groupField).toMatchObject({
+      type: 'object',
+      name: 'data.profile',
+      label: 'Profile',
+      descr: 'Main profile',
+      hint: 'Used in onboarding',
+      min: '1',
+      max: '5',
+      minLength: '2',
+      maxLength: '12',
+      order: 0,
+      value: '{}',
+      isRequired: true,
+      extra: {
+        macroName: 'group',
+      },
+    });
+  });
+
+  it('uses option names as fallback values when explicit option values are omitted', () => {
+    const flext = new Flext(`
+      {{!-- @field "data.contract.kind" label="Kind" --}}
+      {{!-- @option "remote" for="data.contract.kind" label="Remote" --}}
+      {{ data.contract.kind }}
+    `);
+
+    expect(flext.fields.find(field => field.name === 'data.contract.kind')?.options).toEqual([
+      {
+        type: 'string',
+        name: 'remote',
+        fieldName: 'data.contract.kind',
+        label: 'Remote',
+        descr: null,
+        value: 'remote',
+        isDisabled: false,
+      },
+    ]);
+  });
+
   it('throws when @option does not include a for parameter', () => {
     expect(() => new Flext(`
       {{!-- @field "data.contract.type" label="Type" --}}

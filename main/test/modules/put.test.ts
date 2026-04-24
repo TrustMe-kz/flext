@@ -27,6 +27,30 @@ describe('"put" module', () => {
     expect(fallbackValue).toBe('Default City');
   });
 
+  it('noColor falls back for nullish values but not for false', () => {
+    const nullHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put:noColor data.value "Fallback" }}',
+      data: { data: { value: null } },
+    }).trim();
+
+    const undefinedHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put:noColor data.value "Fallback" }}',
+      data: { data: {} },
+    }).trim();
+
+    const falseHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put:noColor data.value "Fallback" }}',
+      data: { data: { value: false } },
+    }).trim();
+
+    expect(nullHtml).toBe('Fallback');
+    expect(undefinedHtml).toBe('Fallback');
+    expect(falseHtml).toBe('false');
+  });
+
   it('default helper wraps the value with color and respects overrides', () => {
     const colored = getHtml({
       modules: MODULE_NAME,
@@ -56,6 +80,16 @@ describe('"put" module', () => {
     expect(fallback).toBe(mockPut('Default City'));
     expect(overriddenColor).toBe(mockPut('Paris', 'text-red-600'));
     expect(zeroValue).toBe(mockPut('0'));
+  });
+
+  it('passes date formatting arguments through the put helper', () => {
+    const html = getHtml({
+      modules: [ MODULE_NAME, 'date' ],
+      template: '{{ put:noColor data.createdAt lang="en-US" timeZone="UTC" }}',
+      data: { data: { createdAt: '2024-03-05T14:23:45Z' } },
+    }).trim();
+
+    expect(html).toContain('3/5/2024');
   });
 
   it('keeps falsy but defined values without falling back', () => {
@@ -100,6 +134,17 @@ describe('"put" module', () => {
     }).trim();
 
     expect(html).toBe('<span class="text-blue-500">{\n  "name": "Anna"\n}</span>');
+  });
+
+  it('falls back to the unwrapped SafeString branch when color is explicitly empty', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ put data.city "Default City" color="" }}',
+      data: { data: { city: 'Paris' } },
+    }).trim();
+
+    expect(html).not.toContain('<span class=');
+    expect(html).toBe('[object Object]');
   });
 
   it('formats valid date values through the date formatter path', () => {

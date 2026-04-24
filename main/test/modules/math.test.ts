@@ -79,6 +79,15 @@ describe('"math" module', () => {
     expect(html).toBe('1');
   });
 
+  it('intDiv alias mirrors intDivide behavior', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ math:intDiv 7 2 }}',
+    }).trim();
+
+    expect(html).toBe('1');
+  });
+
   it('power raises the first value to the power of the second', () => {
     const html = getHtml({
       modules: MODULE_NAME,

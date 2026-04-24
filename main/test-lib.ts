@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { Obj } from '@/types';
+import { types } from '@flext/core';
 import Flext from '@flext';
 
 
@@ -9,8 +9,8 @@ import Flext from '@flext';
 export type GetHtmlOptions = {
   modules: string | string[],
   template: string,
-  data?: Obj,
-  helpers?: Obj,
+  data?: types.Obj,
+  helpers?: types.Obj,
 };
 
 

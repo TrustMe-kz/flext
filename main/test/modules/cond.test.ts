@@ -87,6 +87,40 @@ describe('"cond" module', () => {
     expect(html).toBe('Passed');
   });
 
+  it('greaterOrEqual and lessOrEqual include boundary values', () => {
+    const greaterHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:greaterOrEqual data.score 70)}}Passed{{else}}Retry{{/if}}',
+      data: { data: { score: 70 } },
+    }).trim();
+
+    const lessHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:lessOrEqual data.score 40)}}Low{{else}}High{{/if}}',
+      data: { data: { score: 40 } },
+    }).trim();
+
+    expect(greaterHtml).toBe('Passed');
+    expect(lessHtml).toBe('Low');
+  });
+
+  it('greaterOrEqual and lessOrEqual return false when the boundary is not satisfied', () => {
+    const greaterHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:greaterOrEqual data.score 70)}}Passed{{else}}Retry{{/if}}',
+      data: { data: { score: 69 } },
+    }).trim();
+
+    const lessHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:lessOrEqual data.score 40)}}Low{{else}}High{{/if}}',
+      data: { data: { score: 41 } },
+    }).trim();
+
+    expect(greaterHtml).toBe('Retry');
+    expect(lessHtml).toBe('High');
+  });
+
   it('less compares numbers using strict less-than', () => {
     const html = getHtml({
       modules: MODULE_NAME,
@@ -95,6 +129,23 @@ describe('"cond" module', () => {
     }).trim();
 
     expect(html).toBe('Low');
+  });
+
+  it('greaterOrEq and lessOrEq aliases mirror the long helper names', () => {
+    const greaterHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:greaterOrEq data.score 70)}}Passed{{else}}Retry{{/if}}',
+      data: { data: { score: 75 } },
+    }).trim();
+
+    const lessHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:lessOrEq data.score 40)}}Low{{else}}High{{/if}}',
+      data: { data: { score: 55 } },
+    }).trim();
+
+    expect(greaterHtml).toBe('Passed');
+    expect(lessHtml).toBe('High');
   });
 
   it('default helper matches the base op behavior', () => {
@@ -213,6 +264,23 @@ describe('"cond" module', () => {
 
     expect(greaterHtml).toBe('High');
     expect(lessHtml).toBe('Low');
+  });
+
+  it('soft mode applies to the new range helpers with numeric strings', () => {
+    const greaterHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:op data.score "greaterOrEqual" "60" soft=true)}}High{{else}}Low{{/if}}',
+      data: { data: { score: '60' } },
+    }).trim();
+
+    const lessHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#if (cond:op data.score "lessOrEqual" "50" soft=true)}}Low{{else}}High{{/if}}',
+      data: { data: { score: '51' } },
+    }).trim();
+
+    expect(greaterHtml).toBe('High');
+    expect(lessHtml).toBe('High');
   });
 
   it('throws when an unsupported operation name is provided', () => {

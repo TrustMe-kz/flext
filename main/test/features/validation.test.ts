@@ -149,4 +149,52 @@ describe('Flext validation workflow', () => {
     expect(errors[1].message).toContain('longer than the range');
     expect(errors[1].fieldName).toBe('data.profile.username');
   });
+
+  it('validates date ranges from runtime fields and string min/max shorthand consistently', () => {
+    const flext = new Flext(`
+      {{ data.schedule.startDate }}
+      {{ data.profile.code }}
+    `).setFields([
+      {
+        type: 'date',
+        name: 'data.schedule.startDate',
+        min: new Date('2024-01-10T00:00:00.000Z'),
+        max: new Date('2024-01-20T00:00:00.000Z'),
+        isRequired: false,
+      },
+      {
+        type: 'string',
+        name: 'data.profile.code',
+        min: 3,
+        max: 5,
+        isRequired: false,
+      },
+    ]);
+
+    const earlyErrors = flext.getValidationErrors({
+      data: {
+        schedule: { startDate: new Date('2024-01-05T00:00:00.000Z') },
+        profile: { code: 'AB' },
+      },
+    });
+
+    const lateErrors = flext.getValidationErrors({
+      data: {
+        schedule: { startDate: new Date('2024-01-25T00:00:00.000Z') },
+        profile: { code: 'TOOLONG' },
+      },
+    });
+
+    expect(earlyErrors).toHaveLength(2);
+    expect(earlyErrors[0].fieldName).toBe('data.schedule.startDate');
+    expect(earlyErrors[0].message).toContain('less than the range');
+    expect(earlyErrors[1].fieldName).toBe('data.profile.code');
+    expect(earlyErrors[1].message).toContain('shorter than the range');
+
+    expect(lateErrors).toHaveLength(2);
+    expect(lateErrors[0].fieldName).toBe('data.schedule.startDate');
+    expect(lateErrors[0].message).toContain('greater than the range');
+    expect(lateErrors[1].fieldName).toBe('data.profile.code');
+    expect(lateErrors[1].message).toContain('longer than the range');
+  });
 });
