@@ -182,7 +182,7 @@ export function slice(state: any): any[] {
     const [ arr ] = args;
     const { start, end } = namedArgs;
 
-    if (end)
+    if (isset(end))
         return op({ ...state, args: [ 'slice', arr ], namedArgs: { ...namedArgs, start, end } }) as any[];
     else
         return op({ ...state, args: [ 'slice', arr ], namedArgs: { ...namedArgs, start } }) as any[];

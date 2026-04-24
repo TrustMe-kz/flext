@@ -37,6 +37,26 @@ describe('"media" module', () => {
     expect(() => flext.html).toThrow(/Asset 'logo' does not exist/);
   });
 
+  it('supports reading assets set through addAsset on an empty processor', () => {
+    const flext = new Flext(`
+      {{!-- @use "media" --}}
+      <img src="{{ media:url "stamp" }}" alt="Stamp">
+    `);
+    const blob = new Blob([ 'stamp' ], { type: 'text/plain' });
+    const createSpy = vi.spyOn(URL, 'createObjectURL');
+
+    flext.addAsset('stamp', blob);
+
+    const html = flext.html.trim();
+    const blobUrl = html.match(/src="([^"]+)"/)?.[1];
+
+    expect(html).toMatch(/^<img src="blob:.+" alt="Stamp">$/);
+    expect(createSpy).toHaveBeenCalledWith(blob);
+
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
+    createSpy.mockRestore();
+  });
+
   it('supports adding assets after initialization', () => {
     const blob = new Blob([ 'logo-2' ], { type: 'text/plain' });
     const flext = new Flext(template).setAssets({});
@@ -48,6 +68,24 @@ describe('"media" module', () => {
     expect(html).toMatch(/^<img src="blob:.+" alt="Company Seal">$/);
     expect(createSpy).toHaveBeenCalledTimes(1);
 
+    createSpy.mockRestore();
+  });
+
+  it('default helper mirrors media:url behavior', () => {
+    const blob = new Blob([ 'seal' ], { type: 'text/plain' });
+    const flext = new Flext(`
+      {{!-- @use "media" --}}
+      <img src="{{ media "logo" }}" alt="Company Seal">
+    `).setAssets({ logo: blob });
+    const createSpy = vi.spyOn(URL, 'createObjectURL');
+
+    const html = flext.html.trim();
+    const blobUrl = html.match(/src="([^"]+)"/)?.[1];
+
+    expect(html).toMatch(/^<img src="blob:.+" alt="Company Seal">$/);
+    expect(createSpy).toHaveBeenCalledTimes(1);
+
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
     createSpy.mockRestore();
   });
 

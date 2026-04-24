@@ -169,4 +169,58 @@ describe('Flext features', () => {
     expect(flext.helpers.put).toBeUndefined();
     expect(flext.html.trim()).toContain('5');
   });
+
+  it('parses additional field types, option defaults, and bracket-based field names', () => {
+    const template = `
+      {{!-- @syntax "standard" --}}
+      {{!-- @field "data.flags.enabled" type="boolean" label="Enabled" required --}}
+      {{!-- @field "data.tags" type="array" label="Tags" --}}
+      {{!-- @field "data.startedAt" type="date" label="Started At" --}}
+      {{!-- @field "data.payload" type="mixed" label="Payload" --}}
+      {{!-- @field "data.items[0].name" label="Item Name" --}}
+      {{!-- @field "data.status" label="Status" --}}
+      {{!-- @option "draft" for="data.status" label="Draft" --}}
+      {{ data.flags.enabled }} {{ data.tags }} {{ data.startedAt }} {{ data.payload }} {{ data.items.[0].name }} {{ data.status }}
+    `;
+
+    const flext = new Flext(template);
+
+    expect(flext.fields.find(field => field.name === 'data.flags.enabled')?.type).toBe('boolean');
+    expect(flext.fields.find(field => field.name === 'data.tags')?.type).toBe('array');
+    expect(flext.fields.find(field => field.name === 'data.startedAt')?.type).toBe('date');
+    expect(flext.fields.find(field => field.name === 'data.payload')?.type).toBe('mixed');
+    expect(flext.fields.find(field => field.name === 'data.items0.name')).toMatchObject({
+      name: 'data.items0.name',
+      type: 'string',
+    });
+    expect(flext.fields.find(field => field.name === 'data.status')?.options).toEqual([
+      {
+        type: 'string',
+        name: 'draft',
+        fieldName: 'data.status',
+        label: 'Draft',
+        descr: null,
+        value: 'draft',
+        isDisabled: false,
+      },
+    ]);
+  });
+
+  it('keeps setter-trimmed lang, title, timeZone, and margins values', () => {
+    const flext = new Flext(`
+      {{!-- @syntax "standard" --}}
+      {{ data.value }}
+    `);
+
+    flext
+      .setLang('  en-US  ')
+      .setTitle('  Runtime Title  ')
+      .setTimeZone('  UTC  ')
+      .setMargins('  12mm 8mm  ');
+
+    expect(flext.lang).toBe('en-US');
+    expect(flext.title).toBe('Runtime Title');
+    expect(flext.timeZone).toBe('UTC');
+    expect(flext.margins).toBe('12mm 8mm');
+  });
 });

@@ -39,6 +39,16 @@ describe('"date" module', () => {
         expect(html).toBe('5');
     });
 
+    it('op supports padded hour extraction explicitly', () => {
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:op data.createdAt "hours" padding=3 timeZone="UTC" }}',
+            data: TEMPLATE_DATA,
+        }).trim();
+
+        expect(html).toBe('014');
+    });
+
     it('seconds returns zero-padded seconds', () => {
         const html = getHtml({
             modules: MODULE_NAME,
@@ -169,6 +179,16 @@ describe('"date" module', () => {
         expect(html).toBe(TEMPLATE_DATA_DATE.toISOTime());
     });
 
+    it('format falls back to Flext-level locale when helper-level lang is omitted', () => {
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{!-- @lang "en-US" --}}{{ date:format data.createdAt timeZone="UTC" }}',
+            data: TEMPLATE_DATA,
+        }).trim();
+
+        expect(html).toBe(TEMPLATE_DATA_DATE.setLocale('en-US').toLocaleString());
+    });
+
     it('default helper mirrors the colored base implementation', () => {
         const html = getHtml({
             modules: MODULE_NAME,
@@ -230,6 +250,29 @@ describe('"date" module', () => {
         }).trim();
 
         expect(html).toBe(currentYear);
+    });
+
+    it('supports the explicit date:now helper', () => {
+        const currentYear = String(new Date().getFullYear());
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:year (date:now) }}',
+        }).trim();
+
+        expect(html).toBe(currentYear);
+    });
+
+    it('accepts an explicit genitive flag for monthText', () => {
+        const localized = TEMPLATE_DATA_DATE.setLocale('ru-RU').toLocaleString({ day: 'numeric', month: 'long' });
+        const expected = localized.replace(/[^\p{L}]/gu, '').toLowerCase();
+
+        const html = getHtml({
+            modules: MODULE_NAME,
+            template: '{{ date:op data.createdAt "monthText" genitive=true lang="ru-RU" timeZone="UTC" }}',
+            data: TEMPLATE_DATA,
+        }).trim();
+
+        expect(html).toBe(expected);
     });
 
     it('throws when the input date is invalid', () => {

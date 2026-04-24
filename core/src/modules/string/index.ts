@@ -151,7 +151,7 @@ export function slice(state: any): string {
     const [ str ] = args;
     const { start, end } = namedArgs;
 
-    if (end)
+    if (isset(end))
         return op({ ...state, args: [ 'slice', str ], namedArgs: { ...namedArgs, start, end } }) as string;
     else
         return op({ ...state, args: [ 'slice', str ], namedArgs: { ...namedArgs, start } }) as string;

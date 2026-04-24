@@ -62,6 +62,16 @@ describe('"number" module', () => {
     expect(strictNumber).toBe('true');
   });
 
+  it('check accepts numeric strings with surrounding whitespace in soft mode', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number:check data.value }}',
+      data: { data: { value: ' 12 ' } },
+    }).trim();
+
+    expect(html).toBe('true');
+  });
+
   it('op returns the raw primitive without decorations', () => {
     const html = getHtml({
       modules: MODULE_NAME,
@@ -69,6 +79,22 @@ describe('"number" module', () => {
     }).trim();
 
     expect(html).toBe('42');
+  });
+
+  it('op supports explicit text and check operations', () => {
+    const textHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number:op "text" 12 lang="en" }}',
+    }).trim();
+
+    const checkHtml = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number:op "check" data.value strict=true }}',
+      data: { data: { value: 12 } },
+    }).trim();
+
+    expect(textHtml).toBe('twelve');
+    expect(checkHtml).toBe('true');
   });
 
   it('maps extended locale codes to written-number equivalents', () => {
@@ -102,6 +128,24 @@ describe('"number" module', () => {
     }).trim();
 
     expect(html).toBe('жиырма бір');
+  });
+
+  it('text handles zero values without losing them during localization', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number:text 0 lang="en" }}',
+    }).trim();
+
+    expect(html).toBe('zero');
+  });
+
+  it('falls back to the default locale when the provided locale is unknown', () => {
+    const html = getHtml({
+      modules: MODULE_NAME,
+      template: '{{ number:text 5 lang="xx-XX" }}',
+    }).trim();
+
+    expect(html).toBe('five');
   });
 
   it('surfaces NaN for missing inputs so templates handle fallbacks explicitly', () => {
