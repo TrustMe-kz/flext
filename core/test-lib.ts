@@ -1,10 +1,11 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { Obj } from '@/types';
 import Flext from '@flext';
 
 
 // Types
+
+export type Obj<T extends any = any> = Record<string, T>;
 
 export type GetHtmlOptions = {
   modules: string | string[],

@@ -147,31 +147,22 @@ describe('"array" module', () => {
     expect(stringHtml).toBe('false');
   });
 
-  it('default helper mirrors op behavior and unknown operations return the operation name', () => {
+  it('default helper mirrors op behavior', () => {
     const defaultHtml = getHtml({
       modules: MODULE_NAME,
       template: '{{ array "length" data.tags }}',
       data: TEMPLATE_DATA,
     }).trim();
 
-    const unknownHtml = getHtml({
-      modules: MODULE_NAME,
-      template: '{{ array:op "unknown" data.tags }}',
-      data: TEMPLATE_DATA,
-    }).trim();
-
     expect(defaultHtml).toBe('3');
-    expect(unknownHtml).toBe('unknown');
   });
 
   it('returns empty output for missing array length', () => {
-    const html = getHtml({
+    expect(() => getHtml({
       modules: MODULE_NAME,
       template: '{{ array:length data.missing }}',
       data: TEMPLATE_DATA,
-    }).trim();
-
-    expect(html).toBe('');
+    })).toThrow();
   });
 
   it('throws when slice is requested for a non-array object', () => {

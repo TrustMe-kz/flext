@@ -1,5 +1,5 @@
 import { Obj } from '@/types';
-import { isNumber, defineModule } from '@/lib';
+import { defineModule, isNumber } from '@/lib';
 import writtenNumber from 'written-number';
 import kkKz from './locales/kkKz.json';
 import localeNames from './localeNames.json';
@@ -21,7 +21,7 @@ export function op(state: any): number|string|boolean {
     const args: any[] = state?.args ?? [];
     const namedArgs: Obj = state?.namedArgs ?? {};
     const [ op, number ] = args;
-    const { lang, strict } = namedArgs;
+    const { strict, lang } = namedArgs;
 
 
     // Defining the functions

@@ -1,5 +1,5 @@
 import { Obj } from '@/types';
-import { defineModule, isset } from '@/lib';
+import { defineModule, isset, RegexHelper } from '@/lib';
 
 
 // Functions
@@ -7,11 +7,28 @@ import { defineModule, isset } from '@/lib';
 export function op(state: any): Obj | any[] | string | boolean {
     const args: any[] = state?.args ?? [];
     const namedArgs: Obj = state?.namedArgs ?? {};
-    const [ op, str, arg, ...rest ] = args;
-    const { soft, start, end } = namedArgs;
+    const [ op = 'default', str, arg, ...rest ] = args;
+    const { separator = '', soft, start, end } = namedArgs;
+
+
+    // Doing some checks
+
+    if (op === 'check')
+        return typeof str === 'string';
+
+    if (op === 'default')
+        return String(str);
 
 
     // Defining the functions
+
+    const title = (val: string): string => val
+        .toLowerCase()
+        .split(' ')
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+
+    const capitalize = (val: string): string => val.replace(RegexHelper.firstChars, c => c.toUpperCase());
 
     const _contains = (...refs: string[]): boolean => {
         for (const valRef of refs) {
@@ -50,10 +67,20 @@ export function op(state: any): Obj | any[] | string | boolean {
     // Applying the operation
 
     switch (op) {
+        case 'array':
+            return str.split(separator);
         case 'json':
             return JSON.parse(str);
         case 'trim':
             return str.trim();
+        case 'lower':
+            return str.toLowerCase();
+        case 'upper':
+            return str.toUpperCase();
+        case 'title':
+            return title(str);
+        case 'capitalize':
+            return capitalize(str);
         case 'slice':
             return isset(end) ? str.slice(start, end) : str.slice(start);
         case 'contains':
@@ -69,6 +96,13 @@ export function op(state: any): Obj | any[] | string | boolean {
     }
 }
 
+export function array(state: any): any[] {
+    const args: any[] = state?.args ?? [];
+    const [ str ] = args;
+
+    return op({ ...state, args: [ 'array', str ] }) as any[];
+}
+
 export function json(state: any): Obj | any[] {
     const args: any[] = state?.args ?? [];
     const [ str ] = args;
@@ -81,6 +115,34 @@ export function trim(state: any): string {
     const [ str ] = args;
 
     return op({ ...state, args: [ 'trim', str ] }) as string;
+}
+
+export function lower(state: any): string {
+    const args: any[] = state?.args ?? [];
+    const [ str ] = args;
+
+    return op({ ...state, args: [ 'lower', str ] }) as string;
+}
+
+export function upper(state: any): string {
+    const args: any[] = state?.args ?? [];
+    const [ str ] = args;
+
+    return op({ ...state, args: [ 'upper', str ] }) as string;
+}
+
+export function title(state: any): string {
+    const args: any[] = state?.args ?? [];
+    const [ str ] = args;
+
+    return op({ ...state, args: [ 'title', str ] }) as string;
+}
+
+export function capitalize(state: any): string {
+    const args: any[] = state?.args ?? [];
+    const [ str ] = args;
+
+    return op({ ...state, args: [ 'capitalize', str ] }) as string;
 }
 
 export function slice(state: any): string {
@@ -127,8 +189,14 @@ export function check(state: any): boolean {
 export default defineModule({
     helpers: {
         op: op,
+        array: array,
         json: json,
         trim: trim,
+        lower: lower,
+        upper: upper,
+        title: title,
+        capitalize: capitalize,
+        name: capitalize,
         slice: slice,
         contains: contains,
         starts: starts,

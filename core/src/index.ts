@@ -1,5 +1,5 @@
 import { Obj, Macro, Field, FieldType, FieldValue, FieldValueOption, DataModel, DataModelNode, MetadataModelNode, CollectorFilterHandler, ParseTemplateHandler, GetTemplateTitleHandler, GetTemplateMacroHandler } from '@/types';
-import { BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError, TemplateDataValidationError } from '@/errors';
+import { BaseThrowable, BaseWarning, BaseError, PotentialLoopError, TemplateError, TemplateSyntaxError, TemplateDataError, TemplateDataValidationError } from '@/errors';
 import { Processor, SimpleProcessor } from '@/engine';
 import { Dialect } from '@/dialects';
 import * as types from '@/types';
@@ -31,6 +31,7 @@ export {
     PotentialLoopError,
     TemplateError,
     TemplateSyntaxError,
+    TemplateDataError,
     TemplateDataValidationError,
 
     Processor,

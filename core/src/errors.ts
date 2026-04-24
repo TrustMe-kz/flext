@@ -40,7 +40,11 @@ export class TemplateSyntaxError extends TemplateError {
     public name = 'TemplateSyntaxError';
 }
 
-export class TemplateDataValidationError extends TemplateError {
+export class TemplateDataError extends TemplateError {
+    public name = 'TemplateDataError';
+}
+
+export class TemplateDataValidationError extends TemplateDataError {
     public name = 'TemplateDataValidationError';
     declare public fieldName: string;
 

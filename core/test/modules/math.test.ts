@@ -230,18 +230,4 @@ describe('"math" module', () => {
 
     expect(html).toBe('12');
   });
-
-  it('throws when requesting an unknown Math API fallback', () => {
-    expect(() => getHtml({
-      modules: MODULE_NAME,
-      template: '{{ math:op "percent" 100 }}',
-    })).toThrow(/Unknown operation/i);
-  });
-
-  it('does not expose percent as a registered helper', () => {
-    expect(() => getHtml({
-      modules: MODULE_NAME,
-      template: '{{ math:percent 25 100 }}',
-    })).toThrow(/Missing helper/i);
-  });
 });

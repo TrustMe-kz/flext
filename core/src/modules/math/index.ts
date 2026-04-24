@@ -1,5 +1,5 @@
-import {audit, sum, defineModule, isNumber} from '@/lib';
-import {BaseError, TemplateSyntaxError} from '@/errors';
+import { defineModule, audit, isNumber, sum } from '@/lib';
+import { BaseError, TemplateSyntaxError } from '@/errors';
 
 
 // Types
@@ -143,17 +143,6 @@ export function round(state: any): number {
     }
 }
 
-export function percent(state: any): number {
-    const args: Arg[] = state?.args ?? [];
-    const [ a, b ] = args;
-
-    if (b === undefined || b === null) {
-        return op({ ...state, args: [ 'percent', a ] });
-    } else {
-        return op({ ...state, args: [ a, 'divide', b, 'multiply', 100 ] });
-    }
-}
-
 export function sqrt(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a ] = args;
@@ -182,13 +171,14 @@ export default defineModule({
         plus: plus,
         sum: _sum,
         minus: minus,
-        mul: multiply,
         multiply: multiply,
-        div: divide,
+        mul: multiply,
         divide: divide,
+        div: divide,
         intDivide: intDivide,
-        pow: power,
+        intDiv: intDivide,
         power: power,
+        pow: power,
         round: round,
         sqrt: sqrt,
         cbrt: cbrt,

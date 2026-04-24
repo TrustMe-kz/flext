@@ -58,8 +58,12 @@ export function op(state: any): boolean {
             return _or(arg1, arg3, ...rest);
         case 'greater':
             return Number(arg1) > Number(arg3);
+        case 'greaterOrEqual':
+            return Number(arg1) >= Number(arg3);
         case 'less':
             return Number(arg1) < Number(arg3);
+        case 'lessOrEqual':
+            return Number(arg1) <= Number(arg3);
         default:
             throw new TemplateSyntaxError('Condition: Unknown operation: ' + audit(arg2));
     }
@@ -107,11 +111,25 @@ export function greater(state: any): boolean {
     return op({ ...state, args: [ a, 'greater', b ] });
 }
 
+export function greaterOrEqual(state: any): boolean {
+    const args: any[] = state?.args ?? [];
+    const [ a, b ] = args;
+
+    return op({ ...state, args: [ a, 'greaterOrEqual', b ] });
+}
+
 export function less(state: any): boolean {
     const args: any[] = state?.args ?? [];
     const [ a, b ] = args;
 
     return op({ ...state, args: [ a, 'less', b ] });
+}
+
+export function lessOrEqual(state: any): boolean {
+    const args: any[] = state?.args ?? [];
+    const [ a, b ] = args;
+
+    return op({ ...state, args: [ a, 'lessOrEqual', b ] });
 }
 
 
@@ -126,7 +144,11 @@ export default defineModule({
         and: and,
         or: or,
         greater: greater,
+        greaterOrEqual: greaterOrEqual,
+        greaterOrEq: greaterOrEqual,
         less: less,
+        lessOrEqual: lessOrEqual,
+        lessOrEq: lessOrEqual,
         __default: op,
     },
 });

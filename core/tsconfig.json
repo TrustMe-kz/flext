@@ -33,5 +33,5 @@
     "noFallthroughCasesInSwitch": true,
     "ignoreDeprecations": "6.0"
   },
-  "include": [ "test/**/*.d.ts", "vitest.config.ts" ]
+  "include": [ "test/**/*.d.ts", "vitest.config.ts", "test-lib.ts" ]
 }

@@ -13,7 +13,7 @@ export function url(state: any): string {
 
     const qr = qrcode(0, 'M');
 
-    qr.addData(val || '');
+    qr.addData(String(val || ''));
     qr.make();
 
 

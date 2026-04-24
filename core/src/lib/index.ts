@@ -911,6 +911,7 @@ export function defineModule(options: any = {}): any {
 // Helpers
 
 export class RegexHelper {
+    public static firstChars = /\b\p{L}/gu;
     public static dbDateStr = /^\d+-\d+-\d+$/;
     public static macro = /^@(?<name>.+?) (?<params>.+)$/;
     public static macroParams = /(?<param>".+?")|(?<namedParam>[a-zA-Z0-9]+=".+?")|(?<simplaeParam>[a-zA-Z0-9]+)/gm;
