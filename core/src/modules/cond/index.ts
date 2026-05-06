@@ -1,6 +1,7 @@
+import { DateTime } from 'luxon';
 import { Obj } from '@/types';
-import { defineModule, audit, isObject } from '@/lib';
-import { TemplateSyntaxError } from '@/errors';
+import { defineModule, audit, isNumber, isObject } from '@/lib';
+import { TemplateError, TemplateSyntaxError } from '@/errors';
 
 
 // Functions
@@ -9,7 +10,7 @@ export function op(state: any): boolean {
     const args: any[] = state?.args ?? [];
     const namedArgs: Obj = state?.namedArgs ?? {};
     const [ arg1, arg2, arg3, ...rest ] = args;
-    const { soft } = namedArgs;
+    const { soft, inclusive } = namedArgs;
 
 
     // If the 'not' operator was passed
@@ -44,6 +45,27 @@ export function op(state: any): boolean {
 
     const _or  = <T = any>(..._args: T[]): T => _args.reduce((r, x) => r || x);
 
+    const _greater = <T = number | DateTime>(val: T, valRef: T, _inclusive: boolean = false): boolean => {
+        if (isNumber(val) && _inclusive)
+            return Number(val) >= Number(valRef);
+        if (isNumber(val))
+            return Number(val) > Number(valRef);
+        else if (isObject(val) && val instanceof DateTime && _inclusive)
+            return val >= valRef;
+        else if (isObject(val) && val instanceof DateTime)
+            return val > valRef;
+        else
+            throw new TemplateError(`Condition: Unable to perform '${arg2}': Unsupported type: ${audit(typeof arg1)}`);
+    };
+
+    const _less = <T = number | DateTime>(val: T, valRef: T, _inclusive: boolean = false): boolean => {
+        return !_greater(val, valRef, !_inclusive);
+    };
+
+    const _between = <T = number | DateTime>(val: T, valRef1: T, valRef2: T, _inclusive: boolean = false): boolean => {
+        return _greater(val, valRef1, _inclusive) && _less(val, valRef2, _inclusive);
+    };
+
 
     // Applying the operation
 
@@ -57,13 +79,16 @@ export function op(state: any): boolean {
         case 'or':
             return _or(arg1, arg3, ...rest);
         case 'greater':
-            return Number(arg1) > Number(arg3);
+            return _greater(arg1, arg3);
         case 'greaterOrEqual':
-            return Number(arg1) >= Number(arg3);
+            return _greater(arg1, arg3, true);
         case 'less':
-            return Number(arg1) < Number(arg3);
+            return _less(arg1, arg3);
         case 'lessOrEqual':
-            return Number(arg1) <= Number(arg3);
+            return _less(arg1, arg3, true);
+        case 'between':
+            const [ arg4 ] = rest;
+            return _between(arg1, arg3, arg4, inclusive);
         default:
             throw new TemplateSyntaxError('Condition: Unknown operation: ' + audit(arg2));
     }
@@ -132,6 +157,13 @@ export function lessOrEqual(state: any): boolean {
     return op({ ...state, args: [ a, 'lessOrEqual', b ] });
 }
 
+export function between(state: any): boolean {
+    const args: any[] = state?.args ?? [];
+    const [ a, b, c ] = args;
+
+    return op({ ...state, args: [ a, 'between', b, c ] });
+}
+
 
 export default defineModule({
     helpers: {
@@ -149,6 +181,7 @@ export default defineModule({
         less: less,
         lessOrEqual: lessOrEqual,
         lessOrEq: lessOrEqual,
+        between: between,
         __default: op,
     },
 });
