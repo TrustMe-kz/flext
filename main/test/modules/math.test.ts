@@ -206,6 +206,14 @@ describe('"math" module', () => {
     expect(html).toBe('12');
   });
 
+  it('propagates undefined through multiplication and sum as NaN', () => {
+    const scalarHtml = getHtml({ modules: MODULE_NAME, template: '{{math:mul data.missing 5}}', data: { data: {} } }).trim();
+    const arrayHtml = getHtml({ modules: MODULE_NAME, template: '{{math:sum (math:mul data.values 5)}}', data: { data: { values: [ 1, undefined ] } } }).trim();
+
+    expect(scalarHtml).toBe('NaN');
+    expect(arrayHtml).toBe('NaN');
+  });
+
   it('div alias mirrors divide output', () => {
     const html = getHtml({
       modules: MODULE_NAME,

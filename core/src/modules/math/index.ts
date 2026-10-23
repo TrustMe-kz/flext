@@ -1,4 +1,4 @@
-import { defineModule, audit, isNumber, sum } from '@/lib';
+import { defineModule, audit, isNumber, sum, mul as multiplyValues } from '@/lib';
 import { BaseError, TemplateSyntaxError } from '@/errors';
 
 
@@ -8,10 +8,9 @@ export type Arg = string|number|null|undefined;
 
 export type FlattenFuncArg = number | number[];
 
-
 // Functions
 
-export function op(state: any): number {
+export function op(state: any): number | number[] {
     const args: Arg[] = state?.args ?? [];
     const [ a, op, b, ...rest ] = args;
 
@@ -30,11 +29,12 @@ export function op(state: any): number {
 
     const flatten = (..._args: FlattenFuncArg[] | any[]): number[] => {
         const result: number[] = [];
+        const isMathNumber = (val: any): boolean => typeof val === 'number' || isNumber(val);
 
         for (const arg of _args) {
-            if (isNumber(arg))
-                result.push(arg);
-            else if (Array.isArray(arg) && arg.every(isNumber))
+            if (isMathNumber(arg))
+                result.push(Number(arg));
+            else if (Array.isArray(arg) && arg.every(isMathNumber))
                 result.push(...arg);
             else
                 throw new BaseError('Math: Unable to sum: The given arguments are not numbers: ' + audit(_args));
@@ -53,7 +53,8 @@ export function op(state: any): number {
         case 'minus':
             return Number(a) - Number(b || 0);
         case 'multiply':
-            return Number(a) * Number(b || 1);
+        case 'mul':
+            return multiplyValues(a as number | number[] | undefined, b as number | number[] | undefined);
         case 'divide':
             return Number(a) / Number(b || 1);
         case 'intDivide':
@@ -69,49 +70,49 @@ export function plus(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b, ...rest ] = args;
 
-    return op({ ...state, args: [ a, 'plus', b, ...rest ] });
+    return op({ ...state, args: [ a, 'plus', b, ...rest ] }) as number;
 }
 
 export function _sum(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b, ...rest ] = args;
 
-    return op({ ...state, args: [ a, 'sum', b, ...rest ] });
+    return op({ ...state, args: [ a, 'sum', b, ...rest ] }) as number;
 }
 
 export function minus(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return op({ ...state, args: [ a, 'minus', b ] });
+    return op({ ...state, args: [ a, 'minus', b ] }) as number;
 }
 
-export function multiply(state: any): number {
+export function multiply(state: any): number | number[] {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return op({ ...state, args: [ a, 'multiply', b ] });
+    return op({ ...state, args: [ a, 'mul', b ] });
 }
 
 export function divide(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return op({ ...state, args: [ a, 'divide', b ] });
+    return op({ ...state, args: [ a, 'divide', b ] }) as number;
 }
 
 export function intDivide(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return op({ ...state, args: [ a, 'intDivide', b ] });
+    return op({ ...state, args: [ a, 'intDivide', b ] }) as number;
 }
 
 export function power(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a, b ] = args;
 
-    return op({ ...state, args: [ a, 'power', b ] });
+    return op({ ...state, args: [ a, 'power', b ] }) as number;
 }
 
 export function round(state: any): number {
@@ -121,7 +122,7 @@ export function round(state: any): number {
 
     // Defining the function
 
-    const handle = (__op: string, val: Arg): number => op({ ...state, args: [ __op, val ] });
+    const handle = (__op: string, val: Arg): number => op({ ...state, args: [ __op, val ] }) as number;
 
 
     // If the operation is not defined
@@ -147,21 +148,21 @@ export function sqrt(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a ] = args;
 
-    return op({ ...state, args: [ 'sqrt', a ] });
+    return op({ ...state, args: [ 'sqrt', a ] }) as number;
 }
 
 export function cbrt(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a ] = args;
 
-    return op({ ...state, args: [ 'cbrt', a ] });
+    return op({ ...state, args: [ 'cbrt', a ] }) as number;
 }
 
 export function abs(state: any): number {
     const args: Arg[] = state?.args ?? [];
     const [ a ] = args;
 
-    return op({ ...state, args: [ 'abs', a ] });
+    return op({ ...state, args: [ 'abs', a ] }) as number;
 }
 
 

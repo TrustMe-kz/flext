@@ -150,6 +150,21 @@ Templates should stay declarative and focused on layout. Business logic is usual
 
 Treat templates as versioned artifacts. Prefer explicit metadata over hidden assumptions. Keep helper usage predictable and document important data paths with `@field`. Test templates with realistic data and separate document layout from application business rules.
 
+Use `array:destruct` to extract object properties into arrays, `math:mul` to multiply corresponding values, and `math:sum` to add the results:
+
+```handlebars
+{{!-- @use "array" "math" --}}
+{{math:sum (math:mul (array:destruct data.payments "amount") (array:destruct data.payments "price"))}}
+```
+
+Use `fallback` when an extracted property may be missing. The source must still be an array. The fallback can be a number, string, array, or another value:
+
+```handlebars
+{{math:sum (math:mul (array:destruct data.payments "amount" fallback=0) (array:destruct data.payments "price" fallback=0))}}
+```
+
+If `math:mul` receives `undefined` without a fallback, it returns `NaN`; `math:sum` propagates that value without throwing.
+
 ### Limitations
 
 Flext is intentionally focused. It is not a full programming language, not a WYSIWYG editor, and not a complete document management system. Its role is to act as a reliable template core inside document generation workflows.

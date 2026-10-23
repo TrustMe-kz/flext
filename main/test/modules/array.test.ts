@@ -73,6 +73,28 @@ describe('"array" module', () => {
     expect(html).toBe('Anna;Boris;');
   });
 
+  it('destruct applies fallback only to undefined property values', () => {
+    const missingUndefined = getHtml({
+      modules: MODULE_NAME,
+      template: '{{array:length (array:destruct data.items "value")}}|{{#each (array:destruct data.items "value")}}x{{/each}}',
+      data: { data: { items: [ {} ] } },
+    }).trim();
+    const missingProperty = getHtml({
+      modules: MODULE_NAME,
+      template: '{{array:destruct data.items "value" fallback=0}}',
+      data: { data: { items: [ { value: 5 }, {} ] } },
+    }).trim();
+    const nullProperty = getHtml({
+      modules: MODULE_NAME,
+      template: '{{#each (array:destruct data.items "value" fallback=1)}}{{#if this}}Y{{else}}N{{/if}}{{/each}}',
+      data: { data: { items: [ { value: null }, {} ] } },
+    }).trim();
+
+    expect(missingUndefined).toBe('1|x');
+    expect(missingProperty).toBe('5,0');
+    expect(nullProperty).toBe('NY');
+  });
+
   it('reverse returns a reversed array without mutating the original data', () => {
     const html = getHtml({
       modules: MODULE_NAME,
